@@ -43,6 +43,7 @@ model TelefonoNuevoVariante {
   telefonoNuevoId   Int
   colorId           Int
   rom               String             // Almacenamiento: "128GB", "256GB", "512GB", etc.
+  precio            Decimal            @db.Decimal(10, 2) // Precio específico de esta variante según capacidad
   stock             Int                @default(0)
   createdAt         DateTime           @default(now())
   
@@ -193,8 +194,10 @@ model ImagenProducto {
 
 model ContenidoTienda {
   id                Int                @id @default(autoincrement())
-  tipo              String             // "hero", "logo", "banner", "publicidad"
+  tipo              String             // "hero", "logo", "banner", "publicidad", "cta"
   url               String             // URL de Cloudinary
+  urlDestino        String?            // URL de destino cuando se hace clic (para CTA/publicidad/banner)
+  titulo            String?            // Título del banner (para banners grandes)
   descripcion       String?            @db.Text
   activo            Boolean            @default(true)
   orden             Int                @default(0) // Para ordenar contenido
@@ -203,6 +206,27 @@ model ContenidoTienda {
   
   @@index([tipo])
   @@index([activo])
+}
+
+// ============================================
+// UBICACIONES / LOCALIDADES
+// ============================================
+
+model Localidad {
+  id                Int                @id @default(autoincrement())
+  imagenUrl         String             // URL de Cloudinary
+  titulo            String             // Título del lugar
+  direccion         String             @db.Text
+  telefono          String?
+  linkGoogleMaps    String?            // URL de Google Maps
+  linkWaze          String?            // URL de Waze
+  activo            Boolean            @default(true)
+  orden             Int                @default(0) // Para ordenar localidades
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  @@index([activo])
+  @@index([orden])
 }
 
 // ============================================

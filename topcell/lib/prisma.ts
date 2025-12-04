@@ -44,12 +44,17 @@ function getPoolConfig() {
     user: decodeURIComponent(user),
     password: decodeURIComponent(password),
     database: database,
-    connectionLimit: 5,
-    connectTimeout: 60000, // 60 segundos
+    connectionLimit: 10, // Aumentar límite de conexiones
+    connectTimeout: 30000, // 30 segundos para conectar
+    acquireTimeout: 30000, // 30 segundos para obtener conexión del pool
+    timeout: 30000, // 30 segundos timeout general
     // Railway requiere SSL para conexiones externas
     ssl: host.includes("railway") || host.includes("rlwy.net") 
       ? { rejectUnauthorized: false } 
       : undefined,
+    // Configuraciones adicionales para mejorar la estabilidad
+    idleTimeout: 600000, // 10 minutos antes de cerrar conexiones inactivas
+    reconnect: true, // Reconectar automáticamente
   };
 }
 
@@ -57,6 +62,8 @@ function getPoolConfig() {
 // El adapter espera una configuración (PoolConfig o string), no un pool ya creado
 // El pool se crea internamente cuando Prisma llama a connect()
 const poolConfig = getPoolConfig();
+
+// Crear el adapter con configuración mejorada
 const adapter =
   globalForPrisma.adapter ??
   new PrismaMariaDb(poolConfig);
@@ -65,14 +72,22 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.adapter = adapter;
 }
 
+// Crear Prisma Client con configuración optimizada
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     adapter,
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    log: ["error", "warn"], // Solo errores y warnings, sin queries
   });
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
+}
+
+// Manejar desconexiones limpias al cerrar la aplicación
+if (typeof process !== "undefined") {
+  process.on("beforeExit", async () => {
+    await prisma.$disconnect();
+  });
 }
 

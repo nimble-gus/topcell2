@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Configurar el directorio raíz para evitar warnings de múltiples lockfiles
+  outputFileTracingRoot: path.join(__dirname, ".."),
   // Usar webpack explícitamente para tener control sobre la configuración
   // Alternativamente, puedes usar Turbopack agregando: turbopack: {}
   webpack: (config, { isServer }) => {

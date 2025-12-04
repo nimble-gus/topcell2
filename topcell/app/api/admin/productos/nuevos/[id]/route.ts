@@ -137,6 +137,9 @@ export async function PUT(
     colores.forEach((v: any, index: number) => {
       if (!v.colorId) variantesInvalidas.push(`Variante ${index + 1}: falta el color`);
       if (!v.rom || v.rom.trim() === "") variantesInvalidas.push(`Variante ${index + 1}: falta el almacenamiento (ROM)`);
+      if (v.precio === undefined || v.precio === null || v.precio === "" || parseFloat(v.precio) <= 0) {
+        variantesInvalidas.push(`Variante ${index + 1}: falta el precio o es inválido`);
+      }
       if (v.stock === undefined || v.stock === null || v.stock === "") {
         variantesInvalidas.push(`Variante ${index + 1}: falta el stock`);
       }
@@ -183,6 +186,7 @@ export async function PUT(
             create: colores.map((v: any) => ({
               colorId: parseInt(v.colorId),
               rom: v.rom,
+              precio: parseFloat(v.precio || precio || 0),
               stock: parseInt(v.stock || 0),
             })),
           },

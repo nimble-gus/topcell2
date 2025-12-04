@@ -6,24 +6,22 @@ import { storeHandlers } from "@/lib/auth-store";
 function getHandler(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // Verificar header personalizado del middleware o del cliente
+  // Prioridad 1: Header personalizado del middleware
   const authContext = request.headers.get("x-auth-context");
   if (authContext === "admin") {
     return adminHandlers;
   }
   
-  // CRÍTICO: Si la ruta contiene "admin-credentials" en el pathname, es un signIn de admin
+  // Prioridad 2: Pathname contiene identificadores de provider
   if (pathname.includes("admin-credentials")) {
     return adminHandlers;
   }
   
-  // CRÍTICO: Si la ruta contiene "store-credentials" en el pathname, es un signIn de store
   if (pathname.includes("store-credentials")) {
     return storeHandlers;
   }
   
-  // Verificar el referer para determinar el contexto
-  // El referer contiene la URL completa de la página que hizo la request
+  // Prioridad 3: Verificar el referer para determinar el contexto
   const referer = request.headers.get("referer");
   let isAdminReferer = false;
   if (referer) {
@@ -31,7 +29,6 @@ function getHandler(request: NextRequest) {
       const refererUrl = new URL(referer);
       isAdminReferer = refererUrl.pathname.startsWith("/admin");
     } catch {
-      // Si no se puede parsear el referer, verificar si contiene "/admin"
       isAdminReferer = referer.includes("/admin/login") || referer.includes("/admin/");
     }
   }
@@ -59,29 +56,75 @@ function getHandler(request: NextRequest) {
   const hasAdminCookie = request.cookies.has(adminCookieName);
   const hasStoreCookie = request.cookies.has(storeCookieName);
   
-  // REGLA CRÍTICA DE SEGURIDAD:
-  // Si el referer/origin indica contexto de admin, usar admin handler
-  // Si NO hay referer/origin de admin, SIEMPRE usar store handler (incluso si hay cookie de admin)
-  // Esto previene que admins vean su sesión en la tienda
-  
+  // Prioridad 4: Si hay referer/origin de admin, usar admin handler
   if (isAdminReferer || isAdminOrigin) {
-    // Estamos en contexto de admin, usar admin handler
     return adminHandlers;
   }
   
-  // NO estamos en contexto de admin, SIEMPRE usar store handler
-  // Esto asegura que la tienda NUNCA vea sesiones de admin
-  // Incluso si hay una cookie de admin, la ignoramos si no estamos en /admin
+  // Prioridad 5: Verificar cookies para determinar el contexto
+  // Si hay cookie de admin pero NO cookie de store, usar admin handler
+  if (hasAdminCookie && !hasStoreCookie) {
+    // Pero solo si el referer indica que estamos en contexto de admin
+    // Si no hay referer o el referer no es de admin, usar store handler por seguridad
+    if (isAdminReferer || isAdminOrigin) {
+      return adminHandlers;
+    }
+    // Si hay cookie de admin pero no estamos en contexto de admin, usar store handler
+    // Esto previene que admins vean su sesión en la tienda
+    return storeHandlers;
+  }
+  
+  // Prioridad 6: Si hay cookie de store pero NO cookie de admin, usar store handler
+  if (hasStoreCookie && !hasAdminCookie) {
+    return storeHandlers;
+  }
+  
+  // Prioridad 7: Si ambas cookies están presentes, usar el contexto del referer
+  if (hasAdminCookie && hasStoreCookie) {
+    if (isAdminReferer || isAdminOrigin) {
+      return adminHandlers;
+    }
+    return storeHandlers;
+  }
+  
+  // Prioridad 8: Por defecto, si no hay contexto claro, usar store handler para la tienda pública
+  // Esto es seguro porque la tienda pública nunca debería ver sesiones de admin
   return storeHandlers;
 }
 
 export async function GET(request: NextRequest) {
-  const handler = getHandler(request);
-  return handler.GET(request as any);
+  try {
+    const handler = getHandler(request);
+    const response = await handler.GET(request as any);
+    // Asegurar que la respuesta tenga headers correctos
+    if (response instanceof Response) {
+      return response;
+    }
+    return response;
+  } catch (error: any) {
+    console.error("Error in GET /api/auth/[...nextauth]:", error);
+    return Response.json(
+      { error: "Error de autenticación", message: error.message },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
-  const handler = getHandler(request);
-  return handler.POST(request as any);
+  try {
+    const handler = getHandler(request);
+    const response = await handler.POST(request as any);
+    // Asegurar que la respuesta tenga headers correctos
+    if (response instanceof Response) {
+      return response;
+    }
+    return response;
+  } catch (error: any) {
+    console.error("Error in POST /api/auth/[...nextauth]:", error);
+    return Response.json(
+      { error: "Error de autenticación", message: error.message },
+      { status: 500 }
+    );
+  }
 }
 

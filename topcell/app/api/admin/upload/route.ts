@@ -41,8 +41,12 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Subir a Cloudinary
-    const folder = "topcell/productos";
+    // Obtener folder del formData o usar default
+    const folderParam = formData.get("folder") as string;
+    const folder = folderParam 
+      ? `topcell/${folderParam}` 
+      : "topcell/productos";
+    
     const imageUrl = await uploadImage(buffer, folder);
 
     return NextResponse.json({ url: imageUrl }, { status: 200 });

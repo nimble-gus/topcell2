@@ -19,6 +19,7 @@ interface Variante {
   id?: number;
   colorId: number;
   rom: string;
+  precio: number;
   stock: number;
 }
 
@@ -98,6 +99,7 @@ export default function EditarTelefonoPage() {
             id: v.id,
             colorId: v.colorId,
             rom: v.rom,
+            precio: v.precio ? Number(v.precio) : (telefonoData.precio ? Number(telefonoData.precio) : 0),
             stock: v.stock,
           })),
         });
@@ -133,11 +135,11 @@ export default function EditarTelefonoPage() {
 
       // Validar que todas las variantes estén completas
       const variantesIncompletas = formData.variantes.filter(
-        (v) => !v.colorId || !v.rom || v.stock === undefined || v.stock === null
+        (v) => !v.colorId || !v.rom || v.precio === undefined || v.precio === null || v.precio <= 0 || v.stock === undefined || v.stock === null
       );
 
       if (variantesIncompletas.length > 0) {
-        setError("Todas las variantes deben tener color, almacenamiento y stock completos");
+        setError("Todas las variantes deben tener color, almacenamiento, precio y stock completos");
         setSaving(false);
         return;
       }
@@ -148,6 +150,7 @@ export default function EditarTelefonoPage() {
         colores: formData.variantes.map((v) => ({
           colorId: v.colorId,
           rom: v.rom,
+          precio: v.precio,
           stock: v.stock,
         })),
         imagenes: imagenes, // Incluir las URLs de las imágenes
@@ -178,14 +181,16 @@ export default function EditarTelefonoPage() {
   const handleAddVariant = () => {
     const colorSelect = document.getElementById("new-variante-color") as HTMLSelectElement;
     const romSelect = document.getElementById("new-variante-rom") as HTMLSelectElement;
+    const precioInput = document.getElementById("new-variante-precio") as HTMLInputElement;
     const stockInput = document.getElementById("new-variante-stock") as HTMLInputElement;
 
     const colorId = parseInt(colorSelect.value);
     const rom = romSelect.value;
+    const precio = parseFloat(precioInput.value) || 0;
     const stock = parseInt(stockInput.value) || 0;
 
-    if (!colorId || !rom) {
-      alert("Por favor completa todos los campos");
+    if (!colorId || !rom || precio <= 0) {
+      alert("Por favor completa todos los campos (color, almacenamiento y precio son requeridos)");
       return;
     }
 
@@ -203,13 +208,14 @@ export default function EditarTelefonoPage() {
       ...formData,
       variantes: [
         ...formData.variantes,
-        { colorId, rom, stock },
+        { colorId, rom, precio, stock },
       ],
     });
 
     // Limpiar campos
     colorSelect.value = "";
     romSelect.value = "";
+    precioInput.value = "";
     stockInput.value = "";
   };
 
@@ -467,8 +473,8 @@ export default function EditarTelefonoPage() {
                         key={index}
                         className="rounded-md border border-gray-200 bg-gray-50 p-3"
                       >
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-                          <div className="sm:col-span-2">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-5">
+                          <div>
                             <label className="block text-xs font-medium text-gray-700">
                               Color *
                             </label>
@@ -508,26 +514,41 @@ export default function EditarTelefonoPage() {
                           </div>
                           <div>
                             <label className="block text-xs font-medium text-gray-700">
+                              Precio (Q) *
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={variante.precio}
+                              onChange={(e) =>
+                                handleUpdateVariant(index, "precio", parseFloat(e.target.value) || 0)
+                              }
+                              className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700">
                               Stock *
                             </label>
-                            <div className="flex gap-2">
-                              <input
-                                type="number"
-                                min="0"
-                                value={variante.stock}
-                                onChange={(e) =>
-                                  handleUpdateVariant(index, "stock", parseInt(e.target.value) || 0)
-                                }
-                                className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveVariant(index)}
-                                className="mt-1 rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white hover:bg-red-700"
-                              >
-                                ×
-                              </button>
-                            </div>
+                            <input
+                              type="number"
+                              min="0"
+                              value={variante.stock}
+                              onChange={(e) =>
+                                handleUpdateVariant(index, "stock", parseInt(e.target.value) || 0)
+                              }
+                              className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            />
+                          </div>
+                          <div className="flex items-end">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVariant(index)}
+                              className="w-full rounded-md bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                            >
+                              Eliminar
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -541,8 +562,8 @@ export default function EditarTelefonoPage() {
                 <h3 className="text-sm font-medium text-gray-700 mb-3">
                   Agregar Nueva Variante
                 </h3>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-                  <div className="sm:col-span-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-5">
+                  <div>
                     <label className="block text-xs font-medium text-gray-700">
                       Color *
                     </label>
@@ -573,6 +594,19 @@ export default function EditarTelefonoPage() {
                       <option value="512GB">512GB</option>
                       <option value="1TB">1TB</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700">
+                      Precio (Q) *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      id="new-variante-precio"
+                      className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      placeholder="0.00"
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700">

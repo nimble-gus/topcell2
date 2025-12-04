@@ -23,7 +23,7 @@ export default function NuevoTelefonoPage() {
     stock: "",
     descripcion: "",
     featured: false,
-    variantes: [] as { colorId: number; rom: string; stock: number }[],
+    variantes: [] as { colorId: number; rom: string; precio: number; stock: number }[],
   });
 
   const [imagenes, setImagenes] = useState<string[]>([]);
@@ -67,11 +67,11 @@ export default function NuevoTelefonoPage() {
 
       // Validar que todas las variantes estén completas
       const variantesIncompletas = formData.variantes.filter(
-        (v) => !v.colorId || !v.rom || v.stock === undefined || v.stock === null
+        (v) => !v.colorId || !v.rom || v.precio === undefined || v.precio === null || v.precio <= 0 || v.stock === undefined || v.stock === null
       );
 
       if (variantesIncompletas.length > 0) {
-        setError("Todas las variantes deben tener color, almacenamiento y stock completos");
+        setError("Todas las variantes deben tener color, almacenamiento, precio y stock completos");
         setLoading(false);
         return;
       }
@@ -334,7 +334,7 @@ export default function NuevoTelefonoPage() {
                         className="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3"
                       >
                         <span className="flex-1 text-sm font-medium text-gray-700">
-                          {color?.color || "Color"} - {variante.rom} (Stock: {variante.stock})
+                          {color?.color || "Color"} - {variante.rom} | Q{variante.precio.toLocaleString("es-GT")} | Stock: {variante.stock}
                         </span>
                         <button
                           type="button"
@@ -359,8 +359,8 @@ export default function NuevoTelefonoPage() {
                 <h3 className="text-sm font-medium text-gray-700 mb-3">
                   Agregar Nueva Variante
                 </h3>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-                  <div className="sm:col-span-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-5">
+                  <div>
                     <label className="block text-xs font-medium text-gray-700">
                       Color *
                     </label>
@@ -394,6 +394,19 @@ export default function NuevoTelefonoPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700">
+                      Precio (Q) *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      id="new-variante-precio"
+                      className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700">
                       Stock *
                     </label>
                     <input
@@ -410,14 +423,16 @@ export default function NuevoTelefonoPage() {
                   onClick={() => {
                     const colorSelect = document.getElementById("new-variante-color") as HTMLSelectElement;
                     const romSelect = document.getElementById("new-variante-rom") as HTMLSelectElement;
+                    const precioInput = document.getElementById("new-variante-precio") as HTMLInputElement;
                     const stockInput = document.getElementById("new-variante-stock") as HTMLInputElement;
 
                     const colorId = parseInt(colorSelect.value);
                     const rom = romSelect.value;
+                    const precio = parseFloat(precioInput.value) || 0;
                     const stock = parseInt(stockInput.value) || 0;
 
-                    if (!colorId || !rom) {
-                      alert("Por favor completa todos los campos");
+                    if (!colorId || !rom || precio <= 0) {
+                      alert("Por favor completa todos los campos (color, almacenamiento y precio son requeridos)");
                       return;
                     }
 
@@ -435,13 +450,14 @@ export default function NuevoTelefonoPage() {
                       ...formData,
                       variantes: [
                         ...formData.variantes,
-                        { colorId, rom, stock },
+                        { colorId, rom, precio, stock },
                       ],
                     });
 
                     // Limpiar campos
                     colorSelect.value = "";
                     romSelect.value = "";
+                    precioInput.value = "";
                     stockInput.value = "";
                   }}
                   className="mt-3 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500"

@@ -75,7 +75,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { url, descripcion, activo, orden } = body;
+    const { url, urlDestino, titulo, descripcion, activo, orden } = body;
 
     // Si se está activando un logo, desactivar otros logos
     if (contenidoExistente.tipo === "logo" && activo === true) {
@@ -92,6 +92,8 @@ export async function PUT(
       where: { id },
       data: {
         url: url !== undefined ? url : contenidoExistente.url,
+        urlDestino: urlDestino !== undefined ? urlDestino : contenidoExistente.urlDestino,
+        titulo: titulo !== undefined ? titulo : contenidoExistente.titulo,
         descripcion: descripcion !== undefined ? descripcion : contenidoExistente.descripcion,
         activo: activo !== undefined ? activo : contenidoExistente.activo,
         orden: orden !== undefined ? orden : contenidoExistente.orden,

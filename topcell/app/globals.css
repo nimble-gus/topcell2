@@ -16,3 +16,23 @@ body {
   color: var(--foreground);
   font-family: var(--font-poppins), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+/* Animación para el marquee de marcas */
+@keyframes brands-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.brands-marquee {
+  animation: brands-scroll 30s linear infinite;
+  display: flex;
+  width: fit-content;
+}
+
+.brands-marquee:hover {
+  animation-play-state: paused;
+}

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { tipo, url, descripcion, activo, orden } = body;
+    const { tipo, url, urlDestino, titulo, descripcion, activo, orden } = body;
 
     if (!tipo || !url) {
       return NextResponse.json(
@@ -66,6 +66,8 @@ export async function POST(request: NextRequest) {
       data: {
         tipo,
         url,
+        urlDestino: urlDestino || null,
+        titulo: titulo || null,
         descripcion: descripcion || null,
         activo: activo !== undefined ? activo : true,
         orden: orden || 0,

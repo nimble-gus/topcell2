@@ -13,6 +13,7 @@ const navigation = [
   { name: "Marcas", href: "/admin/catalogo/marcas", icon: "🏷️" },
   { name: "Colores", href: "/admin/catalogo/colores", icon: "🎨" },
   { name: "Contenido", href: "/admin/contenido", icon: "🖼️" },
+  { name: "Ubicaciones", href: "/admin/ubicaciones", icon: "📍" },
   { name: "Órdenes", href: "/admin/ordenes", icon: "📦" },
   { name: "Usuarios", href: "/admin/usuarios", icon: "👥" },
   { name: "Inventario", href: "/admin/inventario", icon: "📊" },

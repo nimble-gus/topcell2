@@ -5,11 +5,13 @@ import { useState, useRef } from "react";
 interface SingleImageUploaderProps {
   imageUrl: string | null;
   onImageChange: (url: string | null) => void;
+  folder?: string; // Carpeta opcional en Cloudinary
 }
 
 export default function SingleImageUploader({
   imageUrl,
   onImageChange,
+  folder = "productos",
 }: SingleImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -37,6 +39,9 @@ export default function SingleImageUploader({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if (folder) {
+        formData.append("folder", folder);
+      }
 
       const response = await fetch("/api/admin/upload", {
         method: "POST",

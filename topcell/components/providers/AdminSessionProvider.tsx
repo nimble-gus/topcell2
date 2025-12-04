@@ -8,6 +8,14 @@ export default function AdminSessionProvider({
   children: React.ReactNode;
 }) {
   // No usar basePath, el endpoint único detectará que es admin por la cookie
-  return <NextAuthSessionProvider>{children}</NextAuthSessionProvider>;
+  // Agregar refetchInterval para mantener la sesión actualizada
+  return (
+    <NextAuthSessionProvider
+      refetchInterval={5 * 60} // Refrescar cada 5 minutos
+      refetchOnWindowFocus={true}
+    >
+      {children}
+    </NextAuthSessionProvider>
+  );
 }
 

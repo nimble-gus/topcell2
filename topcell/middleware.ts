@@ -9,21 +9,36 @@ export async function middleware(request: NextRequest) {
   // cuando vienen de rutas de admin
   if (pathname.startsWith("/api/auth")) {
     const referer = request.headers.get("referer");
-    if (referer?.includes("/admin")) {
+    const origin = request.headers.get("origin");
+    
+    // Verificar referer y origin para contexto de admin
+    const isAdminReferer = referer && (referer.includes("/admin") || referer.includes("/admin/"));
+    const isAdminOrigin = origin && (origin.includes("/admin") || origin.includes("/admin/"));
+    
+    if (isAdminReferer || isAdminOrigin) {
       const response = NextResponse.next();
       response.headers.set("x-auth-context", "admin");
       return response;
     }
+    
     // Si hay cookie de admin, también marcar como admin
     // Verificar tanto la versión de producción como desarrollo
     const adminCookieName = process.env.NODE_ENV === "production"
       ? "__Secure-next-auth.admin.session-token"
       : "next-auth.admin.session-token";
-    if (request.cookies.has(adminCookieName)) {
+    const storeCookieName = process.env.NODE_ENV === "production"
+      ? "__Secure-next-auth.store.session-token"
+      : "next-auth.store.session-token";
+    
+    // Solo marcar como admin si hay cookie de admin Y NO hay cookie de store
+    // O si estamos en una ruta que claramente es de admin
+    if (request.cookies.has(adminCookieName) && !request.cookies.has(storeCookieName)) {
       const response = NextResponse.next();
       response.headers.set("x-auth-context", "admin");
       return response;
     }
+    
+    // Por defecto, no agregar header (será detectado como store)
     return NextResponse.next();
   }
 
