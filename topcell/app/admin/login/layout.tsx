@@ -1,0 +1,9 @@
+// Layout específico para login que no requiere autenticación
+export default function LoginLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}
+

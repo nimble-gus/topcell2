@@ -1,0 +1,48 @@
+{
+  "name": "topcell",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:push-force": "prisma db push --accept-data-loss",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "create-admin": "tsx scripts/create-admin.ts",
+    "create-admin-direct": "tsx scripts/create-admin-direct.ts",
+    "test-connection": "tsx scripts/test-connection.ts",
+    "check-admin": "tsx scripts/check-admin.ts",
+    "migrate-stock": "tsx scripts/migrate-stock-to-colors.ts",
+    "migrate-variantes": "tsx scripts/migrate-to-variantes-sql.ts"
+  },
+  "dependencies": {
+    "@prisma/adapter-mariadb": "^7.1.0",
+    "@prisma/client": "^7.1.0",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.8.0",
+    "dotenv": "^17.2.3",
+    "mariadb": "^3.4.5",
+    "mysql2": "^3.15.3",
+    "next": "16.0.7",
+    "next-auth": "^5.0.0-beta.30",
+    "prisma": "^7.1.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.7",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}
