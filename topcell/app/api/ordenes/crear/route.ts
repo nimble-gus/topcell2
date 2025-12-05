@@ -118,7 +118,13 @@ export async function POST(request: NextRequest) {
       if (item.tipo === "telefono-nuevo") {
         producto = await prisma.telefonoNuevo.findUnique({
           where: { id: item.productoId },
-          include: { variantes: true },
+          include: { 
+            variantes: {
+              include: {
+                color: true,
+              },
+            },
+          },
         });
 
         if (!producto) {
@@ -141,7 +147,13 @@ export async function POST(request: NextRequest) {
       } else if (item.tipo === "telefono-seminuevo") {
         producto = await prisma.telefonoSeminuevo.findUnique({
           where: { id: item.productoId },
-          include: { variantes: true },
+          include: { 
+            variantes: {
+              include: {
+                color: true,
+              },
+            },
+          },
         });
 
         if (!producto) {
@@ -164,7 +176,13 @@ export async function POST(request: NextRequest) {
       } else if (item.tipo === "accesorio") {
         producto = await prisma.accesorio.findUnique({
           where: { id: item.productoId },
-          include: { colores: true },
+          include: { 
+            colores: {
+              include: {
+                color: true,
+              },
+            },
+          },
         });
 
         if (!producto) {
@@ -174,10 +192,24 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const colorItem = producto.colores.find((c: any) => c.colorId === item.colorId);
+        if (!producto.colores || !Array.isArray(producto.colores) || producto.colores.length === 0) {
+          return NextResponse.json(
+            { error: `El accesorio ${item.productoId} no tiene colores configurados` },
+            { status: 400 }
+          );
+        }
+
+        if (!item.colorId) {
+          return NextResponse.json(
+            { error: `ColorId no proporcionado para el accesorio ${item.productoId}` },
+            { status: 400 }
+          );
+        }
+
+        colorItem = producto.colores.find((c: any) => c.colorId === item.colorId);
         if (!colorItem) {
           return NextResponse.json(
-            { error: `Color no encontrado: ${item.colorId}` },
+            { error: `Color no encontrado: ${item.colorId} para el accesorio ${item.productoId}. Colores disponibles: ${producto.colores.map((c: any) => c.colorId).join(", ")}` },
             { status: 404 }
           );
         }
@@ -198,6 +230,28 @@ export async function POST(request: NextRequest) {
       const itemSubtotal = precioUnitario.mul(item.cantidad);
       subtotal = subtotal.add(itemSubtotal);
 
+      // Preparar detalles de la variante para almacenar
+      let detallesVariante: any = null;
+      
+      if (item.tipo === "telefono-nuevo" && variante) {
+        detallesVariante = {
+          color: variante.color?.color || "N/A",
+          rom: variante.rom || "N/A",
+        };
+      } else if (item.tipo === "telefono-seminuevo" && variante) {
+        detallesVariante = {
+          color: variante.color?.color || "N/A",
+          rom: variante.rom || "N/A",
+          estado: variante.estado || null,
+          porcentajeBateria: variante.porcentajeBateria || null,
+          ciclosCarga: variante.ciclosCarga || null,
+        };
+      } else if (item.tipo === "accesorio" && colorItem) {
+        detallesVariante = {
+          color: colorItem.color?.color || "N/A",
+        };
+      }
+
       // Preparar item para crear
       let tipoProducto: "TELEFONO_NUEVO" | "TELEFONO_SEMINUEVO" | "ACCESORIO";
       if (item.tipo === "telefono-nuevo") {
@@ -213,6 +267,7 @@ export async function POST(request: NextRequest) {
         cantidad: item.cantidad,
         precioUnitario,
         subtotal: itemSubtotal,
+        detallesVariante: detallesVariante ? JSON.stringify(detallesVariante) : null,
       };
 
       if (item.tipo === "telefono-nuevo") {

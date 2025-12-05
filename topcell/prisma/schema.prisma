@@ -361,6 +361,8 @@ model ItemOrden {
   cantidad          Int
   precioUnitario    Decimal            @db.Decimal(10, 2) // Precio al momento de la compra
   subtotal          Decimal            @db.Decimal(10, 2)
+  // Detalles de la variante seleccionada (almacenados como texto para persistencia)
+  detallesVariante  String?            // JSON string con detalles: color, rom, estado, bateria, etc.
   createdAt         DateTime           @default(now())
   
   orden             Orden              @relation(fields: [ordenId], references: [id], onDelete: Cascade)

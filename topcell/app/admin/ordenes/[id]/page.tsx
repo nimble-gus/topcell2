@@ -5,12 +5,21 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
+interface DetallesVariante {
+  color?: string;
+  rom?: string;
+  estado?: number | null;
+  porcentajeBateria?: number | null;
+  ciclosCarga?: number | null;
+}
+
 interface ItemOrden {
   id: number;
   tipoProducto: string;
   cantidad: number;
   precioUnitario: number;
   subtotal: number;
+  detallesVariante: string | null;
   telefonoNuevo?: {
     id: number;
     modelo: string;
@@ -316,6 +325,16 @@ export default function DetalleOrdenPage() {
                 const imagen = producto?.imagenes[0]?.url || "/placeholder-phone.jpg";
                 const marca = producto?.marca.nombre || "";
                 const modelo = producto?.modelo || "";
+                
+                // Parsear detalles de la variante
+                let detalles: DetallesVariante | null = null;
+                if (item.detallesVariante) {
+                  try {
+                    detalles = JSON.parse(item.detallesVariante);
+                  } catch (e) {
+                    console.error("Error al parsear detallesVariante:", e);
+                  }
+                }
 
                 return (
                   <div key={item.id} className="flex gap-4 pb-4 border-b border-gray-200 last:border-0">
@@ -331,6 +350,38 @@ export default function DetalleOrdenPage() {
                     <div className="flex-1">
                       <p className="text-sm text-gray-500 mb-1">{marca}</p>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{modelo}</h3>
+                      
+                      {/* Detalles de la variante */}
+                      {detalles && (
+                        <div className="mb-2 space-y-1">
+                          {detalles.color && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Color:</span> {detalles.color}
+                            </p>
+                          )}
+                          {detalles.rom && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Capacidad:</span> {detalles.rom}
+                            </p>
+                          )}
+                          {detalles.estado !== null && detalles.estado !== undefined && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Estado:</span> {detalles.estado}/10
+                            </p>
+                          )}
+                          {detalles.porcentajeBateria !== null && detalles.porcentajeBateria !== undefined && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Batería:</span> {detalles.porcentajeBateria}%
+                            </p>
+                          )}
+                          {detalles.ciclosCarga !== null && detalles.ciclosCarga !== undefined && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Ciclos de carga:</span> {detalles.ciclosCarga}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
                       <div className="flex justify-between items-end">
                         <p className="text-sm text-gray-600">
                           Cantidad: {item.cantidad} × Q{Number(item.precioUnitario).toLocaleString("es-GT")}
