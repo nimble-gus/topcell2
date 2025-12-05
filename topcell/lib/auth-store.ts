@@ -66,6 +66,7 @@ export const storeAuthOptions: NextAuthConfig = {
             id: usuario.id.toString(),
             email: usuario.email,
             name: usuario.nombre,
+            role: "user", // Role requerido por NextAuth
             type: "user", // Identificador para distinguir de admins
           };
         } catch (error) {

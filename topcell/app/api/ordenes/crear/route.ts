@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
     for (const item of items) {
       let producto: any = null;
       let variante: any = null;
+      let colorItem: any = null;
       let precioUnitario = new Prisma.Decimal(item.precio);
       let stockDisponible = 0;
 

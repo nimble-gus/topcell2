@@ -95,6 +95,7 @@ export default function EditarTelefonoPage() {
           tamanoPantalla: telefonoData.tamanoPantalla,
           tipoEntrada: telefonoData.tipoEntrada,
           descripcion: telefonoData.descripcion || "",
+          featured: telefonoData.featured || false,
           variantes: telefonoData.variantes.map((v: any) => ({
             id: v.id,
             colorId: v.colorId,

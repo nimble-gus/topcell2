@@ -118,7 +118,7 @@ export default function CarritoPage() {
   };
 
   const subtotal = getCartTotal();
-  const envio = 0; // Por ahora sin envío
+  const envio: number = 0; // Por ahora sin envío
   const total = subtotal + envio;
 
   if (loading || !serverData) {
