@@ -61,6 +61,34 @@ export default async function ContenidoPage() {
         </div>
       </div>
 
+      {/* Páginas de contenido */}
+      <div className="mb-8">
+        <h2 className="mb-4 text-xl font-semibold text-gray-900">Páginas de Contenido</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link
+            href="/admin/contenido/conocenos"
+            className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Conócenos</h3>
+            <p className="text-sm text-gray-600">Gestiona el banner y contenido de la página Conócenos</p>
+          </Link>
+          <Link
+            href="/admin/contenido/privacidad"
+            className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Política de Privacidad</h3>
+            <p className="text-sm text-gray-600">Gestiona el banner y contenido de la página de Privacidad</p>
+          </Link>
+          <Link
+            href="/admin/contenido/terminos"
+            className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Términos y Condiciones</h3>
+            <p className="text-sm text-gray-600">Gestiona el banner y contenido de la página de Términos</p>
+          </Link>
+        </div>
+      </div>
+
       {/* Logo Section */}
       <div className="mb-8">
         <h2 className="mb-4 text-xl font-semibold text-gray-900">Logo</h2>

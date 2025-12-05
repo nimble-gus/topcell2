@@ -125,16 +125,16 @@ export default function ProductCard({ producto }: ProductCardProps) {
       </div>
 
       {/* Información del producto */}
-      <div className="p-4">
-        <p className="text-sm font-medium text-gray-500 mb-1">{producto.marca}</p>
-        <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 mb-2">
+      <div className="p-3 sm:p-4">
+        <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">{producto.marca}</p>
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 line-clamp-2 mb-2">
           {producto.modelo}
         </h3>
-        <p className="text-xl font-bold text-orange-500">
+        <p className="text-lg sm:text-xl font-bold text-orange-500">
           {precioDisplay}
         </p>
         {producto.tieneVariantes && (
-          <p className="text-xs text-gray-500 mt-1">Varios precios disponibles</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Varios precios disponibles</p>
         )}
       </div>
     </Link>

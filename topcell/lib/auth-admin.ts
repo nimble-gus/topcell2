@@ -67,6 +67,7 @@ export const adminAuthOptions: NextAuthConfig = {
             email: admin.email,
             name: admin.nombre,
             role: admin.rol,
+            permisos: admin.permisos, // Incluir permisos en la sesión
             type: "admin", // Identificador para distinguir de usuarios normales
           };
         } catch (error) {
@@ -100,6 +101,7 @@ export const adminAuthOptions: NextAuthConfig = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.permisos = (user as any).permisos;
         token.type = (user as any).type;
       }
       return token;
@@ -108,6 +110,7 @@ export const adminAuthOptions: NextAuthConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         (session.user as any).role = token.role;
+        (session.user as any).permisos = token.permisos;
         (session.user as any).type = token.type;
       }
       return session;

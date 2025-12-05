@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { addToCart } from "@/lib/cart";
 
 interface VarianteNuevo {
   id: number;
@@ -38,11 +40,13 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({ tipo, producto }: ProductDetailsProps) {
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
   const [selectedRom, setSelectedRom] = useState<string | null>(null);
   const [selectedEstado, setSelectedEstado] = useState<number | null>(null);
   const [selectedBateria, setSelectedBateria] = useState<number | null>(null);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   // Obtener colores únicos disponibles
   const coloresDisponibles = useMemo(() => {
@@ -167,9 +171,40 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
     }
   };
 
+  const handleAddToCart = () => {
+    if (!varianteSeleccionada || varianteSeleccionada.stock === 0) return;
+    
+    setAddingToCart(true);
+    
+    // Encontrar el color seleccionado
+    const colorSeleccionado = coloresDisponibles.find(c => c.id === selectedColorId);
+    
+    addToCart({
+      tipo: tipo === "telefono-nuevo" ? "telefono-nuevo" : "telefono-seminuevo",
+      productoId: producto.id,
+      varianteId: varianteSeleccionada.id,
+      cantidad: 1,
+      precio: varianteSeleccionada.precio,
+      modelo: producto.modelo,
+      marca: producto.marca,
+      imagen: producto.imagenes[0] || "",
+      color: colorSeleccionado?.color || "",
+      rom: varianteSeleccionada.rom,
+      estado: tipo === "telefono-seminuevo" ? (varianteSeleccionada as VarianteSeminuevo).estado : undefined,
+      porcentajeBateria: tipo === "telefono-seminuevo" ? (varianteSeleccionada as VarianteSeminuevo).porcentajeBateria : undefined,
+      ciclosCarga: tipo === "telefono-seminuevo" ? (varianteSeleccionada as VarianteSeminuevo).ciclosCarga : undefined,
+    });
+    
+    setTimeout(() => {
+      setAddingToCart(false);
+      // Opcional: mostrar notificación o redirigir al carrito
+      // router.push("/carrito");
+    }, 500);
+  };
+
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
         {/* Galería de imágenes */}
         <div className="space-y-4">
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100">
@@ -186,11 +221,11 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
               <>
                 <button
                   onClick={handlePrevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg transition-all"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 sm:p-3 shadow-lg transition-all"
                   aria-label="Imagen anterior"
                 >
                   <svg
-                    className="w-6 h-6 text-gray-700"
+                    className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -205,11 +240,11 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
                 </button>
                 <button
                   onClick={handleNextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg transition-all"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 sm:p-3 shadow-lg transition-all"
                   aria-label="Siguiente imagen"
                 >
                   <svg
-                    className="w-6 h-6 text-gray-700"
+                    className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -228,12 +263,12 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
 
           {/* Miniaturas */}
           {producto.imagenes.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="flex gap-2 overflow-x-auto pb-2">
               {producto.imagenes.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
                     index === currentImageIndex
                       ? "border-orange-500"
                       : "border-gray-200 hover:border-gray-300"
@@ -253,22 +288,22 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
         </div>
 
         {/* Información del producto */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-2">{producto.marca}</p>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{producto.modelo}</h1>
-            <div className="text-4xl font-bold text-orange-500 mb-6">
+            <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">{producto.marca}</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">{producto.modelo}</h1>
+            <div className="text-3xl sm:text-4xl font-bold text-orange-500 mb-4 sm:mb-6">
               Q{precioMostrar.toLocaleString("es-GT")}
             </div>
           </div>
 
           {/* Selección de variantes */}
           {producto.variantes.length > 0 && (
-            <div className="space-y-4 border-t border-gray-200 pt-6">
+            <div className="space-y-3 sm:space-y-4 border-t border-gray-200 pt-4 sm:pt-6">
               {/* Selección de color */}
               {coloresDisponibles.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Color
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -276,7 +311,7 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
                       <button
                         key={color.id}
                         onClick={() => handleColorSelect(color.id)}
-                        className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg border-2 transition-all ${
                           selectedColorId === color.id
                             ? "border-orange-500 bg-orange-50 text-orange-700 font-semibold"
                             : "border-gray-200 hover:border-gray-300 text-gray-700"
@@ -313,15 +348,15 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
                         <button
                           key={index}
                           onClick={() => handleCapacidadSelect(item)}
-                          className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
+                          className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 transition-all ${
                             isSelected
                               ? "border-orange-500 bg-orange-50"
                               : "border-gray-200 hover:border-gray-300"
                           }`}
                         >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="font-medium text-gray-900">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <div className="flex-1">
+                              <div className="text-sm sm:text-base font-medium text-gray-900">
                                 {item.rom}
                                 {tipo === "telefono-seminuevo" && (
                                   <>
@@ -336,12 +371,12 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
                                 )}
                               </div>
                               {variante && variante.stock > 0 && (
-                                <div className="text-sm text-gray-500 mt-1">
+                                <div className="text-xs sm:text-sm text-gray-500 mt-1">
                                   Stock disponible: {variante.stock}
                                 </div>
                               )}
                             </div>
-                            <div className="text-lg font-bold text-orange-500">
+                            <div className="text-base sm:text-lg font-bold text-orange-500">
                               Q{variante ? variante.precio.toLocaleString("es-GT") : "0"}
                             </div>
                           </div>
@@ -369,22 +404,25 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
 
           {/* Botón de agregar al carrito */}
           <button
-            disabled={!varianteSeleccionada || varianteSeleccionada.stock === 0}
-            className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
-              varianteSeleccionada && varianteSeleccionada.stock > 0
+            onClick={handleAddToCart}
+            disabled={!varianteSeleccionada || varianteSeleccionada.stock === 0 || addingToCart}
+            className={`w-full py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all ${
+              varianteSeleccionada && varianteSeleccionada.stock > 0 && !addingToCart
                 ? "bg-orange-500 hover:bg-orange-600 text-white"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            {varianteSeleccionada && varianteSeleccionada.stock > 0
+            {addingToCart
+              ? "Agregando..."
+              : varianteSeleccionada && varianteSeleccionada.stock > 0
               ? "Agregar al carrito"
               : "Selecciona una variante"}
           </button>
 
           {/* Especificaciones técnicas */}
-          <div className="border-t border-gray-200 pt-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Especificaciones Técnicas</h2>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="border-t border-gray-200 pt-4 sm:pt-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Especificaciones Técnicas</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
               <div>
                 <span className="text-gray-500">Procesador:</span>
                 <span className="ml-2 font-medium text-gray-900">{producto.procesador}</span>
@@ -410,9 +448,9 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
 
           {/* Descripción */}
           {producto.descripcion && (
-            <div className="border-t border-gray-200 pt-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Descripción</h2>
-              <p className="text-gray-600 whitespace-pre-line">{producto.descripcion}</p>
+            <div className="border-t border-gray-200 pt-4 sm:pt-6">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Descripción</h2>
+              <p className="text-sm sm:text-base text-gray-600 whitespace-pre-line">{producto.descripcion}</p>
             </div>
           )}
         </div>

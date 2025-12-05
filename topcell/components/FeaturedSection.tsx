@@ -68,10 +68,10 @@ export default function FeaturedSection({
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
       {/* Tabs */}
-      <div className="mb-8 flex items-center justify-center gap-8 border-b border-gray-200">
+      <div className="mb-6 sm:mb-8 flex items-center justify-center gap-4 sm:gap-8 border-b border-gray-200">
         <button
           onClick={() => setActiveTab("telefonos")}
-          className={`relative pb-4 text-lg font-semibold transition-colors ${
+          className={`relative pb-3 sm:pb-4 text-base sm:text-lg font-semibold transition-colors ${
             activeTab === "telefonos"
               ? "text-orange-500"
               : "text-gray-700 hover:text-gray-900"
@@ -84,7 +84,7 @@ export default function FeaturedSection({
         </button>
         <button
           onClick={() => setActiveTab("accesorios")}
-          className={`relative pb-4 text-lg font-semibold transition-colors ${
+          className={`relative pb-3 sm:pb-4 text-base sm:text-lg font-semibold transition-colors ${
             activeTab === "accesorios"
               ? "text-orange-500"
               : "text-gray-700 hover:text-gray-900"
@@ -99,9 +99,9 @@ export default function FeaturedSection({
 
       {/* Logo de la marca con transición (solo para teléfonos) */}
       {activeTab === "telefonos" && currentMarca?.marca.logoUrl && (
-        <div className="mb-12 flex justify-center">
+        <div className="mb-8 sm:mb-12 flex justify-center">
           <div 
-            className={`relative h-20 w-auto transition-all duration-500 ${
+            className={`relative h-12 sm:h-16 md:h-20 w-auto transition-all duration-500 ${
               isTransitioning 
                 ? "opacity-0 scale-95" 
                 : "opacity-100 scale-100"
@@ -112,7 +112,7 @@ export default function FeaturedSection({
               alt={`Logo ${currentMarca.marca.nombre}`}
               width={200}
               height={80}
-              className="object-contain h-20 w-auto"
+              className="object-contain h-12 sm:h-16 md:h-20 w-auto"
               priority
             />
           </div>
@@ -175,11 +175,11 @@ export default function FeaturedSection({
               </div>
 
               {/* Información del producto */}
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 mb-2">
+              <div className="p-3 sm:p-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 line-clamp-2 mb-2">
                   {product.modelo || product.descripcion || "Producto"}
                 </h3>
-                <p className="text-xl font-bold text-orange-500">
+                <p className="text-lg sm:text-xl font-bold text-orange-500">
                   Q{Number(product.precio).toLocaleString("es-GT")}
                 </p>
               </div>

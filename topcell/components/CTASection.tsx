@@ -26,8 +26,8 @@ export default function CTASection({ images }: CTASectionProps) {
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
         {activeImages.map((image) => (
           <Link
             key={image.id}
@@ -43,8 +43,8 @@ export default function CTASection({ images }: CTASectionProps) {
               />
             </div>
             {image.descripcion && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                <p className="text-white text-sm font-medium">{image.descripcion}</p>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-4">
+                <p className="text-white text-xs sm:text-sm font-medium">{image.descripcion}</p>
               </div>
             )}
           </Link>

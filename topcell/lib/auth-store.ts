@@ -42,12 +42,22 @@ export const storeAuthOptions: NextAuthConfig = {
             return null;
           }
 
-          // NOTA: Los usuarios de la tienda necesitarán tener passwordHash en el futuro
-          // Por ahora, si no tienen contraseña, no pueden hacer login
-          // Esto se implementará cuando se cree el sistema de registro de usuarios
-          
-          // Por ahora, retornamos null si no hay sistema de contraseñas para usuarios
-          // TODO: Implementar hash de contraseñas para usuarios cuando se cree el registro
+          // Verificar que el usuario tenga contraseña (se registró)
+          if (!usuario.passwordHash) {
+            console.log(`❌ Usuario sin contraseña: ${email}`);
+            return null;
+          }
+
+          // Verificar contraseña
+          const isValidPassword = await bcrypt.compare(
+            password,
+            usuario.passwordHash
+          );
+
+          if (!isValidPassword) {
+            console.log(`❌ Contraseña incorrecta para usuario: ${email}`);
+            return null;
+          }
           
           console.log(`✅ Login exitoso para usuario: ${usuario.email}`);
 

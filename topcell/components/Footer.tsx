@@ -33,12 +33,12 @@ export default function Footer({
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
       {/* Contenido principal del footer */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
           {/* Logo y nombre */}
           <div className="flex flex-col">
             {logoUrl ? (
-              <div className="relative h-16 w-auto mb-4">
+              <div className="relative h-12 sm:h-16 w-auto mb-3 sm:mb-4">
                 <Image
                   src={logoUrl}
                   alt="TOPCELL Logo"
@@ -48,32 +48,32 @@ export default function Footer({
                 />
               </div>
             ) : (
-              <div className="mb-4">
-                <h2 className="text-3xl font-bold">
+              <div className="mb-3 sm:mb-4">
+                <h2 className="text-2xl sm:text-3xl font-bold">
                   <span className="text-orange-500">TOP</span>
                   <span className="text-gray-900">CELL</span>
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">TELECOMUNICACIONES</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">TELECOMUNICACIONES</p>
               </div>
             )}
           </div>
 
           {/* Servicios */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Servicios</h3>
-            <ul className="space-y-2">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Servicios</h3>
+            <ul className="space-y-1.5 sm:space-y-2">
               {servicios.length > 0 ? (
                 servicios.map((servicio, index) => (
-                  <li key={index} className="text-gray-600 hover:text-gray-900 transition-colors">
+                  <li key={index} className="text-sm sm:text-base text-gray-600 hover:text-gray-900 transition-colors">
                     {servicio}
                   </li>
                 ))
               ) : (
                 <>
-                  <li className="text-gray-600">Reparación de celulares</li>
-                  <li className="text-gray-600">Protección móvil</li>
-                  <li className="text-gray-600">Venta de accesorios</li>
-                  <li className="text-gray-600">Distribución al por mayor</li>
+                  <li className="text-sm sm:text-base text-gray-600">Reparación de celulares</li>
+                  <li className="text-sm sm:text-base text-gray-600">Protección móvil</li>
+                  <li className="text-sm sm:text-base text-gray-600">Venta de accesorios</li>
+                  <li className="text-sm sm:text-base text-gray-600">Distribución al por mayor</li>
                 </>
               )}
             </ul>
@@ -81,21 +81,21 @@ export default function Footer({
 
           {/* Contáctanos */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Contáctanos</h3>
-            <div className="space-y-3">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Contáctanos</h3>
+            <div className="space-y-2 sm:space-y-3">
               {email && (
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   <span className="font-medium">Email:</span>{" "}
                   <a
                     href={`mailto:${email}`}
-                    className="hover:text-orange-500 transition-colors"
+                    className="hover:text-orange-500 transition-colors break-all"
                   >
                     {email}
                   </a>
                 </p>
               )}
               {telefono && (
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   <span className="font-medium">Tel:</span>{" "}
                   <a
                     href={`tel:${telefono.replace(/\s/g, "")}`}
@@ -108,7 +108,7 @@ export default function Footer({
               
               {/* Redes sociales */}
               {(facebookUrl || instagramUrl || tiktokUrl) && (
-                <div className="flex items-center gap-4 mt-4">
+                <div className="flex items-center gap-3 sm:gap-4 mt-3 sm:mt-4">
                   {facebookUrl && (
                     <a
                       href={facebookUrl}
@@ -180,36 +180,30 @@ export default function Footer({
 
       {/* Barra inferior */}
       <div className="border-t border-gray-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-600">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4">
+            <p className="text-xs sm:text-sm text-gray-600 text-center md:text-left">
               © {currentYear} TopCell. Todos los derechos reservados.
             </p>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-              {linkConocenos && (
-                <Link
-                  href={linkConocenos}
-                  className="hover:text-orange-500 transition-colors"
-                >
-                  Conócenos
-                </Link>
-              )}
-              {linkPrivacidad && (
-                <Link
-                  href={linkPrivacidad}
-                  className="hover:text-orange-500 transition-colors"
-                >
-                  Política de privacidad
-                </Link>
-              )}
-              {linkTerminos && (
-                <Link
-                  href={linkTerminos}
-                  className="hover:text-orange-500 transition-colors"
-                >
-                  Términos y condiciones
-                </Link>
-              )}
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
+              <Link
+                href="/conocenos"
+                className="hover:text-orange-500 transition-colors"
+              >
+                Conócenos
+              </Link>
+              <Link
+                href="/privacidad"
+                className="hover:text-orange-500 transition-colors"
+              >
+                Política de privacidad
+              </Link>
+              <Link
+                href="/terminos"
+                className="hover:text-orange-500 transition-colors"
+              >
+                Términos y condiciones
+              </Link>
             </div>
           </div>
         </div>

@@ -61,7 +61,7 @@ export default function HeroSection({ images }: HeroSectionProps) {
   };
 
   return (
-    <section className="relative h-[600px] w-full overflow-hidden rounded-b-3xl">
+    <section className="relative h-[400px] sm:h-[500px] md:h-[600px] w-full overflow-hidden rounded-b-3xl">
       {/* Images */}
       <div className="relative h-full w-full">
         {sortedImages.map((image, index) => (
@@ -89,11 +89,11 @@ export default function HeroSection({ images }: HeroSectionProps) {
         <>
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 backdrop-blur-md p-3 text-gray-800 shadow-xl transition-all hover:bg-white hover:scale-110 hover:shadow-2xl"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 backdrop-blur-md p-2 sm:p-3 text-gray-800 shadow-xl transition-all hover:bg-white hover:scale-110 hover:shadow-2xl"
             aria-label="Imagen anterior"
           >
             <svg
-              className="h-5 w-5"
+              className="h-4 w-4 sm:h-5 sm:w-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -108,11 +108,11 @@ export default function HeroSection({ images }: HeroSectionProps) {
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 backdrop-blur-md p-3 text-gray-800 shadow-xl transition-all hover:bg-white hover:scale-110 hover:shadow-2xl"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 backdrop-blur-md p-2 sm:p-3 text-gray-800 shadow-xl transition-all hover:bg-white hover:scale-110 hover:shadow-2xl"
             aria-label="Imagen siguiente"
           >
             <svg
-              className="h-5 w-5"
+              className="h-4 w-4 sm:h-5 sm:w-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -130,15 +130,15 @@ export default function HeroSection({ images }: HeroSectionProps) {
 
       {/* Dots Indicator */}
       {sortedImages.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full">
+        <div className="absolute bottom-4 sm:bottom-6 left-1/2 flex -translate-x-1/2 gap-1.5 sm:gap-2 bg-white/60 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
           {sortedImages.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`h-2.5 rounded-full transition-all ${
+              className={`h-2 sm:h-2.5 rounded-full transition-all ${
                 index === currentIndex
-                  ? "w-8 bg-orange-500"
-                  : "w-2.5 bg-white/70 hover:bg-white"
+                  ? "w-6 sm:w-8 bg-orange-500"
+                  : "w-2 sm:w-2.5 bg-white/70 hover:bg-white"
               }`}
               aria-label={`Ir a imagen ${index + 1}`}
             />

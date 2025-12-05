@@ -94,7 +94,7 @@ export default async function TelefonoSeminuevoPage({
     return (
       <div className="min-h-screen bg-white">
         <Header logoUrl={logoContent?.url || null} />
-        <main className="pt-20">
+        <main className="pt-16 sm:pt-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
             <p className="text-center text-gray-600">Producto no encontrado</p>
           </div>

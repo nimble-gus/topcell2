@@ -36,7 +36,7 @@ export default function BannerSection({ banners }: BannerSectionProps) {
             className="group relative block overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.01]"
           >
             {/* Imagen grande */}
-            <div className="relative h-[500px] w-full overflow-hidden bg-gray-100">
+            <div className="relative h-[300px] sm:h-[400px] md:h-[500px] w-full overflow-hidden bg-gray-100">
               <Image
                 src={banner.url}
                 alt={banner.titulo || "Banner"}
@@ -47,24 +47,24 @@ export default function BannerSection({ banners }: BannerSectionProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
               
               {/* Contenido sobre la imagen */}
-              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+              <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6 md:p-8 lg:p-12">
                 {/* Título */}
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-2 sm:mb-4">
                   {banner.titulo}
                 </h2>
                 
                 {/* Descripción */}
                 {banner.descripcion && (
-                  <p className="text-lg md:text-xl text-white/90 mb-6 max-w-2xl">
+                  <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 mb-4 sm:mb-6 max-w-2xl line-clamp-2 sm:line-clamp-none">
                     {banner.descripcion}
                   </p>
                 )}
                 
                 {/* Call to Action */}
-                <div className="flex items-center text-white font-semibold text-lg group-hover:translate-x-2 transition-transform">
+                <div className="flex items-center text-white font-semibold text-sm sm:text-base md:text-lg group-hover:translate-x-2 transition-transform">
                   Más información
                   <svg
-                    className="ml-2 h-5 w-5"
+                    className="ml-2 h-4 w-4 sm:h-5 sm:w-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

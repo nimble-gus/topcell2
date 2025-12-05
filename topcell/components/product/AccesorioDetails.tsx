@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { addToCart } from "@/lib/cart";
 
 interface AccesorioDetailsProps {
   accesorio: {
@@ -22,8 +24,10 @@ interface AccesorioDetailsProps {
 }
 
 export default function AccesorioDetails({ accesorio }: AccesorioDetailsProps) {
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   // Auto-seleccionar primer color si hay colores disponibles
   useEffect(() => {
@@ -40,6 +44,30 @@ export default function AccesorioDetails({ accesorio }: AccesorioDetailsProps) {
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + accesorio.imagenes.length) % accesorio.imagenes.length);
+  };
+
+  const handleAddToCart = () => {
+    if (!colorSeleccionado || colorSeleccionado.stock === 0) return;
+    
+    setAddingToCart(true);
+    
+    addToCart({
+      tipo: "accesorio",
+      productoId: accesorio.id,
+      colorId: selectedColorId!,
+      cantidad: 1,
+      precio: accesorio.precio,
+      modelo: accesorio.modelo,
+      marca: accesorio.marca,
+      imagen: accesorio.imagenes[0] || "",
+      color: colorSeleccionado.color,
+    });
+    
+    setTimeout(() => {
+      setAddingToCart(false);
+      // Opcional: mostrar notificación o redirigir al carrito
+      // router.push("/carrito");
+    }, 500);
   };
 
   return (
@@ -178,14 +206,17 @@ export default function AccesorioDetails({ accesorio }: AccesorioDetailsProps) {
 
           {/* Botón de agregar al carrito */}
           <button
-            disabled={!colorSeleccionado || colorSeleccionado.stock === 0}
+            onClick={handleAddToCart}
+            disabled={!colorSeleccionado || colorSeleccionado.stock === 0 || addingToCart}
             className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
-              colorSeleccionado && colorSeleccionado.stock > 0
+              colorSeleccionado && colorSeleccionado.stock > 0 && !addingToCart
                 ? "bg-orange-500 hover:bg-orange-600 text-white"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            {colorSeleccionado && colorSeleccionado.stock > 0
+            {addingToCart
+              ? "Agregando..."
+              : colorSeleccionado && colorSeleccionado.stock > 0
               ? "Agregar al carrito"
               : accesorio.colores.length > 0
               ? "Selecciona un color"

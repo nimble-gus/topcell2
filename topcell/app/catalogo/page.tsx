@@ -1,9 +1,15 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import ProductGrid from "@/components/catalog/ProductGrid";
+
+export const metadata: Metadata = {
+  title: "Catálogo de Productos",
+  description: "Explora nuestro catálogo completo de teléfonos nuevos, seminuevos y accesorios. Filtra por marca, precio y características. Encuentra el dispositivo perfecto para ti.",
+};
 
 export default async function CatalogoPage() {
   // Obtener logo para el header
@@ -178,7 +184,7 @@ export default async function CatalogoPage() {
     <div className="min-h-screen bg-white">
       <Header logoUrl={logoContent?.url || null} />
       
-      <main className="pt-20">
+      <main className="pt-16 sm:pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Catálogo de Productos</h1>
           

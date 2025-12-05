@@ -187,7 +187,7 @@ export default async function Home() {
     <div className="min-h-screen bg-white">
       <Header logoUrl={logoContent?.url || null} />
       
-      <main className="pt-20">
+      <main className="pt-16 sm:pt-20">
         {/* Hero Section */}
         <HeroSection
           images={heroImages.map((img) => ({
