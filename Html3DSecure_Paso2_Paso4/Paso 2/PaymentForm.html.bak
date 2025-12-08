@@ -1,0 +1,32 @@
+<html>
+<head>
+	<title>Test3DES Step 2</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+<iframe name=”ddc-iframe” height="1" width="1" style="display: none;">
+</iframe>
+	<form id="ddc-form" target=”ddc-iframe” method="POST" action="https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect">
+	<input type="hidden" name="JWT" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzNTI3OGQzNS0wMjUxLTRkZGItYTUzMy0xYjc1Y2JmNWYxNzkiLCJpYXQiOjE2NzgyMDU5MzQsImlzcyI6IjVkZDgzYmYwMGU0MjNkMTQ5OGRjYmFjYSIsImV4cCI6MTY3ODIwOTUzNCwiT3JnVW5pdElkIjoiNWZiNTQ2Y2U4MjBmZjQ0ZDhiMGNkZjkxIiwiUmVmZXJlbmNlSWQiOiIzMTZhYjFhMy02NWY3LTRlOTktYWFjMi01YmVkZmRmZDZkZjAifQ.yDWSDdQNISwS-oY5lYBjK26vN-fAvt2YX90sspYKMfc" />
+	</form>
+</body>
+<script>
+window.onload = function() {
+	var ddcForm = document.querySelector('#ddc-form');
+	if(ddcForm) // ddc form exists
+	ddcForm.submit();
+}
+</script>
+<script>
+window.addEventListener("message", (event) => {
+	if (event.origin === "https://centinelapistag.cardinalcommerce.com") {
+		let data = JSON.parse(event.data);
+		console.log('Merchant received a message:', data);
+		
+		if (data !== undefined && data.Status) {
+		console.log('Songbird ran DF successfully');
+		}
+	}
+}, false);
+</script>
+</html>

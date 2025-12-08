@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 /**
  * ⚠️ SCRIPT OBSOLETO
  * Este script estaba diseñado para migrar datos de TelefonoNuevoColor a TelefonoNuevoVariante,

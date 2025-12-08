@@ -49,7 +49,7 @@ export default function CheckoutPage() {
 
   // Formulario
   const [tipoEnvio, setTipoEnvio] = useState<"ENVIO" | "RECOGER_BODEGA">("ENVIO");
-  const [metodoPago, setMetodoPago] = useState<"CONTRA_ENTREGA" | "TRANSFERENCIA">("CONTRA_ENTREGA");
+  const [metodoPago, setMetodoPago] = useState<"CONTRA_ENTREGA" | "TRANSFERENCIA" | "TARJETA">("CONTRA_ENTREGA");
   const [formData, setFormData] = useState({
     email: "",
     nombre: "",
@@ -63,6 +63,14 @@ export default function CheckoutPage() {
     notas: "",
   });
   const [boletaPagoUrl, setBoletaPagoUrl] = useState<string>("");
+  
+  // Datos de tarjeta
+  const [tarjetaData, setTarjetaData] = useState({
+    numero: "",
+    fechaVencimiento: "",
+    cvv: "",
+    nombreTitular: "",
+  });
 
   useEffect(() => {
     loadCart();
@@ -216,6 +224,25 @@ export default function CheckoutPage() {
       }
     }
 
+    if (metodoPago === "TARJETA") {
+      if (!tarjetaData.numero || tarjetaData.numero.replace(/\s/g, "").length < 13) {
+        setError("Por favor ingresa un número de tarjeta válido");
+        return false;
+      }
+      if (!tarjetaData.fechaVencimiento || !/^\d{4}$/.test(tarjetaData.fechaVencimiento)) {
+        setError("Por favor ingresa una fecha de vencimiento válida (MMAA)");
+        return false;
+      }
+      if (!tarjetaData.cvv || tarjetaData.cvv.length < 3) {
+        setError("Por favor ingresa el CVV de la tarjeta");
+        return false;
+      }
+      if (!tarjetaData.nombreTitular || tarjetaData.nombreTitular.trim().length < 3) {
+        setError("Por favor ingresa el nombre del titular de la tarjeta");
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -283,6 +310,89 @@ export default function CheckoutPage() {
         throw new Error(data.error || "Error al procesar la orden");
       }
 
+      // Si el método de pago es TARJETA, procesar el pago
+      if (metodoPago === "TARJETA") {
+        const envio = tipoEnvio === "ENVIO" ? COSTO_ENVIO : 0;
+        const total = subtotal + envio;
+
+        // Llamar al Paso 1 de pago con tarjeta
+        const paso1Response = await fetch("/api/pagos/tarjeta/paso1", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ordenId: data.ordenId,
+            tarjeta: {
+              numero: tarjetaData.numero.replace(/\s/g, ""),
+              fechaVencimiento: tarjetaData.fechaVencimiento,
+              cvv: tarjetaData.cvv,
+            },
+            cliente: {
+              nombre: formData.nombre.trim(),
+              apellido: formData.apellido.trim() || "",
+              email: formData.email.trim(),
+              telefono: formData.telefono.trim(),
+              direccion: tipoEnvio === "ENVIO" ? formData.direccion.trim() : DIRECCION_BODEGA,
+              ciudad: tipoEnvio === "ENVIO" ? formData.ciudad.trim() : "Ciudad de Guatemala",
+              codigoPostal: formData.codigoPostal.trim() || undefined,
+              pais: "GT",
+            },
+            monto: total,
+          }),
+        });
+
+        const paso1Data = await paso1Response.json();
+
+        if (!paso1Response.ok) {
+          // Construir mensaje de error más detallado
+          let errorMessage = paso1Data.error || "Error al procesar el pago con tarjeta";
+          if (paso1Data.codigoRespuesta) {
+            errorMessage += ` (Código: ${paso1Data.codigoRespuesta})`;
+          }
+          if (paso1Data.detalles) {
+            errorMessage += ` - ${paso1Data.detalles}`;
+          }
+          // En desarrollo, mostrar más detalles
+          if (process.env.NODE_ENV === "development" && paso1Data.respuestaCompleta) {
+            console.error("Respuesta completa de NeoPay:", paso1Data.respuestaCompleta);
+          }
+          throw new Error(errorMessage);
+        }
+
+        // Si fue aprobado directamente (sin 3DSecure)
+        if (paso1Data.aprobado) {
+          clearCart();
+          router.push(`/orden/${data.ordenId}`);
+          return;
+        }
+
+        // Si requiere 3DSecure, redirigir a la página de autenticación
+        if (paso1Data.requiere3DSecure) {
+          const params = new URLSearchParams({
+            ordenId: data.ordenId.toString(),
+            referenceId: paso1Data.referenceId || "",
+            systemsTraceNo: paso1Data.systemsTraceNo || "",
+          });
+          
+          // Si tenemos accessToken y deviceDataCollectionUrl, usarlos directamente
+          if (paso1Data.accessToken && paso1Data.deviceDataCollectionUrl) {
+            params.append("accessToken", paso1Data.accessToken);
+            params.append("deviceDataCollectionUrl", paso1Data.deviceDataCollectionUrl);
+          } else if (paso1Data.html) {
+            // Si tenemos HTML completo, enviarlo
+            params.append("html", paso1Data.html);
+          }
+          
+          router.push(`/pago/3dsecure?${params.toString()}`);
+          return;
+        }
+
+        // Si fue rechazado
+        throw new Error(paso1Data.error || "El pago fue rechazado");
+      }
+
+      // Para otros métodos de pago, continuar normalmente
       clearCart();
       router.push(`/orden/${data.ordenId}`);
     } catch (error: any) {
@@ -587,6 +697,20 @@ export default function CheckoutPage() {
                       </label>
                     </div>
 
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="metodoPago"
+                          value="TARJETA"
+                          checked={metodoPago === "TARJETA"}
+                          onChange={(e) => setMetodoPago(e.target.value as "TARJETA")}
+                          className="w-5 h-5 text-orange-500 focus:ring-orange-500"
+                        />
+                        <span className="font-semibold text-gray-900">Pago con Tarjeta</span>
+                      </label>
+                    </div>
+
                     {metodoPago === "TRANSFERENCIA" && (
                       <div className="pt-4 border-t border-gray-200 space-y-4">
                         {cuentasBancarias.length > 0 ? (
@@ -642,6 +766,111 @@ export default function CheckoutPage() {
                             <li>Te informaremos por WhatsApp, llamada o correo cuando se haya acreditado el pago</li>
                             <li>Si escoges la opción de recoleccion en bodega, deberas esperar nuestra confirmación vía Whatsapp, llamada o correo donde te estaremos indicando que tu depósito fue recibido</li>
 
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {metodoPago === "TARJETA" && (
+                      <div className="pt-4 border-t border-gray-200 space-y-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <p className="text-sm font-medium text-blue-900 mb-2">
+                            🔒 Pago Seguro con 3DSecure
+                          </p>
+                          <p className="text-sm text-blue-800">
+                            Tu información está protegida. Utilizamos tecnología 3DSecure para mayor seguridad.
+                          </p>
+                        </div>
+
+                        <div>
+                          <label htmlFor="numeroTarjeta" className="block text-sm font-medium text-gray-700 mb-2">
+                            Número de Tarjeta <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="numeroTarjeta"
+                            name="numeroTarjeta"
+                            value={tarjetaData.numero}
+                            onChange={(e) => {
+                              // Formatear número de tarjeta (agregar espacios cada 4 dígitos)
+                              const value = e.target.value.replace(/\s/g, "").replace(/\D/g, "");
+                              const formatted = value.match(/.{1,4}/g)?.join(" ") || value;
+                              setTarjetaData({ ...tarjetaData, numero: formatted });
+                            }}
+                            maxLength={19}
+                            required
+                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                            placeholder="1234 5678 9012 3456"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="fechaVencimiento" className="block text-sm font-medium text-gray-700 mb-2">
+                              Fecha de Vencimiento <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              id="fechaVencimiento"
+                              name="fechaVencimiento"
+                              value={tarjetaData.fechaVencimiento}
+                              onChange={(e) => {
+                                // Formato MMAA
+                                const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                setTarjetaData({ ...tarjetaData, fechaVencimiento: value });
+                              }}
+                              maxLength={4}
+                              required
+                              className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                              placeholder="MMAA (ej: 1229)"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Formato: MMAA (ej: 1229 para Diciembre 2029). Se convertirá automáticamente a YYMM.</p>
+                          </div>
+
+                          <div>
+                            <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-2">
+                              CVV <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              id="cvv"
+                              name="cvv"
+                              value={tarjetaData.cvv}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                setTarjetaData({ ...tarjetaData, cvv: value });
+                              }}
+                              maxLength={4}
+                              required
+                              className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                              placeholder="123"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label htmlFor="nombreTitular" className="block text-sm font-medium text-gray-700 mb-2">
+                            Nombre del Titular <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="nombreTitular"
+                            name="nombreTitular"
+                            value={tarjetaData.nombreTitular}
+                            onChange={(e) => setTarjetaData({ ...tarjetaData, nombreTitular: e.target.value.toUpperCase() })}
+                            required
+                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                            placeholder="JUAN PEREZ"
+                          />
+                        </div>
+
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <p className="text-sm font-medium text-yellow-900 mb-2">
+                            ⚠️ Tarjetas de Prueba:
+                          </p>
+                          <ul className="text-sm text-yellow-800 space-y-1 list-disc list-inside">
+                            <li>Visa: 4456530000001005 (Fecha: 2912, CVV: 123)</li>
+                            <li>Mastercard: 4000000000002503 (Fecha: 2912, CVV: 123)</li>
                           </ul>
                         </div>
                       </div>

@@ -311,6 +311,7 @@ enum TipoEnvio {
 enum MetodoPago {
   CONTRA_ENTREGA
   TRANSFERENCIA
+  TARJETA
 }
 
 model Orden {
@@ -330,6 +331,22 @@ model Orden {
   nombreRecibe     String?            // Nombre de quien recibe (solo si es envío)
   telefonoRecibe   String?            // Teléfono de contacto para entrega (solo si es envío)
   boletaPagoUrl    String?            // URL de la boleta de pago subida (solo si es transferencia)
+  // Campos para pago con tarjeta
+  referenciaPago   String?            // ReferenceId de 3DSecure
+  numeroTarjeta    String?            // Últimos 4 dígitos (ej: "****1005")
+  tipoTarjeta      String?            // Visa, Mastercard, etc.
+  respuestaPago    String?            @db.Text // Respuesta completa de NeoPay (JSON)
+  estadoPago       String?            // APROBADO, RECHAZADO, PENDIENTE, ERROR
+  codigoRespuesta  String?            // Código de respuesta de NeoPay
+  mensajeRespuesta String?            @db.Text // Mensaje de respuesta
+  systemsTraceNoOriginal String?     // SystemsTraceNo de la transacción original (para anulaciones)
+  // Campos para vouchers/comprobantes
+  retrievalRefNo   String?            // Número de Referencia (12 dígitos) - para voucher
+  authIdResponse   String?            // Número de Autorización (6 caracteres) - para voucher
+  fechaTransaccion DateTime?          // Fecha y hora de la transacción del servidor remoto
+  timeLocalTrans   String?            // Hora de transacción (HHMMSS) - para voucher
+  dateLocalTrans   String?            // Fecha de transacción (MMDD) - para voucher
+  typeOperation    String?            // Tipo de operación (1: NeoPay, 2: TMS, 3: 3D Secure)
   notas             String?            @db.Text
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt

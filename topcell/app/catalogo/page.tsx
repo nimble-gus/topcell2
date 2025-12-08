@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import ProductGrid from "@/components/catalog/ProductGrid";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Catálogo de Productos",
   description: "Explora nuestro catálogo completo de teléfonos nuevos, seminuevos y accesorios. Filtra por marca, precio y características. Encuentra el dispositivo perfecto para ti.",

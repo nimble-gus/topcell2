@@ -7,6 +7,8 @@ import BannerSection from "@/components/BannerSection";
 import BrandsMarquee from "@/components/BrandsMarquee";
 import Footer from "@/components/Footer";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   // Obtener logo
   const logoContent = await prisma.contenidoTienda.findFirst({

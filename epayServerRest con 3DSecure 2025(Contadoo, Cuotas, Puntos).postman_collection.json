@@ -1,0 +1,1281 @@
+{
+	"info": {
+		"_postman_id": "94694020-5006-4c41-bfc0-7d88e61a1774",
+		"name": "epayServerRest con 3DSecure 2025(Contadoo, Cuotas, Puntos)",
+		"description": "transacción de epayRest sin TMS con 3Dsecure",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5624884"
+	},
+	"item": [
+		{
+			"name": "3DSecure",
+			"item": [
+				{
+					"name": "Contado",
+					"item": [
+						{
+							"name": "Paso 1 y 3",
+							"item": [
+								{
+									"name": "Venta paso 1 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "4E9CE4AFCF690EA95915C1DF6D35C8D05479F839C242B20941635974F3FF20C6",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "29B49165F409ECB9CD32BFDF5759E70973FD8A4F0708EE9D535A7F222A0FFD1B",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010101\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"13402404\",\r\n    \"CardAcqId\": \"24041300\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"001\",\r\n    \"PrimaryAcctNum\": \"4456530000001005\",\r\n    \"DateExpiration\": \"2912\",\r\n    \"Cvv2\": \"123\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"16000\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"JUAN\",\r\n    \"LastName\": \"PEREZ\",\r\n    \"Company\": \"NA\",\r\n    \"AddressOne\": \"AVENIDA REFORMA ZONA 10\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"GUATEMALA\",\r\n    \"AdministrativeArea\": \"GU\",\r\n    \"PostalCode\": \"01010\",\r\n    \"Country\": \"GT\",\r\n    \"Email\": \"jpereztest@correo.com\",\r\n    \"PhoneNumber\": \"12345678\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"1\",\r\n    \"UrlCommerce\": \"https://midominio.com/PaymentForm.html\",\r\n    \"ReferenceId\": \"\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 3 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "4E9CE4AFCF690EA95915C1DF6D35C8D05479F839C242B20941635974F3FF20C6",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "29B49165F409ECB9CD32BFDF5759E70973FD8A4F0708EE9D535A7F222A0FFD1B",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010101\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"13402404\",\r\n    \"CardAcqId\": \"24041300\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"3\",\r\n    \"ReferenceId\": \"a2d6f6cb-ee86-408b-8ce1-37a88b5fc64d\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Paso 1,3 y 5",
+							"item": [
+								{
+									"name": "Venta paso 1 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "22EC0386DF6A282D4AE7926F8A283C29001B6433CC904AAA1C833ADFB288F5D7",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AC90EA2B240DCB451727AC9AEF7B5D97526B873E31C884A108B66CB4CB8AF729",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010105\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"44004000\",\r\n    \"CardAcqId\": \"202400044\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"001\",\r\n    \"PrimaryAcctNum\": \"4000000000002503\",\r\n    \"DateExpiration\": \"2912\",\r\n    \"Cvv2\": \"123\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"16000\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"JUAN\",\r\n    \"LastName\": \"PEREZ\",\r\n    \"Company\": \"PRUEBA\",\r\n    \"AddressOne\": \"AVENIDA REFORMA ZONA 10\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"GUATEMALA\",\r\n    \"AdministrativeArea\": \"GU\",\r\n    \"PostalCode\": \"01010\",\r\n    \"Country\": \"GT\",\r\n    \"Email\": \"jpereztest@correo.com\",\r\n    \"PhoneNumber\": \"12345678\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"1\",\r\n    \"UrlCommerce\": \"https://midominio.com/PaymentForm.html\",\r\n    \"ReferenceId\": \"\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 3 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "22EC0386DF6A282D4AE7926F8A283C29001B6433CC904AAA1C833ADFB288F5D7",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AC90EA2B240DCB451727AC9AEF7B5D97526B873E31C884A108B66CB4CB8AF729",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010105\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"44004000\",\r\n    \"CardAcqId\": \"202400044\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"3\",\r\n    \"ReferenceId\": \"fd08aa8c-1bb8-4677-8f01-34c6d8e556ad\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 5 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "22EC0386DF6A282D4AE7926F8A283C29001B6433CC904AAA1C833ADFB288F5D7",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AC90EA2B240DCB451727AC9AEF7B5D97526B873E31C884A108B66CB4CB8AF729",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010105\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"44004000\",\r\n    \"CardAcqId\": \"202400044\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"5\",\r\n    \"ReferenceId\": \"fd08aa8c-1bb8-4677-8f01-34c6d8e556ad\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Cuotas",
+					"item": [
+						{
+							"name": "Paso 1 y 3",
+							"item": [
+								{
+									"name": "Venta paso 1 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010101\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"VC06\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"001\",\r\n    \"PrimaryAcctNum\": \"4456530000001005\",\r\n    \"DateExpiration\": \"2412\",\r\n    \"Cvv2\": \"123\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"16000\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"JUAN\",\r\n    \"LastName\": \"PEREZ\",\r\n    \"Company\": \"PRUEBA\",\r\n    \"AddressOne\": \"AVENIDA REFORMA ZONA 10\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"GUATEMALA\",\r\n    \"AdministrativeArea\": \"GU\",\r\n    \"PostalCode\": \"01010\",\r\n    \"Country\": \"GT\",\r\n    \"Email\": \"jpereztest@correo.com\",\r\n    \"PhoneNumber\": \"12345678\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"1\",\r\n    \"UrlCommerce\": \"https://midominio.com/PaymentForm.html\",\r\n    \"ReferenceId\": \"\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 3 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010101\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"3\",\r\n    \"ReferenceId\": \"af936bce-eb23-482b-91e9-e93edfb4d84e\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Paso 1,3 y 5",
+							"item": [
+								{
+									"name": "Venta paso 1 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010102\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"VC06\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"001\",\r\n    \"PrimaryAcctNum\": \"4000000000002503\",\r\n    \"DateExpiration\": \"2412\",\r\n    \"Cvv2\": \"123\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"16000\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"JUAN\",\r\n    \"LastName\": \"PEREZ\",\r\n    \"Company\": \"PRUEBA\",\r\n    \"AddressOne\": \"AVENIDA REFORMA ZONA 10\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"GUATEMALA\",\r\n    \"AdministrativeArea\": \"GU\",\r\n    \"PostalCode\": \"01010\",\r\n    \"Country\": \"GT\",\r\n    \"Email\": \"jpereztest@correo.com\",\r\n    \"PhoneNumber\": \"12345678\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"1\",\r\n    \"UrlCommerce\": \"https://midominio.com/PaymentForm.html\",\r\n    \"ReferenceId\": \"\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 3 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010102\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"3\",\r\n    \"ReferenceId\": \"51c82d08-83ec-4e04-ac21-d42a96c9e0fe\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 5 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010102\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"5\",\r\n    \"ReferenceId\": \"18c94f4e-cf2d-4b45-aaae-6428a00d3ff2\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Puntos",
+					"item": [
+						{
+							"name": "Paso 1 y 3",
+							"item": [
+								{
+									"name": "Venta paso 1 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010101\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"LU\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"001\",\r\n    \"PrimaryAcctNum\": \"4456530000001005\",\r\n    \"DateExpiration\": \"2412\",\r\n    \"Cvv2\": \"123\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"16000\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"JUAN\",\r\n    \"LastName\": \"PEREZ\",\r\n    \"Company\": \"PRUEBA\",\r\n    \"AddressOne\": \"AVENIDA REFORMA ZONA 10\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"GUATEMALA\",\r\n    \"AdministrativeArea\": \"GU\",\r\n    \"PostalCode\": \"01010\",\r\n    \"Country\": \"GT\",\r\n    \"Email\": \"jpereztest@correo.com\",\r\n    \"PhoneNumber\": \"12345678\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"1\",\r\n    \"UrlCommerce\": \"https://midominio.com/PaymentForm.html\",\r\n    \"ReferenceId\": \"\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 3 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010101\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"3\",\r\n    \"ReferenceId\": \"af936bce-eb23-482b-91e9-e93edfb4d84e\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Paso 1,3 y 5",
+							"item": [
+								{
+									"name": "Venta paso 1 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010102\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"LU\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"001\",\r\n    \"PrimaryAcctNum\": \"4000000000002503\",\r\n    \"DateExpiration\": \"2412\",\r\n    \"Cvv2\": \"123\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"16000\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"JUAN\",\r\n    \"LastName\": \"PEREZ\",\r\n    \"Company\": \"PRUEBA\",\r\n    \"AddressOne\": \"AVENIDA REFORMA ZONA 10\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"GUATEMALA\",\r\n    \"AdministrativeArea\": \"GU\",\r\n    \"PostalCode\": \"01010\",\r\n    \"Country\": \"GT\",\r\n    \"Email\": \"jpereztest@correo.com\",\r\n    \"PhoneNumber\": \"12345678\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"1\",\r\n    \"UrlCommerce\": \"https://midominio.com/PaymentForm.html\",\r\n    \"ReferenceId\": \"\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 3 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010102\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"3\",\r\n    \"ReferenceId\": \"51c82d08-83ec-4e04-ac21-d42a96c9e0fe\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Venta paso 5 con 3DSecure",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"name": "Content-Type",
+												"type": "text"
+											},
+											{
+												"key": "MerchantUser",
+												"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+												"type": "text"
+											},
+											{
+												"key": "MerchantPasswd",
+												"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+												"type": "text"
+											},
+											{
+												"key": "ShopperIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "PaymentgwIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											},
+											{
+												"key": "MerchantServerIP",
+												"value": "1.1.1.1",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010102\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"5\",\r\n    \"ReferenceId\": \"18c94f4e-cf2d-4b45-aaae-6428a00d3ff2\"\r\n  }\r\n}"
+										},
+										"url": {
+											"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+											"protocol": "https",
+											"host": [
+												"epaytestvisanet",
+												"com",
+												"gt"
+											],
+											"port": "4433",
+											"path": [
+												"V3",
+												"api",
+												"AuthorizationPaymentCommerce"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Anulación",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"name": "Content-Type",
+						"type": "text"
+					},
+					{
+						"key": "ShopperIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					},
+					{
+						"key": "PaymentgwIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					},
+					{
+						"key": "MerchantServerIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					},
+					{
+						"key": "MerchantUser",
+						"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+						"type": "text"
+					},
+					{
+						"key": "MerchantPasswd",
+						"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"MessageTypeId\": \"0200\",\r\n  \"ProcessingCode\": \"020000\",\r\n  \"SystemsTraceNo\": \"020116\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"\",\r\n    \"UrlCommerce\": \"\",\r\n    \"ReferenceId\": \"\"\r\n  }\r\n}"
+				},
+				"url": {
+					"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+					"protocol": "https",
+					"host": [
+						"epaytestvisanet",
+						"com",
+						"gt"
+					],
+					"port": "4433",
+					"path": [
+						"V3",
+						"api",
+						"AuthorizationPaymentCommerce"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reversa Automática paso 3 con 3DSecure",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"name": "Content-Type",
+						"type": "text"
+					},
+					{
+						"key": "MerchantUser",
+						"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+						"type": "text"
+					},
+					{
+						"key": "MerchantPasswd",
+						"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+						"type": "text"
+					},
+					{
+						"key": "ShopperIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					},
+					{
+						"key": "PaymentgwIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					},
+					{
+						"key": "MerchantServerIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"MessageTypeId\": \"0400\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010100\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"3\",\r\n    \"ReferenceId\": \"51c82d08-83ec-4e04-ac21-d42a96c9e0fe\"\r\n  }\r\n}"
+				},
+				"url": {
+					"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+					"protocol": "https",
+					"host": [
+						"epaytestvisanet",
+						"com",
+						"gt"
+					],
+					"port": "4433",
+					"path": [
+						"V3",
+						"api",
+						"AuthorizationPaymentCommerce"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reversa Automática paso 5 con 3DSecure",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"name": "Content-Type",
+						"type": "text"
+					},
+					{
+						"key": "MerchantUser",
+						"value": "D96793B1703D83A98B1C9CF9F2B2EF4ED82D613BF1F31897507E9A1DAFB0BA39",
+						"type": "text"
+					},
+					{
+						"key": "MerchantPasswd",
+						"value": "AE2672FE9207CA3B0B95125DDF974ED4F739267E0495E1F9546FCACE1BCA16A5",
+						"type": "text"
+					},
+					{
+						"key": "ShopperIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					},
+					{
+						"key": "PaymentgwIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					},
+					{
+						"key": "MerchantServerIP",
+						"value": "1.1.1.1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"MessageTypeId\": \"0400\",\r\n  \"ProcessingCode\": \"000000\",\r\n  \"SystemsTraceNo\": \"010122\",\r\n  \"TimeLocalTrans\": \"\",\r\n  \"DateLocalTrans\": \"\",\r\n  \"PosEntryMode\": \"012\",\r\n  \"Nii\": \"003\",\r\n  \"PosConditionCode\": \"00\",\r\n  \"AdditionalData\": \"\",\r\n  \"OrderInformation\": \"\",\r\n  \"FormatId\": \"1\",\r\n  \"Merchant\": {\r\n    \"TerminalId\": \"29292022\",\r\n    \"CardAcqId\": \"29072022\"\r\n  },\r\n  \"Card\": {\r\n    \"Type\": \"\",\r\n    \"PrimaryAcctNum\": \"\",\r\n    \"DateExpiration\": \"\",\r\n    \"Cvv2\": \"\",\r\n    \"Track2Data\": \"\",\r\n    \"CardTokenId\": \"\",\r\n    \"UniqueCodeofBeneciary\": \"\"\r\n  },\r\n  \"Amount\": {\r\n    \"AmountTrans\": \"\",\r\n    \"AmountDiscount\": \"\",\r\n    \"RateDiscount\": \"\",\r\n    \"AdditionalAmounts\": \"\",\r\n    \"TaxDetail\": [\r\n    ]\r\n  },\r\n  \"PrivateUse60\": {\r\n    \"BatchNumber\": \"\"\r\n  },\r\n  \"PrivateUse63\": {\r\n    \"LodgingFolioNumber14\": \"\",\r\n    \"NationalCard25\": \"\",\r\n    \"HostReferenceData31\": \"\",\r\n    \"TaxAmount1\": \"\"\r\n  },\r\n  \"TokenManagement\": {\r\n    \"Type\": \"\",\r\n    \"ActionMethod\": \"\"\r\n  },\r\n  \"Customer\": {\r\n    \"CustomerTokenId\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"TaxId\": \"\",\r\n    \"IdentificationType\": \"\",\r\n    \"PersonalId\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"BillTo\": {\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\"\r\n  },\r\n  \"ShipTo\": {\r\n    \"DefaultSt\": \"\",\r\n    \"FirstName\": \"\",\r\n    \"LastName\": \"\",\r\n    \"Company\": \"\",\r\n    \"AddressOne\": \"\",\r\n    \"AddressTwo\": \"\",\r\n    \"Locality\": \"\",\r\n    \"AdministrativeArea\": \"\",\r\n    \"PostalCode\": \"\",\r\n    \"Country\": \"\",\r\n    \"Email\": \"\",\r\n    \"PhoneNumber\": \"\",\r\n    \"ShippingAddressTokenId\": \"\"\r\n  },\r\n  \"PaymentInstrument\": {\r\n    \"PaymentInstrumentTokenId\": \"\"\r\n  },\r\n  \"CustomerPaymentInstrument\": {\r\n    \"CustomerPaymentInstrumentTokenId\": \"\",\r\n    \"DefaultCpi\": \"\"\r\n  },\r\n  \"PayerAuthentication\": {\r\n    \"Step\": \"5\",\r\n    \"ReferenceId\": \"18c94f4e-cf2d-4b45-aaae-6428a00d3ff2\"\r\n  }\r\n}"
+				},
+				"url": {
+					"raw": "https://epaytestvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce",
+					"protocol": "https",
+					"host": [
+						"epaytestvisanet",
+						"com",
+						"gt"
+					],
+					"port": "4433",
+					"path": [
+						"V3",
+						"api",
+						"AuthorizationPaymentCommerce"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

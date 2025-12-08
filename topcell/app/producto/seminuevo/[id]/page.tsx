@@ -3,6 +3,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductDetails from "@/components/product/ProductDetails";
 
+export const dynamic = 'force-dynamic';
+
 export default async function TelefonoSeminuevoPage({
   params,
 }: {

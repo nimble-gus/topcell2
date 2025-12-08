@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!metodoPago || (metodoPago !== "CONTRA_ENTREGA" && metodoPago !== "TRANSFERENCIA")) {
+    if (!metodoPago || (metodoPago !== "CONTRA_ENTREGA" && metodoPago !== "TRANSFERENCIA" && metodoPago !== "TARJETA")) {
       return NextResponse.json(
         { error: "Método de pago inválido" },
         { status: 400 }
@@ -63,6 +63,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Para pago con tarjeta, no se requiere boleta de pago
+    // El pago se procesará después de crear la orden
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -320,7 +323,7 @@ export async function POST(request: NextRequest) {
           envio: envioCalculado,
           total,
           tipoEnvio: tipoEnvio as "ENVIO" | "RECOGER_BODEGA",
-          metodoPago: metodoPago as "CONTRA_ENTREGA" | "TRANSFERENCIA",
+          metodoPago: metodoPago as "CONTRA_ENTREGA" | "TRANSFERENCIA" | "TARJETA",
           direccionEnvio,
           ciudadEnvio: ciudadEnvio || null,
           codigoPostalEnvio: codigoPostalEnvio || null,

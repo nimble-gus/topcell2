@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  buildAnulacionPayload,
+  callNeoPayAPI,
+} from "@/lib/neopay";
 
 // GET: Obtener detalles de una orden específica
 export async function GET(
@@ -132,6 +136,76 @@ export async function PUT(
 
     // Si se está cancelando, restaurar stock
     if (estado === "CANCELADO" && ordenExistente.estado !== "CANCELADO") {
+      // Si la orden tiene pago con tarjeta aprobado, intentar anular el pago primero
+      if (ordenExistente.metodoPago === "TARJETA" && ordenExistente.estadoPago === "APROBADO") {
+        try {
+          console.log(`Intentando anular pago de orden ${ordenId}...`);
+          
+          // Validar que tenemos los datos necesarios
+          if (!ordenExistente.systemsTraceNoOriginal) {
+            return NextResponse.json(
+              {
+                error: "No se encontró el SystemsTraceNo original de la transacción. No se puede anular el pago.",
+              },
+              { status: 400 }
+            );
+          }
+
+          // Construir payload de anulación
+          const anulacionData = {
+            systemsTraceNoOriginal: ordenExistente.systemsTraceNoOriginal,
+            montoOriginal: Number(ordenExistente.total),
+            retrievalRefNo: ordenExistente.retrievalRefNo || undefined,
+          };
+
+          const payload = buildAnulacionPayload(anulacionData);
+
+          // Llamar a NeoPay directamente
+          const neopayResponse = await callNeoPayAPI(payload, request.headers);
+
+          console.log("=== Respuesta de Anulación de NeoPay ===");
+          console.log("ResponseCode:", neopayResponse.ResponseCode);
+          console.log("Respuesta completa:", JSON.stringify(neopayResponse, null, 2));
+
+          // Verificar si fue aprobada
+          const aprobada = neopayResponse.ResponseCode === "00" || neopayResponse.ResponseCode === "10";
+
+          if (!aprobada) {
+            console.error("Error al anular pago:", neopayResponse.ResponseMessage);
+            // No cancelamos la orden si la anulación falla
+            return NextResponse.json(
+              {
+                error: `No se pudo anular el pago: ${neopayResponse.ResponseMessage || neopayResponse.PrivateUse63?.AlternateHostResponse22 || "Error desconocido"}. La orden no fue cancelada.`,
+                codigoRespuesta: neopayResponse.ResponseCode,
+              },
+              { status: 400 }
+            );
+          }
+
+          // Actualizar orden con la respuesta de la anulación
+          await prisma.orden.update({
+            where: { id: ordenId },
+            data: {
+              respuestaPago: JSON.stringify(neopayResponse),
+              estadoPago: "ANULADO",
+              codigoRespuesta: neopayResponse.ResponseCode || "00",
+              mensajeRespuesta: neopayResponse.ResponseMessage || "Pago anulado exitosamente",
+            },
+          });
+
+          console.log(`Pago anulado exitosamente para orden ${ordenId}`);
+        } catch (error: any) {
+          console.error("Error al intentar anular pago:", error);
+          // No cancelamos la orden si hay un error en la anulación
+          return NextResponse.json(
+            {
+              error: `Error al anular el pago: ${error.message || "Error desconocido"}. La orden no fue cancelada.`,
+            },
+            { status: 500 }
+          );
+        }
+      }
+
       await prisma.$transaction(async (tx) => {
         // Actualizar estado
         await tx.orden.update({

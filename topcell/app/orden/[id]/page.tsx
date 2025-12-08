@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { clearCart } from "@/lib/cart";
 
 interface DetallesVariante {
   color?: string;
@@ -52,6 +53,7 @@ interface Orden {
   id: number;
   numeroOrden: string;
   estado: string;
+  estadoPago: string | null;
   subtotal: number;
   impuestos: number;
   envio: number;
@@ -103,6 +105,13 @@ export default function OrdenConfirmacionPage() {
       }
       const data = await response.json();
       setOrden(data);
+      
+      // Limpiar el carrito si el pago está aprobado (para pagos con tarjeta)
+      // o si el método de pago no es tarjeta (ya se procesó)
+      if (data.estadoPago === "APROBADO" || (data.metodoPago !== "TARJETA" && data.estado !== "CANCELADA")) {
+        clearCart();
+        console.log("✅ Carrito limpiado después de orden exitosa");
+      }
     } catch (error: any) {
       console.error("Error al cargar orden:", error);
       setError(error.message || "Error al cargar la orden");
@@ -428,6 +437,29 @@ export default function OrdenConfirmacionPage() {
             >
               Continuar Comprando
             </Link>
+            {(orden.metodoPago === "TARJETA" && (orden.estadoPago === "APROBADO" || orden.estadoPago === "ANULADO")) ? (
+              <button
+                onClick={() => {
+                  window.open(`/api/ordenes/${ordenId}/voucher`, "_blank");
+                }}
+                className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Descargar Voucher
+              </button>
+            ) : null}
             <button
               onClick={() => window.print()}
               className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors"
