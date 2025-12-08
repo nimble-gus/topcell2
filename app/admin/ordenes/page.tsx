@@ -241,7 +241,11 @@ export default async function OrdenesPage({
                       {orden.tipoEnvio === "ENVIO" ? "Envío" : "Bodega"}
                     </td>
                     <td className="px-3 py-2 text-xs text-gray-500">
-                      {orden.metodoPago === "CONTRA_ENTREGA" ? "Contra Entrega" : "Transferencia"}
+                      {orden.metodoPago === "CONTRA_ENTREGA" 
+                        ? "Contra Entrega" 
+                        : orden.metodoPago === "TARJETA"
+                        ? "Pago con Tarjeta"
+                        : "Transferencia"}
                     </td>
                     <td className="px-3 py-2 text-xs font-semibold text-gray-900">
                       Q{Number(orden.total).toLocaleString("es-GT")}
