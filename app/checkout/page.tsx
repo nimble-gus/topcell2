@@ -438,8 +438,22 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       <Header logoUrl={serverData.logoUrl} />
+      
+      {/* Loader overlay */}
+      {submitting && (
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-md z-50 flex items-center justify-center">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg p-8 flex flex-col items-center gap-4 shadow-xl border border-white/20">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-orange-200 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            <p className="text-lg font-semibold text-gray-900">Procesando tu pedido...</p>
+            <p className="text-sm text-gray-600 text-center">Por favor espera, esto puede tomar unos momentos</p>
+          </div>
+        </div>
+      )}
       
       <main className="pt-16 sm:pt-20 pb-8 sm:pb-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -448,7 +462,7 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {/* Formulario */}
             <div className="lg:col-span-2">
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <form onSubmit={handleSubmit} className={`space-y-4 sm:space-y-6 ${submitting ? 'pointer-events-none opacity-60' : ''}`}>
                 {/* Información de contacto */}
                 <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
                   <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">
@@ -813,18 +827,22 @@ export default function CheckoutPage() {
                               type="text"
                               id="fechaVencimiento"
                               name="fechaVencimiento"
-                              value={tarjetaData.fechaVencimiento}
+                              value={
+                                tarjetaData.fechaVencimiento.length >= 2
+                                  ? `${tarjetaData.fechaVencimiento.slice(0, 2)} / ${tarjetaData.fechaVencimiento.slice(2, 4)}`
+                                  : tarjetaData.fechaVencimiento
+                              }
                               onChange={(e) => {
-                                // Formato MMAA
+                                // Remover todo excepto números
                                 const value = e.target.value.replace(/\D/g, "").slice(0, 4);
                                 setTarjetaData({ ...tarjetaData, fechaVencimiento: value });
                               }}
-                              maxLength={4}
+                              maxLength={7} // MM / YY = 7 caracteres (visual)
                               required
                               className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
-                              placeholder="MMAA (ej: 1229)"
+                              placeholder="MM / YY"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Formato: MMAA (ej: 1229 para Diciembre 2029). Se convertirá automáticamente a YYMM.</p>
+                            <p className="text-xs text-gray-500 mt-1">Formato: MM / YY (ej: 12 / 29 para Diciembre 2029)</p>
                           </div>
 
                           <div>

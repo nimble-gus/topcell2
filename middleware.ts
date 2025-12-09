@@ -5,6 +5,46 @@ import type { NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ============================================
+  // COMING SOON - Activar/Desactivar
+  // ============================================
+  const COMING_SOON_ENABLED = process.env.NEXT_PUBLIC_COMING_SOON === "true";
+  
+  if (COMING_SOON_ENABLED) {
+    // Rutas que NO deben ser redirigidas a coming soon
+    const alwaysAllowed = [
+      "/coming-soon",
+      "/api",
+      "/_next",
+      "/favicon.ico",
+      "/logo.png",
+      "/admin/login", // Permitir acceso al login de admin
+    ];
+
+    // Rutas condicionalmente permitidas (admin puede acceder si está autenticado)
+    const conditionallyAllowed = [
+      "/admin",
+    ];
+
+    // Verificar si es una ruta siempre permitida
+    const isAlwaysAllowed = alwaysAllowed.some(path => 
+      pathname === path || pathname.startsWith(path)
+    );
+
+    if (isAlwaysAllowed) {
+      // Continuar con el flujo normal
+    } else if (conditionallyAllowed.some(path => pathname.startsWith(path))) {
+      // Para admin, verificar autenticación (se maneja más abajo)
+      // Si no está autenticado, será redirigido a /admin/login (que está permitido)
+      // Si está autenticado, puede acceder normalmente
+    } else {
+      // Redirigir a coming-soon
+      const comingSoonUrl = new URL("/coming-soon", request.url);
+      return NextResponse.redirect(comingSoonUrl);
+    }
+  }
+  // ============================================
+
   // Agregar header para identificar contexto de admin en requests a /api/auth
   // cuando vienen de rutas de admin
   if (pathname.startsWith("/api/auth")) {
@@ -93,9 +133,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Incluir rutas de admin y rutas de auth
-    "/admin/:path*",
-    "/api/auth/:path*",
+    // Incluir todas las rutas excepto estáticos
+    "/((?!_next/static|_next/image|favicon.ico|logo.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
 
