@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import DeleteColorButton from "@/components/admin/DeleteColorButton";
 
 export default async function ColoresPage() {
   const colores = await prisma.color.findMany({
@@ -40,6 +41,15 @@ export default async function ColoresPage() {
                 <span className="text-sm font-medium text-gray-900">
                   {color.color}
                 </span>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/admin/catalogo/colores/${color.id}`}
+                    className="text-indigo-600 hover:text-indigo-900 text-sm"
+                  >
+                    Editar
+                  </Link>
+                  <DeleteColorButton colorId={color.id} nombre={color.color} />
+                </div>
               </div>
             </div>
           ))
