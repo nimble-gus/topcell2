@@ -7,11 +7,15 @@ export const dynamic = 'force-dynamic';
 
 export default async function TelefonoSeminuevoPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ variante?: string }>;
 }) {
   const { id: idParam } = await params;
+  const { variante: varianteIdParam } = await searchParams;
   const id = parseInt(idParam);
+  const varianteIdInicial = varianteIdParam ? parseInt(varianteIdParam) : null;
 
   if (isNaN(id)) {
     return (
@@ -77,17 +81,24 @@ export default async function TelefonoSeminuevoPage({
     },
     include: {
       marca: true,
+      modelo: {
+        include: {
+          imagenes: {
+            orderBy: { orden: "asc" },
+          },
+        },
+      },
       variantes: {
         include: {
           color: true,
+          imagenes: {
+            orderBy: { orden: "asc" },
+          },
         },
         orderBy: [
           { precio: "asc" },
           { estado: "desc" },
         ],
-      },
-      imagenes: {
-        orderBy: { orden: "asc" },
       },
     },
   });
@@ -124,9 +135,10 @@ export default async function TelefonoSeminuevoPage({
       <main className="pt-20">
         <ProductDetails
           tipo="telefono-seminuevo"
+          varianteIdInicial={varianteIdInicial}
           producto={{
             id: telefono.id,
-            modelo: telefono.modelo,
+            modelo: telefono.modelo.nombre,
             marca: telefono.marca.nombre,
             marcaId: telefono.marca.id,
             precio: Number(telefono.precio),
@@ -136,7 +148,7 @@ export default async function TelefonoSeminuevoPage({
             tamanoPantalla: telefono.tamanoPantalla,
             tipoEntrada: telefono.tipoEntrada,
             descripcion: telefono.descripcion,
-            imagenes: telefono.imagenes.map(img => img.url),
+            imagenes: telefono.modelo.imagenes.map(img => img.url), // Imágenes de catálogo del modelo
             variantes: telefono.variantes.map(v => ({
               id: v.id,
               colorId: v.colorId,
@@ -147,6 +159,7 @@ export default async function TelefonoSeminuevoPage({
               estado: v.estado,
               porcentajeBateria: v.porcentajeBateria,
               ciclosCarga: v.ciclosCarga,
+              imagenes: v.imagenes.map(img => img.url), // Imágenes específicas de la variante
             })),
           }}
         />

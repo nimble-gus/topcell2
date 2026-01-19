@@ -80,6 +80,9 @@ export default async function TelefonoNuevoPage({
       variantes: {
         include: {
           color: true,
+          imagenes: {
+            orderBy: { orden: "asc" },
+          },
         },
         orderBy: [
           { precio: "asc" },
@@ -144,6 +147,7 @@ export default async function TelefonoNuevoPage({
               rom: v.rom,
               precio: Number(v.precio),
               stock: v.stock,
+              imagenes: v.imagenes.map(img => img.url), // Imágenes específicas de la variante
             })),
           }}
         />

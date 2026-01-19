@@ -9,8 +9,8 @@ import ProductGrid from "@/components/catalog/ProductGrid";
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "Catálogo de Productos",
-  description: "Explora nuestro catálogo completo de teléfonos nuevos, seminuevos y accesorios. Filtra por marca, precio y características. Encuentra el dispositivo perfecto para ti.",
+  title: "Teléfonos Nuevos y Accesorios",
+  description: "Explora nuestro catálogo de teléfonos nuevos y accesorios. Filtra por marca, precio y características. Encuentra el dispositivo perfecto para ti.",
 };
 
 export default async function CatalogoPage() {
@@ -70,29 +70,8 @@ export default async function CatalogoPage() {
     },
   });
 
-  // Obtener productos activos
+  // Obtener productos activos (solo teléfonos nuevos y accesorios, NO seminuevos)
   const telefonosNuevos = await prisma.telefonoNuevo.findMany({
-    where: {
-      activo: true,
-    },
-    include: {
-      marca: true,
-      imagenes: {
-        orderBy: { orden: "asc" },
-      },
-      variantes: {
-        include: {
-          color: true,
-        },
-        orderBy: { createdAt: "asc" },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  const telefonosSeminuevos = await prisma.telefonoSeminuevo.findMany({
     where: {
       activo: true,
     },
@@ -133,7 +112,7 @@ export default async function CatalogoPage() {
     },
   });
 
-  // Formatear productos para el grid
+  // Formatear productos para el grid (solo teléfonos nuevos y accesorios)
   const productos = [
     ...telefonosNuevos.map((telefono) => {
       // Para teléfonos nuevos, cada variante tiene su propio precio
@@ -154,21 +133,6 @@ export default async function CatalogoPage() {
         tieneVariantes: telefono.variantes.length > 0,
       };
     }),
-    ...telefonosSeminuevos.map((telefono) => ({
-      id: telefono.id,
-      tipo: "telefono-seminuevo" as const,
-      modelo: telefono.modelo,
-      marca: telefono.marca.nombre,
-      marcaId: telefono.marca.id,
-      precio: telefono.variantes.length > 0
-        ? Math.min(...telefono.variantes.map(v => Number(v.precio)))
-        : Number(telefono.precio),
-      precioMax: telefono.variantes.length > 0
-        ? Math.max(...telefono.variantes.map(v => Number(v.precio)))
-        : Number(telefono.precio),
-      imagenes: telefono.imagenes.map(img => img.url),
-      tieneVariantes: telefono.variantes.length > 0,
-    })),
     ...accesorios.map((accesorio) => ({
       id: accesorio.id,
       tipo: "accesorio" as const,
@@ -188,7 +152,7 @@ export default async function CatalogoPage() {
       
       <main className="pt-16 sm:pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Catálogo de Productos</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Teléfonos Nuevos y Accesorios</h1>
           
           <Suspense fallback={<div className="text-center py-12">Cargando catálogo...</div>}>
             <div className="flex flex-col lg:flex-row gap-8">

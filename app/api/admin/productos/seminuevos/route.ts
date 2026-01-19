@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     const {
       marcaId,
-      modelo,
+      modeloId,
       precio,
       procesador,
       ram,
@@ -57,13 +57,12 @@ export async function POST(request: NextRequest) {
       tipoEntrada,
       descripcion,
       variantes,
-      imagenes,
     } = body;
 
     // Validar campos requeridos
     const camposFaltantes: string[] = [];
     if (!marcaId) camposFaltantes.push("Marca");
-    if (!modelo || modelo.trim() === "") camposFaltantes.push("Modelo");
+    if (!modeloId) camposFaltantes.push("Modelo");
     if (!precio || precio === "") camposFaltantes.push("Precio");
     if (!procesador || procesador.trim() === "") camposFaltantes.push("Procesador");
     if (!ram || ram.trim() === "") camposFaltantes.push("RAM");
@@ -128,7 +127,7 @@ export async function POST(request: NextRequest) {
     const telefono = await prisma.telefonoSeminuevo.create({
       data: {
         marcaId: parseInt(marcaId),
-        modelo,
+        modeloId: parseInt(modeloId),
         precio: parseFloat(precio),
         procesador,
         ram,
@@ -147,24 +146,34 @@ export async function POST(request: NextRequest) {
             porcentajeBateria: esiPhone ? parseInt(v.porcentajeBateria) : null,
             ciclosCarga: esiPhone && v.ciclosCarga ? parseInt(v.ciclosCarga) : null,
             stock: parseInt(v.stock || 0),
-          })),
-        },
-        imagenes: {
-          create: (imagenes || []).map((url: string, index: number) => ({
-            url,
-            tipo: index === 0 ? "principal" : "galeria",
-            orden: index,
+            metodosPago: v.metodosPago && Array.isArray(v.metodosPago) && v.metodosPago.length > 0 ? v.metodosPago : null,
+            imagenes: {
+              create: (v.imagenes && Array.isArray(v.imagenes) && v.imagenes.length > 0 ? v.imagenes : []).map((url: string, imgIndex: number) => ({
+                url,
+                tipo: imgIndex === 0 ? "principal" : "galeria",
+                orden: imgIndex,
+              })),
+            },
           })),
         },
       },
       include: {
         marca: true,
+        modelo: {
+          include: {
+            imagenes: {
+              orderBy: { orden: "asc" },
+            },
+          },
+        },
         variantes: {
           include: {
             color: true,
+            imagenes: {
+              orderBy: { orden: "asc" },
+            },
           },
         },
-        imagenes: true,
       },
     });
 

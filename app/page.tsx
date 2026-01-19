@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import FeaturedSection from "@/components/FeaturedSection";
 import CTASection from "@/components/CTASection";
+import FeaturedSection from "@/components/FeaturedSection";
 import BannerSection from "@/components/BannerSection";
 import BrandsMarquee from "@/components/BrandsMarquee";
 import Footer from "@/components/Footer";
@@ -200,6 +200,17 @@ export default async function Home() {
           }))}
         />
 
+        {/* CTA Section */}
+        <CTASection
+          images={ctaImages.map((img) => ({
+            id: img.id,
+            url: img.url,
+            urlDestino: img.urlDestino,
+            descripcion: img.descripcion,
+            orden: img.orden,
+          }))}
+        />
+
         {/* Featured Section */}
         <FeaturedSection
           telefonosPorMarca={marcasConTelefonos}
@@ -217,17 +228,6 @@ export default async function Home() {
               nombre: accesorio.marca.nombre,
               logoUrl: accesorio.marca.logoUrl,
             },
-          }))}
-        />
-
-        {/* CTA Section */}
-        <CTASection
-          images={ctaImages.map((img) => ({
-            id: img.id,
-            url: img.url,
-            urlDestino: img.urlDestino,
-            descripcion: img.descripcion,
-            orden: img.orden,
           }))}
         />
 

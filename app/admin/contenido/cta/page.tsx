@@ -26,21 +26,31 @@ export default async function CTAPage() {
           </Link>
           <h1 className="mt-4 text-3xl font-bold text-gray-900">Imágenes Publicitarias CTA</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Gestiona las imágenes publicitarias con enlaces de destino
+            Gestiona las imágenes publicitarias con enlaces de destino (máximo 4 imágenes)
+          </p>
+          <p className="mt-1 text-xs text-gray-500">
+            Actualmente: {ctaImages.length} de 4 imágenes configuradas
           </p>
         </div>
-        <Link
-          href="/admin/contenido/cta/nuevo"
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
-        >
-          + Agregar Imagen CTA
-        </Link>
+        {ctaImages.length < 4 ? (
+          <Link
+            href="/admin/contenido/cta/nuevo"
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+          >
+            + Agregar Imagen CTA
+          </Link>
+        ) : (
+          <div className="rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-600">
+            Máximo alcanzado (4/4)
+          </div>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">
         {ctaImages.length === 0 ? (
           <div className="p-12 text-center">
             <p className="mb-4 text-gray-500">No hay imágenes CTA configuradas</p>
+            <p className="mb-4 text-xs text-gray-400">Puedes agregar hasta 4 imágenes CTA</p>
             <Link
               href="/admin/contenido/cta/nuevo"
               className="inline-block rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
@@ -50,22 +60,27 @@ export default async function CTAPage() {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {ctaImages.map((image) => (
+            {ctaImages.map((image, index) => (
               <div key={image.id} className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-6">
-                    <div className="relative h-32 w-56 overflow-hidden rounded-lg border border-gray-200">
-                      <Image
-                        src={image.url}
-                        alt={image.descripcion || `CTA ${image.orden}`}
-                        fill
-                        className="object-cover"
-                      />
+                    <div className="relative">
+                      <div className="relative h-32 w-56 overflow-hidden rounded-lg border border-gray-200">
+                        <Image
+                          src={image.url}
+                          alt={image.descripcion || `CTA ${image.orden}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                        {index + 1}
+                      </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <h3 className="text-lg font-medium text-gray-900">
-                          {image.descripcion || `Imagen CTA ${image.orden + 1}`}
+                          {image.descripcion || `Imagen CTA ${index + 1}`}
                         </h3>
                         <span
                           className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -103,6 +118,37 @@ export default async function CTAPage() {
                 </div>
               </div>
             ))}
+            {/* Mostrar slots vacíos si hay menos de 4 */}
+            {ctaImages.length < 4 && (
+              <div className="p-6 bg-gray-50 border-2 border-dashed border-gray-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      <div className="h-32 w-56 flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-100">
+                        <span className="text-gray-400 text-sm">Slot {ctaImages.length + 1}</span>
+                      </div>
+                      <div className="absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 text-xs font-bold text-white">
+                        {ctaImages.length + 1}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-gray-500">
+                        Slot disponible
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-400">
+                        Puedes agregar una imagen CTA aquí
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/admin/contenido/cta/nuevo"
+                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+                  >
+                    + Agregar
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

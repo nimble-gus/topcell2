@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ImageUploader from "@/components/admin/ImageUploader";
 
 interface Color {
   id: number;
@@ -16,6 +17,8 @@ interface Variante {
   porcentajeBateria?: number | null;
   ciclosCarga?: number | null;
   stock: number;
+  metodosPago?: string[] | null;
+  imagenes?: string[]; // URLs de imágenes específicas de esta variante
 }
 
 interface SeminuevoVarianteFormProps {
@@ -39,9 +42,17 @@ export default function SeminuevoVarianteForm({
     porcentajeBateria: null,
     ciclosCarga: null,
     stock: 0,
+    metodosPago: [],
+    imagenes: [],
   });
 
   const [mostrarCiclos, setMostrarCiclos] = useState(false);
+  
+  const METODOS_PAGO = [
+    { value: "CONTRA_ENTREGA", label: "Contra Entrega" },
+    { value: "TRANSFERENCIA", label: "Transferencia" },
+    { value: "TARJETA", label: "Tarjeta" },
+  ];
 
   const handleAddVariant = () => {
     if (!newVariante.colorId || !newVariante.rom || !newVariante.precio) {
@@ -79,6 +90,8 @@ export default function SeminuevoVarianteForm({
         porcentajeBateria: esiPhone ? newVariante.porcentajeBateria : null,
         ciclosCarga: esiPhone && mostrarCiclos ? newVariante.ciclosCarga : null,
         stock: newVariante.stock || 0,
+        metodosPago: newVariante.metodosPago && newVariante.metodosPago.length > 0 ? newVariante.metodosPago : null,
+        imagenes: newVariante.imagenes || [],
       },
     ]);
 
@@ -91,6 +104,8 @@ export default function SeminuevoVarianteForm({
       porcentajeBateria: null,
       ciclosCarga: null,
       stock: 0,
+      metodosPago: [],
+      imagenes: [],
     });
     setMostrarCiclos(false);
   };
@@ -222,11 +237,46 @@ export default function SeminuevoVarianteForm({
                       </button>
                     </div>
                   </div>
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Métodos de Pago</label>
+                    <div className="flex flex-wrap gap-2">
+                      {METODOS_PAGO.map((metodo) => (
+                        <label key={metodo.value} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={(variante.metodosPago || []).includes(metodo.value)}
+                            onChange={(e) => {
+                              const current = variante.metodosPago || [];
+                              const updated = e.target.checked
+                                ? [...current, metodo.value]
+                                : current.filter((m) => m !== metodo.value);
+                              handleUpdateVariant(index, "metodosPago", updated.length > 0 ? updated : null);
+                            }}
+                            className="mr-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-xs text-gray-700">{metodo.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                   {esiPhone && variante.ciclosCarga !== null && variante.ciclosCarga !== undefined && (
                     <div className="mt-2">
                       <span className="text-xs text-gray-600">Ciclos de carga: {variante.ciclosCarga}</span>
                     </div>
                   )}
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                      Imágenes de la Variante (Fotos Reales)
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Sube fotos reales de este teléfono específico. Si no subes imágenes, se usará la imagen de catálogo del modelo.
+                    </p>
+                    <ImageUploader
+                      images={variante.imagenes || []}
+                      onImagesChange={(imagenes) => handleUpdateVariant(index, "imagenes", imagenes)}
+                      maxImages={5}
+                    />
+                  </div>
                 </div>
               );
             })}
@@ -350,6 +400,41 @@ export default function SeminuevoVarianteForm({
                 className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm"
               />
             </div>
+          </div>
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-gray-700 mb-2">Métodos de Pago</label>
+            <div className="flex flex-wrap gap-2">
+              {METODOS_PAGO.map((metodo) => (
+                <label key={metodo.value} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={(newVariante.metodosPago || []).includes(metodo.value)}
+                    onChange={(e) => {
+                      const current = newVariante.metodosPago || [];
+                      const updated = e.target.checked
+                        ? [...current, metodo.value]
+                        : current.filter((m) => m !== metodo.value);
+                      setNewVariante({ ...newVariante, metodosPago: updated });
+                    }}
+                    className="mr-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-xs text-gray-700">{metodo.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              Imágenes de la Variante (Fotos Reales) - Opcional
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              Sube fotos reales de este teléfono específico. Si no subes imágenes, se usará la imagen de catálogo del modelo.
+            </p>
+            <ImageUploader
+              images={newVariante.imagenes || []}
+              onImagesChange={(imagenes) => setNewVariante({ ...newVariante, imagenes })}
+              maxImages={5}
+            />
           </div>
           <button
             type="button"

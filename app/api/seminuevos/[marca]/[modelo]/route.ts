@@ -3,23 +3,32 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ marca: string; modelo: string }> }
 ) {
   try {
-    const { id: idParam } = await params;
-    const id = parseInt(idParam);
+    const { marca: marcaSlug, modelo: modeloSlug } = await params;
     
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: "ID inválido" },
-        { status: 400 }
-      );
-    }
+    // Decodificar los slugs (pueden venir con espacios como guiones)
+    const marcaNombreRaw = decodeURIComponent(marcaSlug).replace(/-/g, " ");
+    const modeloNombreRaw = decodeURIComponent(modeloSlug).replace(/-/g, " ");
+    
+    // Normalizar: primera letra mayúscula, resto minúsculas
+    const marcaNombre = marcaNombreRaw.charAt(0).toUpperCase() + marcaNombreRaw.slice(1).toLowerCase();
+    const modeloNombre = modeloNombreRaw.charAt(0).toUpperCase() + modeloNombreRaw.slice(1).toLowerCase();
 
-    const telefono = await prisma.telefonoSeminuevo.findUnique({
-      where: { 
-        id,
+    const telefono = await prisma.telefonoSeminuevo.findFirst({
+      where: {
         activo: true,
+        marca: {
+          nombre: {
+            equals: marcaNombre,
+          },
+        },
+      modelo: {
+        nombre: {
+          equals: modeloNombre,
+        },
+      },
       },
       include: {
         marca: true,
@@ -31,6 +40,9 @@ export async function GET(
           },
         },
         variantes: {
+          where: {
+            stock: { gt: 0 }, // Solo variantes con stock
+          },
           include: {
             color: true,
             imagenes: {
@@ -61,4 +73,3 @@ export async function GET(
     );
   }
 }
-

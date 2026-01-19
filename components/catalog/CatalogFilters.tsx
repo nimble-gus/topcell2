@@ -94,17 +94,6 @@ export default function CatalogFilters({ marcas }: CatalogFiltersProps) {
               <input
                 type="radio"
                 name="tipo"
-                value="telefono-seminuevo"
-                checked={tipoProducto === "telefono-seminuevo"}
-                onChange={(e) => setTipoProducto(e.target.value)}
-                className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300"
-              />
-              <span className="ml-2 text-sm text-gray-700">Teléfonos Seminuevos</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="tipo"
                 value="accesorio"
                 checked={tipoProducto === "accesorio"}
                 onChange={(e) => setTipoProducto(e.target.value)}

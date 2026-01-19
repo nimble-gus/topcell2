@@ -15,41 +15,58 @@ datasource db {
 // ============================================
 
 model Marca {
-  id                Int                @id @default(autoincrement())
-  nombre            String             @unique
-  logoUrl           String?            // URL del logo en Cloudinary
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
-  telefonosNuevos   TelefonoNuevo[]
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique
+  logoUrl   String? // URL del logo en Cloudinary
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  telefonosNuevos     TelefonoNuevo[]
   telefonosSeminuevos TelefonoSeminuevo[]
-  accesorios        Accesorio[]
+  accesorios          Accesorio[]
+  modelos             Modelo[]
 }
 
 model Color {
-  id                Int                @id @default(autoincrement())
-  color             String             @unique
-  createdAt         DateTime           @default(now())
-  
-  telefonosNuevos   TelefonoNuevoVariante[]
+  id        Int      @id @default(autoincrement())
+  color     String   @unique
+  createdAt DateTime @default(now())
+
+  telefonosNuevos     TelefonoNuevoVariante[]
   telefonosSeminuevos TelefonoSeminuevoVariante[]
-  accesorios        AccesorioColor[]
+  accesorios          AccesorioColor[]
+}
+
+model Modelo {
+  id        Int      @id @default(autoincrement())
+  marcaId   Int
+  nombre    String // Ej: "iPhone 14", "Galaxy S24"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  marca               Marca               @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  imagenes            ImagenProducto[] // Imágenes de catálogo del modelo (fotos oficiales)
+  telefonosSeminuevos TelefonoSeminuevo[]
+
+  @@unique([marcaId, nombre]) // Un modelo único por marca y nombre
+  @@index([marcaId])
 }
 
 // Tabla de variantes: combina Color + Almacenamiento (ROM) + Stock
 // Permite tener múltiples variantes del mismo producto (ej: iPhone 17 Negro 128GB, iPhone 17 Negro 256GB)
 model TelefonoNuevoVariante {
-  id                Int                @id @default(autoincrement())
-  telefonoNuevoId   Int
-  colorId           Int
-  rom               String             // Almacenamiento: "128GB", "256GB", "512GB", etc.
-  precio            Decimal            @db.Decimal(10, 2) // Precio específico de esta variante según capacidad
-  stock             Int                @default(0)
-  createdAt         DateTime           @default(now())
-  
-  telefonoNuevo     TelefonoNuevo      @relation(fields: [telefonoNuevoId], references: [id], onDelete: Cascade)
-  color             Color              @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  
+  id              Int      @id @default(autoincrement())
+  telefonoNuevoId Int
+  colorId         Int
+  rom             String // Almacenamiento: "128GB", "256GB", "512GB", etc.
+  precio          Decimal  @db.Decimal(10, 2) // Precio específico de esta variante según capacidad
+  stock           Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  telefonoNuevo TelefonoNuevo @relation(fields: [telefonoNuevoId], references: [id], onDelete: Cascade)
+  color         Color         @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  imagenes      ImagenProducto[] @relation("TelefonoNuevoVarianteImagenes") // Imágenes específicas de esta variante (fotos del teléfono en ese color)
+
   @@unique([telefonoNuevoId, colorId, rom]) // Una variante única por combinación de producto, color y ROM
   @@index([telefonoNuevoId])
   @@index([colorId])
@@ -57,20 +74,22 @@ model TelefonoNuevoVariante {
 
 // Tabla de variantes para teléfonos seminuevos: combina Color + Almacenamiento (ROM) + Estado + Batería + Ciclos + Precio + Stock
 model TelefonoSeminuevoVariante {
-  id                Int                @id @default(autoincrement())
+  id                  Int      @id @default(autoincrement())
   telefonoSeminuevoId Int
-  colorId           Int
-  rom               String             // Almacenamiento: "128GB", "256GB", "512GB", etc.
-  estado            Int                @default(10) // Estado del teléfono (1-10, donde 10 es "En perfecto estado")
-  precio            Decimal            @db.Decimal(10, 2) // Precio específico de esta variante
-  porcentajeBateria Int?               // Porcentaje de batería (obligatorio si es iPhone)
-  ciclosCarga       Int?               // Ciclos de carga (opcional, solo si es iPhone)
-  stock             Int                @default(0)
-  createdAt         DateTime           @default(now())
-  
-  telefonoSeminuevo TelefonoSeminuevo  @relation(fields: [telefonoSeminuevoId], references: [id], onDelete: Cascade)
-  color             Color              @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  
+  colorId             Int
+  rom                 String // Almacenamiento: "128GB", "256GB", "512GB", etc.
+  estado              Int      @default(10) // Estado del teléfono (1-10, donde 10 es "En perfecto estado")
+  precio              Decimal  @db.Decimal(10, 2) // Precio específico de esta variante
+  porcentajeBateria   Int? // Porcentaje de batería (obligatorio si es iPhone)
+  ciclosCarga         Int? // Ciclos de carga (opcional, solo si es iPhone)
+  stock               Int      @default(0)
+  metodosPago         Json? // Array de métodos de pago permitidos: ["CONTRA_ENTREGA", "TRANSFERENCIA", "TARJETA"]
+  createdAt           DateTime @default(now())
+
+  telefonoSeminuevo TelefonoSeminuevo @relation(fields: [telefonoSeminuevoId], references: [id], onDelete: Cascade)
+  color             Color             @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  imagenes          ImagenProducto[] // Imágenes específicas de esta variante (fotos reales del teléfono)
+
   @@unique([telefonoSeminuevoId, colorId, rom, estado, porcentajeBateria, ciclosCarga]) // Variante única por combinación completa
   @@index([telefonoSeminuevoId])
   @@index([colorId])
@@ -79,112 +98,119 @@ model TelefonoSeminuevoVariante {
 // Tabla intermedia para relación muchos a muchos: Accesorio - Color
 // Ahora incluye stock por color para manejar variantes
 model AccesorioColor {
-  id                Int                @id @default(autoincrement())
-  accesorioId       Int
-  colorId           Int
-  stock             Int                @default(0) // Stock específico para este color
-  createdAt         DateTime           @default(now())
-  
-  accesorio         Accesorio          @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
-  color             Color              @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  
+  id          Int      @id @default(autoincrement())
+  accesorioId Int
+  colorId     Int
+  stock       Int      @default(0) // Stock específico para este color
+  createdAt   DateTime @default(now())
+
+  accesorio Accesorio @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
+  color     Color     @relation(fields: [colorId], references: [id], onDelete: Cascade)
+
   @@unique([accesorioId, colorId])
   @@index([accesorioId])
   @@index([colorId])
 }
 
 model TelefonoNuevo {
-  id                Int                @id @default(autoincrement())
-  marcaId           Int
-  modelo            String
-  precio            Decimal            @db.Decimal(10, 2)
-  procesador        String
-  ram               String             // Ej: "8GB", "12GB"
-  rom               String             // Ej: "128GB", "256GB" - Este campo ahora es solo para referencia, las variantes tienen su propio ROM
-  mpxlsCamara       String             // Ej: "48MP", "108MP"
-  tamanoPantalla    String             // Ej: "6.1 pulgadas"
-  tipoEntrada       String             // Ej: "USB-C", "Lightning"
-  stock             Int                @default(0) // Stock total (calculado desde colores)
-  descripcion       String?            @db.Text
-  activo            Boolean            @default(true)
-  featured          Boolean            @default(false) // Producto destacado para FeaturedSection
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
-  marca             Marca              @relation(fields: [marcaId], references: [id], onDelete: Restrict)
-  variantes         TelefonoNuevoVariante[]
-  imagenes          ImagenProducto[]
-  itemsOrden        ItemOrden[]
-  
+  id             Int      @id @default(autoincrement())
+  marcaId        Int
+  modelo         String
+  precio         Decimal  @db.Decimal(10, 2)
+  procesador     String
+  ram            String // Ej: "8GB", "12GB"
+  rom            String // Ej: "128GB", "256GB" - Este campo ahora es solo para referencia, las variantes tienen su propio ROM
+  mpxlsCamara    String // Ej: "48MP", "108MP"
+  tamanoPantalla String // Ej: "6.1 pulgadas"
+  tipoEntrada    String // Ej: "USB-C", "Lightning"
+  stock          Int      @default(0) // Stock total (calculado desde colores)
+  descripcion    String?  @db.Text
+  activo         Boolean  @default(true)
+  featured       Boolean  @default(false) // Producto destacado para FeaturedSection
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  marca      Marca                   @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  variantes  TelefonoNuevoVariante[]
+  imagenes   ImagenProducto[]
+  itemsOrden ItemOrden[]
+
   @@index([marcaId])
   @@index([activo])
   @@index([featured])
 }
 
 model TelefonoSeminuevo {
-  id                Int                @id @default(autoincrement())
-  marcaId           Int
-  modelo            String
-  precio            Decimal            @db.Decimal(10, 2) // Precio base (las variantes pueden tener su propio precio)
-  procesador        String
-  ram               String
-  rom               String             // Solo para referencia, las variantes tienen su propio ROM
-  mpxlsCamara       String
-  tamanoPantalla    String
-  tipoEntrada       String
-  stock             Int                @default(0) // Stock total (calculado desde variantes)
-  descripcion       String?            @db.Text
-  activo            Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
-  marca             Marca              @relation(fields: [marcaId], references: [id], onDelete: Restrict)
-  variantes         TelefonoSeminuevoVariante[]
-  imagenes          ImagenProducto[]
-  itemsOrden        ItemOrden[]
-  
+  id             Int      @id @default(autoincrement())
+  marcaId        Int
+  modeloId       Int? // Relación con Modelo (iPhone 14, Galaxy S24, etc.) - Opcional temporalmente para migración
+  precio         Decimal  @db.Decimal(10, 2) // Precio base (las variantes pueden tener su propio precio)
+  procesador     String
+  ram            String
+  rom            String // Solo para referencia, las variantes tienen su propio ROM
+  mpxlsCamara    String
+  tamanoPantalla String
+  tipoEntrada    String
+  stock          Int      @default(0) // Stock total (calculado desde variantes)
+  descripcion    String?  @db.Text
+  activo         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  marca      Marca                       @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  modelo     Modelo?                     @relation(fields: [modeloId], references: [id], onDelete: Restrict)
+  variantes  TelefonoSeminuevoVariante[]
+  itemsOrden ItemOrden[]
+
   @@index([marcaId])
+  @@index([modeloId])
   @@index([activo])
 }
 
 model Accesorio {
-  id                Int                @id @default(autoincrement())
-  marcaId           Int
-  modelo            String             // Modelo del accesorio
-  precio            Decimal            @db.Decimal(10, 2)
-  descripcion       String             @db.Text
-  stock             Int                @default(0)
-  activo            Boolean            @default(true)
-  featured          Boolean            @default(false) // Producto destacado para FeaturedSection
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
-  marca             Marca              @relation(fields: [marcaId], references: [id], onDelete: Restrict)
-  colores           AccesorioColor[]
-  imagenes          ImagenProducto[]
-  itemsOrden        ItemOrden[]
-  
+  id          Int      @id @default(autoincrement())
+  marcaId     Int
+  modelo      String // Modelo del accesorio
+  precio      Decimal  @db.Decimal(10, 2)
+  descripcion String   @db.Text
+  stock       Int      @default(0)
+  activo      Boolean  @default(true)
+  featured    Boolean  @default(false) // Producto destacado para FeaturedSection
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  marca      Marca            @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  colores    AccesorioColor[]
+  imagenes   ImagenProducto[]
+  itemsOrden ItemOrden[]
+
   @@index([marcaId])
   @@index([activo])
   @@index([featured])
 }
 
 model ImagenProducto {
-  id                Int                @id @default(autoincrement())
-  url               String             // URL de Cloudinary
-  tipo              String             @default("galeria") // "principal", "galeria"
-  telefonoNuevoId   Int?
-  telefonoSeminuevoId Int?
-  accesorioId       Int?
-  orden             Int                @default(0) // Para ordenar imágenes
-  createdAt         DateTime           @default(now())
-  
-  telefonoNuevo     TelefonoNuevo?     @relation(fields: [telefonoNuevoId], references: [id], onDelete: Cascade)
-  telefonoSeminuevo TelefonoSeminuevo? @relation(fields: [telefonoSeminuevoId], references: [id], onDelete: Cascade)
-  accesorio         Accesorio?         @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
-  
+  id                          Int      @id @default(autoincrement())
+  url                         String // URL de Cloudinary
+  tipo                        String   @default("galeria") // "principal", "galeria"
+  telefonoNuevoId             Int?
+  telefonoNuevoVarianteId     Int? // Imagen específica de la variante de teléfono nuevo (foto del teléfono en ese color)
+  modeloId                    Int? // Imagen de catálogo del modelo (foto oficial)
+  telefonoSeminuevoVarianteId Int? // Imagen específica de la variante (foto real del teléfono)
+  accesorioId                 Int?
+  orden                       Int      @default(0) // Para ordenar imágenes
+  createdAt                   DateTime @default(now())
+
+  telefonoNuevo             TelefonoNuevo?             @relation(fields: [telefonoNuevoId], references: [id], onDelete: Cascade)
+  telefonoNuevoVariante      TelefonoNuevoVariante?     @relation("TelefonoNuevoVarianteImagenes", fields: [telefonoNuevoVarianteId], references: [id], onDelete: Cascade)
+  modelo                     Modelo?                    @relation(fields: [modeloId], references: [id], onDelete: Cascade)
+  telefonoSeminuevoVariante  TelefonoSeminuevoVariante? @relation(fields: [telefonoSeminuevoVarianteId], references: [id], onDelete: Cascade)
+  accesorio                  Accesorio?                 @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
+
   @@index([telefonoNuevoId])
-  @@index([telefonoSeminuevoId])
+  @@index([telefonoNuevoVarianteId])
+  @@index([modeloId])
+  @@index([telefonoSeminuevoVarianteId])
   @@index([accesorioId])
 }
 
@@ -193,17 +219,17 @@ model ImagenProducto {
 // ============================================
 
 model ContenidoTienda {
-  id                Int                @id @default(autoincrement())
-  tipo              String             // "hero", "logo", "banner", "publicidad", "cta"
-  url               String             // URL de Cloudinary
-  urlDestino        String?            // URL de destino cuando se hace clic (para CTA/publicidad/banner)
-  titulo            String?            // Título del banner (para banners grandes)
-  descripcion       String?            @db.Text
-  activo            Boolean            @default(true)
-  orden             Int                @default(0) // Para ordenar contenido
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
+  id          Int      @id @default(autoincrement())
+  tipo        String // "hero", "logo", "banner", "publicidad", "cta"
+  url         String // URL de Cloudinary
+  urlDestino  String? // URL de destino cuando se hace clic (para CTA/publicidad/banner)
+  titulo      String? // Título del banner (para banners grandes)
+  descripcion String?  @db.Text
+  activo      Boolean  @default(true)
+  orden       Int      @default(0) // Para ordenar contenido
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   @@index([tipo])
   @@index([activo])
 }
@@ -213,18 +239,18 @@ model ContenidoTienda {
 // ============================================
 
 model Localidad {
-  id                Int                @id @default(autoincrement())
-  imagenUrl         String             // URL de Cloudinary
-  titulo            String             // Título del lugar
-  direccion         String             @db.Text
-  telefono          String?
-  linkGoogleMaps    String?            // URL de Google Maps
-  linkWaze          String?            // URL de Waze
-  activo            Boolean            @default(true)
-  orden             Int                @default(0) // Para ordenar localidades
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
+  id             Int      @id @default(autoincrement())
+  imagenUrl      String // URL de Cloudinary
+  titulo         String // Título del lugar
+  direccion      String   @db.Text
+  telefono       String?
+  linkGoogleMaps String? // URL de Google Maps
+  linkWaze       String? // URL de Waze
+  activo         Boolean  @default(true)
+  orden          Int      @default(0) // Para ordenar localidades
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
   @@index([activo])
   @@index([orden])
 }
@@ -234,18 +260,18 @@ model Localidad {
 // ============================================
 
 model SolicitudMayorista {
-  id                Int                @id @default(autoincrement())
-  nombre            String
-  telefono          String
-  direccion         String             @db.Text
-  nombreEmpresa     String
-  departamento      String
-  municipio         String
-  status            String             @default("Nuevo") // "Nuevo", "Pendiente", "Contactado"
-  notas             String?            @db.Text // Notas adicionales del admin
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
+  id            Int      @id @default(autoincrement())
+  nombre        String
+  telefono      String
+  direccion     String   @db.Text
+  nombreEmpresa String
+  departamento  String
+  municipio     String
+  status        String   @default("Nuevo") // "Nuevo", "Pendiente", "Contactado"
+  notas         String?  @db.Text // Notas adicionales del admin
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   @@index([status])
   @@index([createdAt])
 }
@@ -255,37 +281,37 @@ model SolicitudMayorista {
 // ============================================
 
 model Usuario {
-  id                Int                @id @default(autoincrement())
-  email             String             @unique
-  nombre            String
-  apellido          String?
-  telefono          String?
-  direccion         String?            @db.Text
-  ciudad            String?
-  codigoPostal      String?
-  passwordHash      String?            // Hash de la contraseña (opcional, para usuarios que se registran)
-  activo            Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
-  ordenes           Orden[]
-  
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  nombre       String
+  apellido     String?
+  telefono     String?
+  direccion    String?  @db.Text
+  ciudad       String?
+  codigoPostal String?
+  passwordHash String? // Hash de la contraseña (opcional, para usuarios que se registran)
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ordenes Orden[]
+
   @@index([email])
   @@index([activo])
 }
 
 model UsuarioAdmin {
-  id                Int                @id @default(autoincrement())
-  email             String             @unique
-  nombre            String
-  passwordHash      String             // Hash de la contraseña
-  rol               String             @default("admin") // "admin", "superadmin"
-  permisos          Json?              // JSON con permisos: { productos: true, ordenes: true, usuarios: false, ... }
-  activo            Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  lastLogin         DateTime?
-  
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  nombre       String
+  passwordHash String // Hash de la contraseña
+  rol          String    @default("admin") // "admin", "superadmin"
+  permisos     Json? // JSON con permisos: { productos: true, ordenes: true, usuarios: false, ... }
+  activo       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLogin    DateTime?
+
   @@index([email])
   @@index([activo])
   @@index([rol])
@@ -315,45 +341,45 @@ enum MetodoPago {
 }
 
 model Orden {
-  id                Int                @id @default(autoincrement())
-  usuarioId        Int
-  numeroOrden      String             @unique // Número único de orden
-  estado            EstadoOrden        @default(PENDIENTE)
-  subtotal          Decimal            @db.Decimal(10, 2)
-  impuestos         Decimal            @default(0) @db.Decimal(10, 2)
-  envio             Decimal            @default(0) @db.Decimal(10, 2)
-  total             Decimal            @db.Decimal(10, 2)
-  tipoEnvio         TipoEnvio          @default(ENVIO)
-  metodoPago        MetodoPago         @default(CONTRA_ENTREGA)
-  direccionEnvio   String             @db.Text
-  ciudadEnvio       String?
-  codigoPostalEnvio String?
-  nombreRecibe     String?            // Nombre de quien recibe (solo si es envío)
-  telefonoRecibe   String?            // Teléfono de contacto para entrega (solo si es envío)
-  boletaPagoUrl    String?            // URL de la boleta de pago subida (solo si es transferencia)
+  id                     Int         @id @default(autoincrement())
+  usuarioId              Int
+  numeroOrden            String      @unique // Número único de orden
+  estado                 EstadoOrden @default(PENDIENTE)
+  subtotal               Decimal     @db.Decimal(10, 2)
+  impuestos              Decimal     @default(0) @db.Decimal(10, 2)
+  envio                  Decimal     @default(0) @db.Decimal(10, 2)
+  total                  Decimal     @db.Decimal(10, 2)
+  tipoEnvio              TipoEnvio   @default(ENVIO)
+  metodoPago             MetodoPago  @default(CONTRA_ENTREGA)
+  direccionEnvio         String      @db.Text
+  ciudadEnvio            String?
+  codigoPostalEnvio      String?
+  nombreRecibe           String? // Nombre de quien recibe (solo si es envío)
+  telefonoRecibe         String? // Teléfono de contacto para entrega (solo si es envío)
+  boletaPagoUrl          String? // URL de la boleta de pago subida (solo si es transferencia)
   // Campos para pago con tarjeta
-  referenciaPago   String?            // ReferenceId de 3DSecure
-  numeroTarjeta    String?            // Últimos 4 dígitos (ej: "****1005")
-  tipoTarjeta      String?            // Visa, Mastercard, etc.
-  respuestaPago    String?            @db.Text // Respuesta completa de NeoPay (JSON)
-  estadoPago       String?            // APROBADO, RECHAZADO, PENDIENTE, ERROR
-  codigoRespuesta  String?            // Código de respuesta de NeoPay
-  mensajeRespuesta String?            @db.Text // Mensaje de respuesta
-  systemsTraceNoOriginal String?     // SystemsTraceNo de la transacción original (para anulaciones)
+  referenciaPago         String? // ReferenceId de 3DSecure
+  numeroTarjeta          String? // Últimos 4 dígitos (ej: "****1005")
+  tipoTarjeta            String? // Visa, Mastercard, etc.
+  respuestaPago          String?     @db.Text // Respuesta completa de NeoPay (JSON)
+  estadoPago             String? // APROBADO, RECHAZADO, PENDIENTE, ERROR
+  codigoRespuesta        String? // Código de respuesta de NeoPay
+  mensajeRespuesta       String?     @db.Text // Mensaje de respuesta
+  systemsTraceNoOriginal String? // SystemsTraceNo de la transacción original (para anulaciones)
   // Campos para vouchers/comprobantes
-  retrievalRefNo   String?            // Número de Referencia (12 dígitos) - para voucher
-  authIdResponse   String?            // Número de Autorización (6 caracteres) - para voucher
-  fechaTransaccion DateTime?          // Fecha y hora de la transacción del servidor remoto
-  timeLocalTrans   String?            // Hora de transacción (HHMMSS) - para voucher
-  dateLocalTrans   String?            // Fecha de transacción (MMDD) - para voucher
-  typeOperation    String?            // Tipo de operación (1: NeoPay, 2: TMS, 3: 3D Secure)
-  notas             String?            @db.Text
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
-  usuario           Usuario            @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  items             ItemOrden[]
-  
+  retrievalRefNo         String? // Número de Referencia (12 dígitos) - para voucher
+  authIdResponse         String? // Número de Autorización (6 caracteres) - para voucher
+  fechaTransaccion       DateTime? // Fecha y hora de la transacción del servidor remoto
+  timeLocalTrans         String? // Hora de transacción (HHMMSS) - para voucher
+  dateLocalTrans         String? // Fecha de transacción (MMDD) - para voucher
+  typeOperation          String? // Tipo de operación (1: NeoPay, 2: TMS, 3: 3D Secure)
+  notas                  String?     @db.Text
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+
+  usuario Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  items   ItemOrden[]
+
   @@index([usuarioId])
   @@index([estado])
   @@index([numeroOrden])
@@ -369,24 +395,24 @@ enum TipoProducto {
 }
 
 model ItemOrden {
-  id                Int                @id @default(autoincrement())
-  ordenId           Int
-  tipoProducto      TipoProducto
-  telefonoNuevoId    Int?
+  id                  Int          @id @default(autoincrement())
+  ordenId             Int
+  tipoProducto        TipoProducto
+  telefonoNuevoId     Int?
   telefonoSeminuevoId Int?
-  accesorioId       Int?
-  cantidad          Int
-  precioUnitario    Decimal            @db.Decimal(10, 2) // Precio al momento de la compra
-  subtotal          Decimal            @db.Decimal(10, 2)
+  accesorioId         Int?
+  cantidad            Int
+  precioUnitario      Decimal      @db.Decimal(10, 2) // Precio al momento de la compra
+  subtotal            Decimal      @db.Decimal(10, 2)
   // Detalles de la variante seleccionada (almacenados como texto para persistencia)
-  detallesVariante  String?            // JSON string con detalles: color, rom, estado, bateria, etc.
-  createdAt         DateTime           @default(now())
-  
+  detallesVariante    String? // JSON string con detalles: color, rom, estado, bateria, etc.
+  createdAt           DateTime     @default(now())
+
   orden             Orden              @relation(fields: [ordenId], references: [id], onDelete: Cascade)
   telefonoNuevo     TelefonoNuevo?     @relation(fields: [telefonoNuevoId], references: [id], onDelete: Restrict)
   telefonoSeminuevo TelefonoSeminuevo? @relation(fields: [telefonoSeminuevoId], references: [id], onDelete: Restrict)
   accesorio         Accesorio?         @relation(fields: [accesorioId], references: [id], onDelete: Restrict)
-  
+
   @@index([ordenId])
   @@index([tipoProducto])
 }
@@ -396,17 +422,16 @@ model ItemOrden {
 // ============================================
 
 model CuentaBancaria {
-  id                Int                @id @default(autoincrement())
-  banco             String             // Nombre del banco
-  numeroCuenta      String             // Número de cuenta
-  tipoCuenta        String             // "Ahorro", "Corriente", etc.
-  nombreTitular     String             // Nombre del titular de la cuenta
-  activo            Boolean            @default(true)
-  orden             Int                @default(0) // Para ordenar las cuentas
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
+  id            Int      @id @default(autoincrement())
+  banco         String // Nombre del banco
+  numeroCuenta  String // Número de cuenta
+  tipoCuenta    String // "Ahorro", "Corriente", etc.
+  nombreTitular String // Nombre del titular de la cuenta
+  activo        Boolean  @default(true)
+  orden         Int      @default(0) // Para ordenar las cuentas
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   @@index([activo])
   @@index([orden])
 }
-

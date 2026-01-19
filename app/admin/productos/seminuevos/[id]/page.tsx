@@ -25,11 +25,13 @@ interface Variante {
   porcentajeBateria?: number | null;
   ciclosCarga?: number | null;
   stock: number;
+  metodosPago?: string[] | null;
+  imagenes?: string[];
 }
 
 interface TelefonoSeminuevoFormData {
   marcaId: string;
-  modelo: string;
+  modeloId: string;
   precio: string;
   procesador: string;
   ram: string;
@@ -49,7 +51,7 @@ export default function EditarTelefonoSeminuevoPage() {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState<TelefonoSeminuevoFormData>({
     marcaId: "",
-    modelo: "",
+    modeloId: "",
     precio: "",
     procesador: "",
     ram: "",
@@ -61,15 +63,16 @@ export default function EditarTelefonoSeminuevoPage() {
 
   const [variantes, setVariantes] = useState<Variante[]>([]);
   const [marcas, setMarcas] = useState<Marca[]>([]);
+  const [modelos, setModelos] = useState<any[]>([]);
   const [colores, setColores] = useState<Color[]>([]);
-  const [imagenes, setImagenes] = useState<string[]>([]);
   const [esiPhone, setEsiPhone] = useState(false);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [marcasRes, coloresRes, telefonoRes] = await Promise.all([
+        const [marcasRes, modelosRes, coloresRes, telefonoRes] = await Promise.all([
           fetch("/api/admin/marcas"),
+          fetch("/api/admin/modelos"),
           fetch("/api/admin/colores"),
           fetch(`/api/admin/productos/seminuevos/${id}`),
         ]);
@@ -79,10 +82,12 @@ export default function EditarTelefonoSeminuevoPage() {
         }
 
         const marcasData = await marcasRes.json();
+        const modelosData = await modelosRes.json();
         const coloresData = await coloresRes.json();
         const telefonoData = await telefonoRes.json();
 
         setMarcas(marcasData);
+        setModelos(Array.isArray(modelosData) ? modelosData : []);
         setColores(coloresData);
 
         // Detectar si es iPhone
@@ -95,7 +100,7 @@ export default function EditarTelefonoSeminuevoPage() {
         // Cargar datos del teléfono
         setFormData({
           marcaId: telefonoData.marcaId.toString(),
-          modelo: telefonoData.modelo,
+          modeloId: telefonoData.modeloId.toString(),
           precio: telefonoData.precio.toString(),
           procesador: telefonoData.procesador,
           ram: telefonoData.ram,
@@ -116,13 +121,10 @@ export default function EditarTelefonoSeminuevoPage() {
             porcentajeBateria: v.porcentajeBateria,
             ciclosCarga: v.ciclosCarga,
             stock: v.stock,
+            metodosPago: v.metodosPago ? (Array.isArray(v.metodosPago) ? v.metodosPago : JSON.parse(v.metodosPago)) : null,
+            imagenes: v.imagenes ? v.imagenes.map((img: any) => img.url) : [],
           }))
         );
-
-        // Cargar imágenes existentes
-        if (telefonoData.imagenes && telefonoData.imagenes.length > 0) {
-          setImagenes(telefonoData.imagenes.map((img: any) => img.url));
-        }
       } catch (err: any) {
         setError(err.message || "Error al cargar los datos");
       } finally {
@@ -134,6 +136,11 @@ export default function EditarTelefonoSeminuevoPage() {
       loadData();
     }
   }, [id]);
+
+  // Filtrar modelos por marca seleccionada
+  const modelosFiltrados = Array.isArray(modelos) 
+    ? modelos.filter((m) => m.marcaId === parseInt(formData.marcaId))
+    : [];
 
   // Detectar si es iPhone cuando cambia la marca
   useEffect(() => {
@@ -179,6 +186,7 @@ export default function EditarTelefonoSeminuevoPage() {
       const datosParaEnviar = {
         ...formData,
         variantes: variantes.map((v) => ({
+          id: v.id,
           colorId: v.colorId,
           rom: v.rom,
           estado: v.estado,
@@ -186,8 +194,9 @@ export default function EditarTelefonoSeminuevoPage() {
           porcentajeBateria: esiPhone ? v.porcentajeBateria : null,
           ciclosCarga: esiPhone && v.ciclosCarga ? v.ciclosCarga : null,
           stock: v.stock,
+          metodosPago: v.metodosPago && v.metodosPago.length > 0 ? v.metodosPago : null,
+          imagenes: v.imagenes || [],
         })),
-        imagenes: imagenes,
       };
 
       const response = await fetch(`/api/admin/productos/seminuevos/${id}`, {
@@ -280,15 +289,36 @@ export default function EditarTelefonoSeminuevoPage() {
                 <label className="block text-sm font-medium text-gray-700">
                   Modelo *
                 </label>
-                <input
-                  type="text"
+                <select
                   required
-                  value={formData.modelo}
+                  value={formData.modeloId}
                   onChange={(e) =>
-                    setFormData({ ...formData, modelo: e.target.value })
+                    setFormData({ ...formData, modeloId: e.target.value })
                   }
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
+                  disabled={!formData.marcaId || modelosFiltrados.length === 0}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {!formData.marcaId
+                      ? "Selecciona primero una marca"
+                      : modelosFiltrados.length === 0
+                      ? "No hay modelos para esta marca"
+                      : "Seleccionar modelo"}
+                  </option>
+                  {modelosFiltrados.map((modelo) => (
+                    <option key={modelo.id} value={modelo.id}>
+                      {modelo.nombre}
+                    </option>
+                  ))}
+                </select>
+                {formData.marcaId && modelosFiltrados.length === 0 && (
+                  <p className="mt-1 text-xs text-amber-600">
+                    No hay modelos disponibles para esta marca. Crea un modelo primero en{" "}
+                    <Link href="/admin/catalogo/modelos/nuevo" className="underline">
+                      Catálogo → Modelos
+                    </Link>
+                  </p>
+                )}
               </div>
             </div>
 
@@ -448,20 +478,6 @@ export default function EditarTelefonoSeminuevoPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white shadow">
-          <div className="border-b border-gray-200 px-6 py-4">
-            <h2 className="text-lg font-medium text-gray-900">
-              Imágenes del Producto
-            </h2>
-          </div>
-          <div className="px-6 py-4">
-            <ImageUploader
-              images={imagenes}
-              onImagesChange={setImagenes}
-              maxImages={10}
-            />
-          </div>
-        </div>
 
         <div className="rounded-lg border border-gray-200 bg-white shadow">
           <div className="border-b border-gray-200 px-6 py-4">

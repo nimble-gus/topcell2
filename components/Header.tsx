@@ -83,7 +83,13 @@ export default function Header({ logoUrl }: HeaderProps) {
               href="/catalogo"
               className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors rounded-lg px-3 py-2 hover:bg-orange-50"
             >
-              Catálogo
+              Nuevos
+            </Link>
+            <Link
+              href="/seminuevos"
+              className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors rounded-lg px-3 py-2 hover:bg-orange-50"
+            >
+              Seminuevos
             </Link>
             <Link
               href="/ubicaciones"
@@ -219,7 +225,14 @@ export default function Header({ logoUrl }: HeaderProps) {
                 className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Catálogo
+                Nuevos
+              </Link>
+              <Link
+                href="/seminuevos"
+                className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Seminuevos
               </Link>
               <Link
                 href="/ubicaciones"

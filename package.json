@@ -19,7 +19,8 @@
     "check-admin": "tsx scripts/check-admin.ts",
     "migrate-stock": "tsx scripts/migrate-stock-to-colors.ts",
     "migrate-variantes": "tsx scripts/migrate-to-variantes-sql.ts",
-    "migrate-precio-variantes": "tsx scripts/migrate-precio-variantes.ts"
+    "migrate-precio-variantes": "tsx scripts/migrate-precio-variantes.ts",
+    "migrate-modelos": "tsx scripts/migrate-to-modelos-safe.ts"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.1.0",

@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface DeleteColorButtonProps {
-  colorId: number;
+interface DeleteModeloButtonProps {
+  modeloId: number;
   nombre: string;
 }
 
-export default function DeleteColorButton({ colorId, nombre }: DeleteColorButtonProps) {
+export default function DeleteModeloButton({ modeloId, nombre }: DeleteModeloButtonProps) {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -16,19 +16,19 @@ export default function DeleteColorButton({ colorId, nombre }: DeleteColorButton
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const response = await fetch(`/api/admin/colores/${colorId}`, {
+      const response = await fetch(`/api/admin/modelos/${modeloId}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Error al eliminar el color");
+        throw new Error(data.error || "Error al eliminar el modelo");
       }
 
       // Recargar la página para actualizar la lista
       router.refresh();
     } catch (error: any) {
-      alert(error.message || "Error al eliminar el color");
+      alert(error.message || "Error al eliminar el modelo");
     } finally {
       setDeleting(false);
       setShowConfirm(false);
@@ -67,6 +67,3 @@ export default function DeleteColorButton({ colorId, nombre }: DeleteColorButton
     </button>
   );
 }
-
-
-

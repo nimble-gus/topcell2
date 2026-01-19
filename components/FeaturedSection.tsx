@@ -101,7 +101,7 @@ export default function FeaturedSection({
       {activeTab === "telefonos" && currentMarca?.marca.logoUrl && (
         <div className="mb-8 sm:mb-12 flex justify-center">
           <div 
-            className={`relative h-12 sm:h-16 md:h-20 w-auto transition-all duration-500 ${
+            className={`relative h-12 sm:h-16 md:h-20 w-48 sm:w-56 md:w-64 flex items-center justify-center transition-all duration-500 ${
               isTransitioning 
                 ? "opacity-0 scale-95" 
                 : "opacity-100 scale-100"
@@ -110,9 +110,9 @@ export default function FeaturedSection({
             <Image
               src={currentMarca.marca.logoUrl}
               alt={`Logo ${currentMarca.marca.nombre}`}
-              width={200}
-              height={80}
-              className="object-contain h-12 sm:h-16 md:h-20 w-auto"
+              fill
+              className="object-contain"
+              sizes="(max-width: 640px) 192px, (max-width: 768px) 224px, 256px"
               priority
             />
           </div>

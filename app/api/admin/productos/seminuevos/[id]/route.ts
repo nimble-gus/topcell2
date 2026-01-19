@@ -27,12 +27,21 @@ export async function GET(
       where: { id },
       include: {
         marca: true,
+        modelo: {
+          include: {
+            imagenes: {
+              orderBy: { orden: "asc" },
+            },
+          },
+        },
         variantes: {
           include: {
             color: true,
+            imagenes: {
+              orderBy: { orden: "asc" },
+            },
           },
         },
-        imagenes: true,
       },
     });
 
@@ -91,7 +100,7 @@ export async function PUT(
 
     const {
       marcaId,
-      modelo,
+      modeloId,
       precio,
       procesador,
       ram,
@@ -100,13 +109,12 @@ export async function PUT(
       tipoEntrada,
       descripcion,
       variantes,
-      imagenes,
     } = body;
 
     // Validar campos requeridos
     const camposFaltantes: string[] = [];
     if (!marcaId) camposFaltantes.push("Marca");
-    if (!modelo || modelo.trim() === "") camposFaltantes.push("Modelo");
+    if (!modeloId) camposFaltantes.push("Modelo");
     if (!precio || precio === "") camposFaltantes.push("Precio");
     if (!procesador || procesador.trim() === "") camposFaltantes.push("Procesador");
     if (!ram || ram.trim() === "") camposFaltantes.push("RAM");
@@ -168,12 +176,24 @@ export async function PUT(
 
     // Actualizar el teléfono usando transacción
     const telefono = await prisma.$transaction(async (tx) => {
-      // Eliminar variantes e imágenes existentes
-      await tx.telefonoSeminuevoVariante.deleteMany({
+      // Eliminar imágenes de variantes existentes primero
+      const variantesExistentes = await tx.telefonoSeminuevoVariante.findMany({
         where: { telefonoSeminuevoId: id },
+        select: { id: true },
       });
+      
+      if (variantesExistentes.length > 0) {
+        await tx.imagenProducto.deleteMany({
+          where: {
+            telefonoSeminuevoVarianteId: {
+              in: variantesExistentes.map((v) => v.id),
+            },
+          },
+        });
+      }
 
-      await tx.imagenProducto.deleteMany({
+      // Eliminar variantes
+      await tx.telefonoSeminuevoVariante.deleteMany({
         where: { telefonoSeminuevoId: id },
       });
 
@@ -182,7 +202,7 @@ export async function PUT(
         where: { id },
         data: {
           marcaId: parseInt(marcaId),
-          modelo,
+          modeloId: parseInt(modeloId),
           precio: parseFloat(precio),
           procesador,
           ram,
@@ -200,24 +220,34 @@ export async function PUT(
               porcentajeBateria: esiPhone ? parseInt(v.porcentajeBateria) : null,
               ciclosCarga: esiPhone && v.ciclosCarga ? parseInt(v.ciclosCarga) : null,
               stock: parseInt(v.stock || 0),
-            })),
-          },
-          imagenes: {
-            create: (imagenes || []).map((url: string, index: number) => ({
-              url,
-              tipo: index === 0 ? "principal" : "galeria",
-              orden: index,
+              metodosPago: v.metodosPago && Array.isArray(v.metodosPago) && v.metodosPago.length > 0 ? v.metodosPago : null,
+              imagenes: {
+                create: (v.imagenes && Array.isArray(v.imagenes) && v.imagenes.length > 0 ? v.imagenes : []).map((url: string, imgIndex: number) => ({
+                  url,
+                  tipo: imgIndex === 0 ? "principal" : "galeria",
+                  orden: imgIndex,
+                })),
+              },
             })),
           },
         },
         include: {
           marca: true,
+          modelo: {
+            include: {
+              imagenes: {
+                orderBy: { orden: "asc" },
+              },
+            },
+          },
           variantes: {
             include: {
               color: true,
+              imagenes: {
+                orderBy: { orden: "asc" },
+              },
             },
           },
-          imagenes: true,
         },
       });
 

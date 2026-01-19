@@ -21,6 +21,7 @@ interface Variante {
   rom: string;
   precio: number;
   stock: number;
+  imagenes?: string[]; // Imágenes específicas de la variante
 }
 
 interface TelefonoNuevoFormData {
@@ -102,6 +103,7 @@ export default function EditarTelefonoPage() {
             rom: v.rom,
             precio: v.precio ? Number(v.precio) : (telefonoData.precio ? Number(telefonoData.precio) : 0),
             stock: v.stock,
+            imagenes: v.imagenes ? v.imagenes.map((img: any) => img.url) : [],
           })),
         });
 
@@ -148,13 +150,15 @@ export default function EditarTelefonoPage() {
       const datosParaEnviar = {
         ...formData,
         rom: "128GB", // ROM por defecto
-        colores: formData.variantes.map((v) => ({
+        variantes: formData.variantes.map((v) => ({
+          id: v.id,
           colorId: v.colorId,
           rom: v.rom,
           precio: v.precio,
           stock: v.stock,
+          imagenes: v.imagenes || [], // Imágenes específicas de la variante
         })),
-        imagenes: imagenes, // Incluir las URLs de las imágenes
+        imagenes: imagenes, // Imágenes generales del producto
       };
 
       console.log("Enviando datos para actualizar:", datosParaEnviar);
@@ -209,7 +213,7 @@ export default function EditarTelefonoPage() {
       ...formData,
       variantes: [
         ...formData.variantes,
-        { colorId, rom, precio, stock },
+        { colorId, rom, precio, stock, imagenes: [] },
       ],
     });
 
@@ -232,6 +236,18 @@ export default function EditarTelefonoPage() {
     updatedVariantes[index] = {
       ...updatedVariantes[index],
       [field]: value,
+    };
+    setFormData({
+      ...formData,
+      variantes: updatedVariantes,
+    });
+  };
+
+  const handleUpdateVariantImages = (index: number, images: string[]) => {
+    const updatedVariantes = [...formData.variantes];
+    updatedVariantes[index] = {
+      ...updatedVariantes[index],
+      imagenes: images,
     };
     setFormData({
       ...formData,
@@ -551,6 +567,20 @@ export default function EditarTelefonoPage() {
                               Eliminar
                             </button>
                           </div>
+                        </div>
+                        {/* Imágenes de la variante */}
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <label className="block text-xs font-medium text-gray-700 mb-2">
+                            Imágenes de esta variante (Color: {color?.color || "N/A"})
+                          </label>
+                          <p className="text-xs text-gray-500 mb-2">
+                            Sube imágenes específicas de este teléfono en este color. Si no subes imágenes, se usarán las imágenes generales del producto.
+                          </p>
+                          <ImageUploader
+                            images={variante.imagenes || []}
+                            onImagesChange={(images) => handleUpdateVariantImages(index, images)}
+                            maxImages={10}
+                          />
                         </div>
                       </div>
                     );

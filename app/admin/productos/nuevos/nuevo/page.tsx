@@ -23,7 +23,7 @@ export default function NuevoTelefonoPage() {
     stock: "",
     descripcion: "",
     featured: false,
-    variantes: [] as { colorId: number; rom: string; precio: number; stock: number }[],
+    variantes: [] as { colorId: number; rom: string; precio: number; stock: number; imagenes?: string[] }[],
   });
 
   const [imagenes, setImagenes] = useState<string[]>([]);
@@ -80,7 +80,14 @@ export default function NuevoTelefonoPage() {
       const datosParaEnviar = {
         ...formData,
         rom: formData.rom || "128GB", // ROM por defecto si no se especifica
-        colores: formData.variantes, // Enviar variantes como "colores" para compatibilidad con API
+        variantes: formData.variantes.map(v => ({
+          colorId: v.colorId,
+          rom: v.rom,
+          precio: v.precio,
+          stock: v.stock,
+          imagenes: v.imagenes || [],
+        })),
+        colores: formData.variantes, // Mantener compatibilidad con API antiguo
         imagenes: imagenes, // Incluir las URLs de las imágenes
       };
 
@@ -325,29 +332,55 @@ export default function NuevoTelefonoPage() {
               
               {/* Lista de variantes creadas */}
               {formData.variantes.length > 0 && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 space-y-4">
                   {formData.variantes.map((variante, index) => {
                     const color = colores.find((c) => c.id === variante.colorId);
                     return (
                       <div
                         key={index}
-                        className="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3"
+                        className="rounded-md border border-gray-200 bg-gray-50 p-4"
                       >
-                        <span className="flex-1 text-sm font-medium text-gray-700">
-                          {color?.color || "Color"} - {variante.rom} | Q{variante.precio.toLocaleString("es-GT")} | Stock: {variante.stock}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFormData({
-                              ...formData,
-                              variantes: formData.variantes.filter((_, i) => i !== index),
-                            });
-                          }}
-                          className="text-sm text-red-600 hover:text-red-900"
-                        >
-                          Eliminar
-                        </button>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-medium text-gray-700">
+                            {color?.color || "Color"} - {variante.rom} | Q{variante.precio.toLocaleString("es-GT")} | Stock: {variante.stock}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                variantes: formData.variantes.filter((_, i) => i !== index),
+                              });
+                            }}
+                            className="text-sm text-red-600 hover:text-red-900"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                        {/* Imágenes de la variante */}
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <label className="block text-xs font-medium text-gray-700 mb-2">
+                            Imágenes de esta variante (Color: {color?.color || "N/A"})
+                          </label>
+                          <p className="text-xs text-gray-500 mb-2">
+                            Sube imágenes específicas de este teléfono en este color. Si no subes imágenes, se usarán las imágenes generales del producto.
+                          </p>
+                          <ImageUploader
+                            images={variante.imagenes || []}
+                            onImagesChange={(images) => {
+                              const updatedVariantes = [...formData.variantes];
+                              updatedVariantes[index] = {
+                                ...updatedVariantes[index],
+                                imagenes: images,
+                              };
+                              setFormData({
+                                ...formData,
+                                variantes: updatedVariantes,
+                              });
+                            }}
+                            maxImages={10}
+                          />
+                        </div>
                       </div>
                     );
                   })}
@@ -450,7 +483,7 @@ export default function NuevoTelefonoPage() {
                       ...formData,
                       variantes: [
                         ...formData.variantes,
-                        { colorId, rom, precio, stock },
+                        { colorId, rom, precio, stock, imagenes: [] },
                       ],
                     });
 

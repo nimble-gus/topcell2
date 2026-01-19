@@ -16,23 +16,24 @@ interface CTASectionProps {
 }
 
 export default function CTASection({ images }: CTASectionProps) {
-  // Filtrar solo imágenes activas y ordenarlas
+  // Filtrar solo imágenes activas y ordenarlas, limitar a 4
   const activeImages = images
     .filter((img) => img.urlDestino) // Solo imágenes con URL de destino
-    .sort((a, b) => a.orden - b.orden);
+    .sort((a, b) => a.orden - b.orden)
+    .slice(0, 4); // Limitar a 4 imágenes máximo
 
   if (activeImages.length === 0) {
     return null; // No mostrar nada si no hay imágenes
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-10">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
         {activeImages.map((image) => (
           <Link
             key={image.id}
             href={image.urlDestino!}
-            className="group relative overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm transition-all hover:shadow-xl hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm transition-all hover:shadow-lg hover:scale-[1.02]"
           >
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-100">
               <Image
@@ -43,8 +44,8 @@ export default function CTASection({ images }: CTASectionProps) {
               />
             </div>
             {image.descripcion && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-4">
-                <p className="text-white text-xs sm:text-sm font-medium">{image.descripcion}</p>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 sm:p-3">
+                <p className="text-white text-xs font-medium">{image.descripcion}</p>
               </div>
             )}
           </Link>

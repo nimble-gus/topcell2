@@ -12,16 +12,19 @@ interface VarianteNuevo {
   rom: string;
   precio: number;
   stock: number;
+  imagenes?: string[]; // Imágenes específicas de la variante (fotos del teléfono en ese color)
 }
 
 interface VarianteSeminuevo extends VarianteNuevo {
   estado: number;
   porcentajeBateria: number | null;
   ciclosCarga: number | null;
+  imagenes?: string[]; // Imágenes específicas de la variante (fotos reales)
 }
 
 interface ProductDetailsProps {
   tipo: "telefono-nuevo" | "telefono-seminuevo" | "accesorio";
+  varianteIdInicial?: number | null;
   producto: {
     id: number;
     modelo: string;
@@ -39,7 +42,7 @@ interface ProductDetailsProps {
   };
 }
 
-export default function ProductDetails({ tipo, producto }: ProductDetailsProps) {
+export default function ProductDetails({ tipo, varianteIdInicial, producto }: ProductDetailsProps) {
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
@@ -99,8 +102,18 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
     }
   }, [selectedColorId, producto.variantes, tipo]);
 
+  // Estado para mantener el ID de la variante seleccionada directamente (cuando viene de URL)
+  const [varianteIdSeleccionada, setVarianteIdSeleccionada] = useState<number | null>(varianteIdInicial || null);
+
   // Encontrar la variante seleccionada
   const varianteSeleccionada = useMemo(() => {
+    // Si hay un ID de variante seleccionada directamente, usarla
+    if (varianteIdSeleccionada) {
+      const variante = producto.variantes.find(v => v.id === varianteIdSeleccionada);
+      if (variante) return variante;
+    }
+
+    // Si no, usar la lógica de selección por características
     if (!selectedColorId || !selectedRom) return null;
 
     if (tipo === "telefono-seminuevo") {
@@ -119,21 +132,70 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
         (v) => v.colorId === selectedColorId && v.rom === selectedRom
       ) || null;
     }
-  }, [selectedColorId, selectedRom, selectedEstado, selectedBateria, producto.variantes, tipo]);
+  }, [varianteIdSeleccionada, selectedColorId, selectedRom, selectedEstado, selectedBateria, producto.variantes, tipo]);
 
   // Precio a mostrar
   const precioMostrar = varianteSeleccionada
     ? varianteSeleccionada.precio
     : producto.precio;
 
-  // Auto-seleccionar primera opción si hay variantes
+  // Imágenes a mostrar: si la variante tiene imágenes, usar esas; si no, usar las del producto
+  const imagenesAMostrar = useMemo(() => {
+    if (varianteSeleccionada) {
+      // Para teléfonos nuevos
+      if (tipo === "telefono-nuevo") {
+        const varianteNuevo = varianteSeleccionada as VarianteNuevo;
+        // Si la variante tiene imágenes, usar esas; si no, usar las del producto
+        if (varianteNuevo.imagenes && varianteNuevo.imagenes.length > 0) {
+          return varianteNuevo.imagenes;
+        }
+      }
+      // Para teléfonos seminuevos
+      if (tipo === "telefono-seminuevo") {
+        const varianteSemi = varianteSeleccionada as VarianteSeminuevo;
+        // Si la variante tiene imágenes, usar esas; si no, usar las del modelo
+        if (varianteSemi.imagenes && varianteSemi.imagenes.length > 0) {
+          return varianteSemi.imagenes;
+        }
+      }
+    }
+    return producto.imagenes;
+  }, [varianteSeleccionada, producto.imagenes, tipo]);
+
+  // Resetear índice de imagen cuando cambian las imágenes
   useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [imagenesAMostrar]);
+
+  // Auto-seleccionar variante inicial si se proporciona
+  useEffect(() => {
+    if (varianteIdInicial) {
+      const varianteInicial = producto.variantes.find(v => v.id === varianteIdInicial);
+      if (varianteInicial) {
+        // Establecer el ID de variante directamente para selección exacta
+        setVarianteIdSeleccionada(varianteIdInicial);
+        // También establecer los valores de selección para que la UI muestre los valores correctos
+        setSelectedColorId(varianteInicial.colorId);
+        setSelectedRom(varianteInicial.rom);
+        if (tipo === "telefono-seminuevo") {
+          const vSemi = varianteInicial as VarianteSeminuevo;
+          setSelectedEstado(vSemi.estado);
+          setSelectedBateria(vSemi.porcentajeBateria);
+        }
+        return; // No continuar con la auto-selección por defecto
+      }
+    }
+    
+    // Auto-seleccionar primera opción si hay variantes y no hay variante inicial
     if (coloresDisponibles.length > 0 && !selectedColorId) {
       setSelectedColorId(coloresDisponibles[0].id);
     }
-  }, [coloresDisponibles, selectedColorId]);
+  }, [varianteIdInicial, producto.variantes, coloresDisponibles, selectedColorId, tipo]);
 
   useEffect(() => {
+    // Solo auto-seleccionar si no hay variante inicial
+    if (varianteIdInicial) return;
+    
     if (capacidadesDisponibles.length > 0 && !selectedRom && selectedColorId) {
       if (tipo === "telefono-seminuevo") {
         const primera = capacidadesDisponibles[0] as any;
@@ -144,17 +206,18 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
         setSelectedRom(capacidadesDisponibles[0].rom);
       }
     }
-  }, [capacidadesDisponibles, selectedRom, selectedColorId, tipo]);
+  }, [capacidadesDisponibles, selectedRom, selectedColorId, tipo, varianteIdInicial]);
 
   const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % producto.imagenes.length);
+    setCurrentImageIndex((prev) => (prev + 1) % imagenesAMostrar.length);
   };
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + producto.imagenes.length) % producto.imagenes.length);
+    setCurrentImageIndex((prev) => (prev - 1 + imagenesAMostrar.length) % imagenesAMostrar.length);
   };
 
   const handleColorSelect = (colorId: number) => {
+    setVarianteIdSeleccionada(null); // Limpiar selección directa por ID
     setSelectedColorId(colorId);
     setSelectedRom(null);
     setSelectedEstado(null);
@@ -162,6 +225,7 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
   };
 
   const handleCapacidadSelect = (item: any) => {
+    setVarianteIdSeleccionada(null); // Limpiar selección directa por ID
     if (tipo === "telefono-seminuevo") {
       setSelectedRom(item.rom);
       setSelectedEstado(item.estado);
@@ -187,7 +251,7 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
       precio: varianteSeleccionada.precio,
       modelo: producto.modelo,
       marca: producto.marca,
-      imagen: producto.imagenes[0] || "",
+      imagen: imagenesAMostrar[0] || producto.imagenes[0] || "",
       color: colorSeleccionado?.color || "",
       rom: varianteSeleccionada.rom,
       estado: tipo === "telefono-seminuevo" ? (varianteSeleccionada as VarianteSeminuevo).estado : undefined,
@@ -209,7 +273,7 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
         <div className="space-y-4">
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
-              src={producto.imagenes[currentImageIndex] || "/placeholder-phone.jpg"}
+              src={imagenesAMostrar[currentImageIndex] || "/placeholder-phone.jpg"}
               alt={`${producto.marca} ${producto.modelo}`}
               fill
               className="object-cover"
@@ -217,7 +281,7 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
               priority
             />
             
-            {producto.imagenes.length > 1 && (
+            {imagenesAMostrar.length > 1 && (
               <>
                 <button
                   onClick={handlePrevImage}
@@ -262,9 +326,9 @@ export default function ProductDetails({ tipo, producto }: ProductDetailsProps) 
           </div>
 
           {/* Miniaturas */}
-          {producto.imagenes.length > 1 && (
+          {imagenesAMostrar.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {producto.imagenes.map((img, index) => (
+              {imagenesAMostrar.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}

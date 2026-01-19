@@ -11,6 +11,7 @@ const navigation = [
   { name: "Productos Seminuevos", href: "/admin/productos/seminuevos", icon: "📱", permiso: "productos" },
   { name: "Accesorios", href: "/admin/productos/accesorios", icon: "🎧", permiso: "productos" },
   { name: "Marcas", href: "/admin/catalogo/marcas", icon: "🏷️", permiso: "catalogo" },
+  { name: "Modelos", href: "/admin/catalogo/modelos", icon: "📱", permiso: "catalogo" },
   { name: "Colores", href: "/admin/catalogo/colores", icon: "🎨", permiso: "catalogo" },
   { name: "Contenido", href: "/admin/contenido", icon: "🖼️", permiso: "contenido" },
   { name: "Ubicaciones", href: "/admin/ubicaciones", icon: "📍", permiso: "ubicaciones" },

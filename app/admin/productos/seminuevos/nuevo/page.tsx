@@ -14,6 +14,8 @@ interface Variante {
   porcentajeBateria?: number | null;
   ciclosCarga?: number | null;
   stock: number;
+  metodosPago?: string[] | null;
+  imagenes?: string[];
 }
 
 export default function NuevoTelefonoSeminuevoPage() {
@@ -23,7 +25,7 @@ export default function NuevoTelefonoSeminuevoPage() {
 
   const [formData, setFormData] = useState({
     marcaId: "",
-    modelo: "",
+    modeloId: "",
     precio: "",
     procesador: "",
     ram: "",
@@ -34,33 +36,41 @@ export default function NuevoTelefonoSeminuevoPage() {
   });
 
   const [variantes, setVariantes] = useState<Variante[]>([]);
-  const [imagenes, setImagenes] = useState<string[]>([]);
   const [marcas, setMarcas] = useState<any[]>([]);
+  const [modelos, setModelos] = useState<any[]>([]);
   const [colores, setColores] = useState<any[]>([]);
   const [esiPhone, setEsiPhone] = useState(false);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [marcasRes, coloresRes] = await Promise.all([
+        const [marcasRes, modelosRes, coloresRes] = await Promise.all([
           fetch("/api/admin/marcas"),
+          fetch("/api/admin/modelos"),
           fetch("/api/admin/colores"),
         ]);
 
         const marcasData = await marcasRes.json();
+        const modelosData = await modelosRes.json();
         const coloresData = await coloresRes.json();
 
         setMarcas(marcasData);
+        setModelos(modelosData);
         setColores(coloresData);
       } catch (error) {
-        console.error("Error al cargar marcas y colores:", error);
+        console.error("Error al cargar datos:", error);
       }
     }
 
     loadData();
   }, []);
 
-  // Detectar si es iPhone cuando cambia la marca
+  // Filtrar modelos por marca seleccionada
+  const modelosFiltrados = Array.isArray(modelos) 
+    ? modelos.filter((m) => m.marcaId === parseInt(formData.marcaId))
+    : [];
+
+  // Detectar si es iPhone cuando cambia la marca o modelo
   useEffect(() => {
     if (formData.marcaId) {
       const marcaSeleccionada = marcas.find((m) => m.id === parseInt(formData.marcaId));
@@ -72,6 +82,11 @@ export default function NuevoTelefonoSeminuevoPage() {
       setEsiPhone(false);
     }
   }, [formData.marcaId, marcas]);
+
+  // Resetear modeloId cuando cambia la marca
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, modeloId: "" }));
+  }, [formData.marcaId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +121,15 @@ export default function NuevoTelefonoSeminuevoPage() {
       }
 
       const datosParaEnviar = {
-        ...formData,
+        marcaId: formData.marcaId,
+        modeloId: formData.modeloId,
+        precio: formData.precio,
+        procesador: formData.procesador,
+        ram: formData.ram,
+        mpxlsCamara: formData.mpxlsCamara,
+        tamanoPantalla: formData.tamanoPantalla,
+        tipoEntrada: formData.tipoEntrada,
+        descripcion: formData.descripcion,
         variantes: variantes.map((v) => ({
           colorId: v.colorId,
           rom: v.rom,
@@ -115,8 +138,9 @@ export default function NuevoTelefonoSeminuevoPage() {
           porcentajeBateria: esiPhone ? v.porcentajeBateria : null,
           ciclosCarga: esiPhone && v.ciclosCarga ? v.ciclosCarga : null,
           stock: v.stock,
+          metodosPago: v.metodosPago && v.metodosPago.length > 0 ? v.metodosPago : null,
+          imagenes: v.imagenes || [],
         })),
-        imagenes: imagenes,
       };
 
       console.log("Enviando datos:", datosParaEnviar);
@@ -202,15 +226,40 @@ export default function NuevoTelefonoSeminuevoPage() {
                 <label className="block text-sm font-medium text-gray-700">
                   Modelo *
                 </label>
-                <input
-                  type="text"
+                <select
                   required
-                  value={formData.modelo}
+                  value={formData.modeloId}
                   onChange={(e) =>
-                    setFormData({ ...formData, modelo: e.target.value })
+                    setFormData({ ...formData, modeloId: e.target.value })
                   }
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
+                  disabled={!formData.marcaId || modelosFiltrados.length === 0}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {!formData.marcaId
+                      ? "Selecciona primero una marca"
+                      : modelosFiltrados.length === 0
+                      ? "No hay modelos para esta marca"
+                      : "Seleccionar modelo"}
+                  </option>
+                  {modelosFiltrados.map((modelo) => (
+                    <option key={modelo.id} value={modelo.id}>
+                      {modelo.nombre}
+                    </option>
+                  ))}
+                </select>
+                {formData.marcaId && modelosFiltrados.length === 0 && (
+                  <p className="mt-1 text-xs text-orange-600">
+                    ⚠️ No hay modelos registrados para esta marca.{" "}
+                    <Link
+                      href="/admin/catalogo/modelos/nuevo"
+                      className="underline"
+                      target="_blank"
+                    >
+                      Crear modelo
+                    </Link>
+                  </p>
+                )}
               </div>
             </div>
 
@@ -373,15 +422,29 @@ export default function NuevoTelefonoSeminuevoPage() {
         <div className="rounded-lg border border-gray-200 bg-white shadow">
           <div className="border-b border-gray-200 px-6 py-4">
             <h2 className="text-lg font-medium text-gray-900">
-              Imágenes del Producto
+              Imágenes del Modelo
             </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Las imágenes de catálogo se obtienen del modelo seleccionado. Puedes gestionar las imágenes del modelo en{" "}
+              <Link href="/admin/catalogo/modelos" className="text-indigo-600 hover:text-indigo-900 underline">
+                Modelos
+              </Link>
+              .
+            </p>
           </div>
           <div className="px-6 py-4">
-            <ImageUploader
-              images={imagenes}
-              onImagesChange={setImagenes}
-              maxImages={10}
-            />
+            {formData.modeloId ? (
+              <div className="text-sm text-gray-600">
+                Modelo seleccionado:{" "}
+                <span className="font-medium text-gray-900">
+                  {modelosFiltrados.find((m) => m.id === parseInt(formData.modeloId))?.nombre || "Cargando..."}
+                </span>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500">
+                Selecciona un modelo para ver sus imágenes
+              </div>
+            )}
           </div>
         </div>
 

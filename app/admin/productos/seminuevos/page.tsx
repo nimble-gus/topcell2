@@ -7,12 +7,17 @@ export default async function TelefonosSeminuevosPage() {
     where: { activo: true },
     include: {
       marca: true,
+      modelo: {
+        include: {
+          imagenes: true,
+        },
+      },
       variantes: {
         include: {
           color: true,
+          imagenes: true,
         },
       },
-      imagenes: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -71,23 +76,30 @@ export default async function TelefonosSeminuevosPage() {
               telefonos.map((telefono) => (
                 <tr key={telefono.id}>
                   <td className="whitespace-nowrap px-6 py-4">
-                    {telefono.imagenes.length > 0 ? (
-                      <img
-                        src={telefono.imagenes[0].url}
-                        alt={telefono.modelo}
-                        className="h-12 w-12 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
-                        Sin imagen
-                      </div>
-                    )}
+                    {(() => {
+                      // Priorizar imagen de variante, luego imagen del modelo
+                      const varianteImagen = telefono.variantes.find(v => v.imagenes.length > 0)?.imagenes[0];
+                      const modeloImagen = telefono.modelo?.imagenes[0];
+                      const imagen = varianteImagen || modeloImagen;
+                      
+                      return imagen ? (
+                        <img
+                          src={imagen.url}
+                          alt={telefono.modelo?.nombre || "Teléfono seminuevo"}
+                          className="h-12 w-12 rounded object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
+                          Sin imagen
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">
                       {telefono.marca.nombre}
                     </div>
-                    <div className="text-sm text-gray-500">{telefono.modelo}</div>
+                    <div className="text-sm text-gray-500">{telefono.modelo?.nombre || "Sin modelo"}</div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                     Q{telefono.precio.toLocaleString()}
@@ -141,7 +153,7 @@ export default async function TelefonosSeminuevosPage() {
                       >
                         Editar
                       </Link>
-                      <DeleteButton telefonoId={telefono.id} modelo={telefono.modelo} />
+                      <DeleteButton telefonoId={telefono.id} modelo={telefono.modelo?.nombre || "Teléfono seminuevo"} />
                     </div>
                   </td>
                 </tr>

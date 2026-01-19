@@ -38,10 +38,12 @@ export async function GET(request: NextRequest) {
     }
 
     if (cliente) {
+      // Normalizar el término de búsqueda para búsqueda case-insensitive
+      const clienteLower = cliente.toLowerCase();
       where.usuario = {
         OR: [
-          { nombre: { contains: cliente, mode: "insensitive" } },
-          { email: { contains: cliente, mode: "insensitive" } },
+          { nombre: { contains: cliente } },
+          { email: { contains: cliente } },
         ],
       };
     }

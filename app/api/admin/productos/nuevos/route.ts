@@ -59,9 +59,13 @@ export async function POST(request: NextRequest) {
       stock,
       descripcion,
       featured,
-      colores,
+      variantes, // variantes con imágenes
+      colores, // mantener compatibilidad con código antiguo
       imagenes,
     } = body;
+
+    // Usar variantes si está disponible, sino usar colores (compatibilidad)
+    const variantesData = variantes || (colores ? colores.map((c: any) => ({ ...c, imagenes: [] })) : []);
 
     // Validar campos requeridos y mostrar cuáles faltan
     const camposFaltantes: string[] = [];
@@ -85,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar que haya al menos una variante
-    if (!colores || !Array.isArray(colores) || colores.length === 0) {
+    if (!variantesData || !Array.isArray(variantesData) || variantesData.length === 0) {
       return NextResponse.json(
         { error: "Debe crear al menos una variante (color + almacenamiento + stock)" },
         { status: 400 }
@@ -94,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     // Validar que cada variante tenga los campos requeridos
     const variantesInvalidas: string[] = [];
-    colores.forEach((v: any, index: number) => {
+    variantesData.forEach((v: any, index: number) => {
       if (!v.colorId) variantesInvalidas.push(`Variante ${index + 1}: falta el color`);
       if (!v.rom || v.rom.trim() === "") variantesInvalidas.push(`Variante ${index + 1}: falta el almacenamiento (ROM)`);
       if (v.precio === undefined || v.precio === null || v.precio === "" || parseFloat(v.precio) <= 0) {
@@ -131,11 +135,18 @@ export async function POST(request: NextRequest) {
         descripcion: descripcion || null,
         featured: featured === true || featured === "true",
         variantes: {
-          create: (colores || []).map((v: any) => ({
+          create: variantesData.map((v: any) => ({
             colorId: parseInt(v.colorId),
             rom: v.rom || rom || "128GB",
             precio: parseFloat(v.precio || precio || 0),
             stock: parseInt(v.stock || 0),
+            imagenes: {
+              create: (v.imagenes || []).map((url: string, imgIndex: number) => ({
+                url,
+                tipo: imgIndex === 0 ? "principal" : "galeria",
+                orden: imgIndex,
+              })),
+            },
           })),
         },
         imagenes: {
