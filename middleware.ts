@@ -12,33 +12,23 @@ export async function middleware(request: NextRequest) {
   
   if (COMING_SOON_ENABLED) {
     // Rutas que NO deben ser redirigidas a coming soon
-    const alwaysAllowed = [
+    // Incluye todas las rutas de admin, API, assets estáticos, y la página coming-soon
+    const excludedPaths = [
       "/coming-soon",
       "/api",
       "/_next",
       "/favicon.ico",
       "/logo.png",
-      "/admin/login", // Permitir acceso al login de admin
+      "/admin", // Todas las rutas de admin (incluyendo /admin/login y todas las subrutas)
     ];
 
-    // Rutas condicionalmente permitidas (admin puede acceder si está autenticado)
-    const conditionallyAllowed = [
-      "/admin",
-    ];
-
-    // Verificar si es una ruta siempre permitida
-    const isAlwaysAllowed = alwaysAllowed.some(path => 
+    // Verificar si la ruta actual debe ser excluida del coming soon
+    const isExcluded = excludedPaths.some(path => 
       pathname === path || pathname.startsWith(path)
     );
 
-    if (isAlwaysAllowed) {
-      // Continuar con el flujo normal
-    } else if (conditionallyAllowed.some(path => pathname.startsWith(path))) {
-      // Para admin, verificar autenticación (se maneja más abajo)
-      // Si no está autenticado, será redirigido a /admin/login (que está permitido)
-      // Si está autenticado, puede acceder normalmente
-    } else {
-      // Redirigir a coming-soon
+    // Si NO está excluida, redirigir a coming-soon
+    if (!isExcluded) {
       const comingSoonUrl = new URL("/coming-soon", request.url);
       return NextResponse.redirect(comingSoonUrl);
     }
