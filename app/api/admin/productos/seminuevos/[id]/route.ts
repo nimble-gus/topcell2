@@ -262,12 +262,16 @@ export async function PUT(
       where: { id },
       include: {
         marca: true,
+        modelo: {
+          include: {
+            imagenes: true,
+          },
+        },
         variantes: {
           include: {
             color: true,
           },
         },
-        imagenes: true,
       },
     });
 

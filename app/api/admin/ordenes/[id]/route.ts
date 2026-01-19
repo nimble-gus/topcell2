@@ -48,9 +48,13 @@ export async function GET(
             telefonoSeminuevo: {
               include: {
                 marca: true,
-                imagenes: {
-                  orderBy: { orden: "asc" },
-                  take: 1,
+                modelo: {
+                  include: {
+                    imagenes: {
+                      orderBy: { orden: "asc" },
+                      take: 1,
+                    },
+                  },
                 },
               },
             },

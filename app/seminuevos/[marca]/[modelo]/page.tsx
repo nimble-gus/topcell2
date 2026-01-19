@@ -46,7 +46,9 @@ export default async function SeminuevoModeloPage({ params }: PageProps) {
   const footerFacebook = footerContent.find((c) => c.descripcion === "facebook")?.urlDestino || null;
   const footerInstagram = footerContent.find((c) => c.descripcion === "instagram")?.urlDestino || null;
   const footerTiktok = footerContent.find((c) => c.descripcion === "tiktok")?.urlDestino || null;
-  const footerServicios = footerContent.filter((c) => c.descripcion?.startsWith("servicio_"));
+  const footerServicios = footerContent
+    .filter((c) => c.descripcion?.startsWith("servicio_"))
+    .map((c) => c.url);
   const footerLinkConocenos = footerContent.find((c) => c.descripcion === "link_conocenos")?.urlDestino || null;
   const footerLinkPrivacidad = footerContent.find((c) => c.descripcion === "link_privacidad")?.urlDestino || null;
   const footerLinkTerminos = footerContent.find((c) => c.descripcion === "link_terminos")?.urlDestino || null;

@@ -7,9 +7,13 @@ export async function GET() {
       where: { activo: true },
       include: {
         marca: true,
-        imagenes: {
-          orderBy: { orden: "asc" },
-          take: 1, // Solo la imagen principal
+        modelo: {
+          include: {
+            imagenes: {
+              orderBy: { orden: "asc" },
+              take: 1, // Solo la imagen principal
+            },
+          },
         },
         variantes: {
           where: {
@@ -22,7 +26,7 @@ export async function GET() {
       },
       orderBy: [
         { marca: { nombre: "asc" } },
-        { modelo: "asc" },
+        { modelo: { nombre: "asc" } },
       ],
     });
 
@@ -44,8 +48,8 @@ export async function GET() {
       if (telefono.variantes.length > 0) {
         acc[marcaNombre].modelos.push({
           id: telefono.id,
-          modelo: telefono.modelo,
-          imagenUrl: telefono.imagenes[0]?.url || null,
+          modelo: telefono.modelo?.nombre || "Sin modelo",
+          imagenUrl: telefono.modelo?.imagenes[0]?.url || null,
           precioMinimo: Math.min(...telefono.variantes.map(v => Number(v.precio))),
         });
       }

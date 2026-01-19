@@ -14,12 +14,16 @@ export async function GET() {
       where: { activo: true },
       include: {
         marca: true,
+        modelo: {
+          include: {
+            imagenes: true,
+          },
+        },
         variantes: {
           include: {
             color: true,
           },
         },
-        imagenes: true,
       },
       orderBy: {
         createdAt: "desc",

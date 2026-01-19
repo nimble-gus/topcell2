@@ -138,7 +138,7 @@ export default async function TelefonoSeminuevoPage({
           varianteIdInicial={varianteIdInicial}
           producto={{
             id: telefono.id,
-            modelo: telefono.modelo.nombre,
+            modelo: telefono.modelo?.nombre || "Sin modelo",
             marca: telefono.marca.nombre,
             marcaId: telefono.marca.id,
             precio: Number(telefono.precio),
@@ -148,7 +148,7 @@ export default async function TelefonoSeminuevoPage({
             tamanoPantalla: telefono.tamanoPantalla,
             tipoEntrada: telefono.tipoEntrada,
             descripcion: telefono.descripcion,
-            imagenes: telefono.modelo.imagenes.map(img => img.url), // Imágenes de catálogo del modelo
+            imagenes: telefono.modelo?.imagenes.map(img => img.url) || [], // Imágenes de catálogo del modelo
             variantes: telefono.variantes.map(v => ({
               id: v.id,
               colorId: v.colorId,

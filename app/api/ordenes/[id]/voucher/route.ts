@@ -25,6 +25,7 @@ export async function GET(
             telefonoSeminuevo: {
               include: {
                 marca: true,
+                modelo: true,
               },
             },
             accesorio: {
@@ -54,7 +55,7 @@ export async function GET(
       if (item.tipoProducto === "TELEFONO_NUEVO" && item.telefonoNuevo) {
         nombre = `${item.telefonoNuevo.marca.nombre} ${item.telefonoNuevo.modelo}`;
       } else if (item.tipoProducto === "TELEFONO_SEMINUEVO" && item.telefonoSeminuevo) {
-        nombre = `${item.telefonoSeminuevo.marca.nombre} ${item.telefonoSeminuevo.modelo}`;
+        nombre = `${item.telefonoSeminuevo.marca.nombre} ${item.telefonoSeminuevo.modelo?.nombre || "Sin modelo"}`;
       } else if (item.tipoProducto === "ACCESORIO" && item.accesorio) {
         nombre = `${item.accesorio.marca.nombre} ${item.accesorio.modelo}`;
       } else {

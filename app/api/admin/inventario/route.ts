@@ -75,13 +75,14 @@ export async function GET(request: NextRequest) {
           activo: true,
           ...(search && {
             OR: [
-              { modelo: { contains: search } },
+              { modelo: { nombre: { contains: search } } },
               { marca: { nombre: { contains: search } } },
             ],
           }),
         },
         include: {
           marca: true,
+          modelo: true,
           variantes: {
             include: {
               color: true,
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
         id: telefono.id,
         tipo: "seminuevo",
         marca: telefono.marca.nombre,
-        modelo: telefono.modelo,
+        modelo: telefono.modelo?.nombre || "Sin modelo",
         variantes: telefono.variantes.map((v) => ({
           id: v.id,
           color: v.color.color,
