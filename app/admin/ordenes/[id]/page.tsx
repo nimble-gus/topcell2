@@ -30,11 +30,13 @@ interface ItemOrden {
   };
   telefonoSeminuevo?: {
     id: number;
-    modelo: string;
+    modelo?: {
+      nombre: string;
+      imagenes?: Array<{ url: string }>;
+    } | null;
     marca: {
       nombre: string;
     };
-    imagenes: Array<{ url: string }>;
   };
   accesorio?: {
     id: number;
@@ -327,9 +329,26 @@ export default function DetalleOrdenPage() {
             <div className="space-y-4">
               {orden.items.map((item) => {
                 const producto = item.telefonoNuevo || item.telefonoSeminuevo || item.accesorio;
-                const imagen = producto?.imagenes[0]?.url || "/placeholder-phone.jpg";
+                
+                // Obtener imagen según el tipo de producto
+                let imagen = "/placeholder-phone.jpg";
+                if (item.telefonoNuevo?.imagenes?.[0]?.url) {
+                  imagen = item.telefonoNuevo.imagenes[0].url;
+                } else if (item.telefonoSeminuevo?.modelo?.imagenes?.[0]?.url) {
+                  imagen = item.telefonoSeminuevo.modelo.imagenes[0].url;
+                } else if (item.accesorio?.imagenes?.[0]?.url) {
+                  imagen = item.accesorio.imagenes[0].url;
+                }
+                
                 const marca = producto?.marca.nombre || "";
-                const modelo = producto?.modelo || "";
+                let modelo = "";
+                if (item.telefonoNuevo) {
+                  modelo = item.telefonoNuevo.modelo || "";
+                } else if (item.telefonoSeminuevo) {
+                  modelo = item.telefonoSeminuevo.modelo?.nombre || "Sin modelo";
+                } else if (item.accesorio) {
+                  modelo = item.accesorio.modelo || "";
+                }
                 
                 // Parsear detalles de la variante
                 let detalles: DetallesVariante | null = null;

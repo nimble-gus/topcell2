@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Toast from "@/components/Toast";
 import {
   getCart,
   getCartTotal,
@@ -33,6 +34,15 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+    isVisible: boolean;
+  }>({
+    message: "",
+    type: "info",
+    isVisible: false,
+  });
   const [cuentasBancarias, setCuentasBancarias] = useState<CuentaBancaria[]>([]);
   const [serverData, setServerData] = useState<{
     logoUrl: string | null;
@@ -307,7 +317,15 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Error al procesar la orden");
+        const errorMessage = data.error || "Error al procesar la orden";
+        setToast({
+          message: errorMessage,
+          type: "error",
+          isVisible: true,
+        });
+        setError(errorMessage);
+        setSubmitting(false);
+        return;
       }
 
       // Si el método de pago es TARJETA, procesar el pago
@@ -397,7 +415,13 @@ export default function CheckoutPage() {
       router.push(`/orden/${data.ordenId}`);
     } catch (error: any) {
       console.error("Error al crear orden:", error);
-      setError(error.message || "Error al procesar la orden. Por favor intenta de nuevo.");
+      const errorMessage = error.message || "Error al procesar la orden. Por favor intenta de nuevo.";
+      setError(errorMessage);
+      setToast({
+        message: errorMessage,
+        type: "error",
+        isVisible: true,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -440,6 +464,15 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-white relative">
       <Header logoUrl={serverData.logoUrl} />
+      
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+        duration={6000}
+      />
       
       {/* Loader overlay */}
       {submitting && (

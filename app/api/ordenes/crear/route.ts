@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma/client";
+import { sendOrdenCreatedEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -151,6 +152,8 @@ export async function POST(request: NextRequest) {
         producto = await prisma.telefonoSeminuevo.findUnique({
           where: { id: item.productoId },
           include: { 
+            marca: true,
+            modelo: true,
             variantes: {
               include: {
                 color: true,
@@ -223,8 +226,18 @@ export async function POST(request: NextRequest) {
 
       // Validar stock
       if (stockDisponible < item.cantidad) {
+        // Obtener el nombre del producto según el tipo
+        let nombreProducto = "producto";
+        if (item.tipo === "telefono-nuevo") {
+          nombreProducto = `${producto.marca.nombre} ${producto.modelo}`;
+        } else if (item.tipo === "telefono-seminuevo") {
+          nombreProducto = `${producto.marca.nombre} ${producto.modelo?.nombre || "Sin modelo"}`;
+        } else if (item.tipo === "accesorio") {
+          nombreProducto = `${producto.marca.nombre} ${producto.modelo}`;
+        }
+        
         return NextResponse.json(
-          { error: `Stock insuficiente para ${producto.modelo}. Disponible: ${stockDisponible}, Solicitado: ${item.cantidad}` },
+          { error: `Stock insuficiente para ${nombreProducto}. Disponible: ${stockDisponible}, Solicitado: ${item.cantidad}` },
           { status: 400 }
         );
       }
@@ -374,6 +387,152 @@ export async function POST(request: NextRequest) {
 
       return nuevaOrden;
     });
+
+    // Obtener la orden completa con toda la información para el email
+    const ordenCompleta = await prisma.orden.findUnique({
+      where: { id: orden.id },
+      include: {
+        usuario: true,
+        items: {
+          include: {
+            telefonoNuevo: {
+              include: {
+                marca: true,
+                imagenes: {
+                  orderBy: { orden: "asc" },
+                  take: 1,
+                },
+              },
+            },
+            telefonoSeminuevo: {
+              include: {
+                marca: true,
+                modelo: {
+                  include: {
+                    imagenes: {
+                      orderBy: { orden: "asc" },
+                      take: 1,
+                    },
+                  },
+                },
+              },
+            },
+            accesorio: {
+              include: {
+                marca: true,
+                imagenes: {
+                  orderBy: { orden: "asc" },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Obtener logo para el email
+    const logoContent = await prisma.contenidoTienda.findFirst({
+      where: {
+        tipo: "logo",
+        activo: true,
+      },
+      orderBy: {
+        orden: "asc",
+      },
+    });
+
+    // Enviar email de confirmación (no bloqueamos si falla)
+    if (ordenCompleta) {
+      try {
+        const itemsParaEmail = ordenCompleta.items.map((item) => {
+          let nombreProducto = "Producto";
+          let variante = null;
+          let imagenUrl = null;
+
+          // Intentar parsear detallesVariante si existe
+          let detalles: any = null;
+          if (item.detallesVariante) {
+            try {
+              detalles = JSON.parse(item.detallesVariante);
+            } catch (e) {
+              // Si no se puede parsear, usar null
+            }
+          }
+
+          if (item.tipoProducto === "TELEFONO_NUEVO" && item.telefonoNuevo) {
+            nombreProducto = `${item.telefonoNuevo.marca.nombre} ${item.telefonoNuevo.modelo}`;
+            if (detalles) {
+              const partesVariante = [];
+              if (detalles.color) partesVariante.push(detalles.color);
+              if (detalles.rom) partesVariante.push(detalles.rom);
+              variante = partesVariante.length > 0 ? partesVariante.join(", ") : null;
+            }
+            imagenUrl = item.telefonoNuevo.imagenes[0]?.url || null;
+          } else if (item.tipoProducto === "TELEFONO_SEMINUEVO" && item.telefonoSeminuevo) {
+            nombreProducto = `${item.telefonoSeminuevo.marca.nombre} ${item.telefonoSeminuevo.modelo?.nombre || "Sin modelo"}`;
+            if (detalles) {
+              const partesVariante = [];
+              if (detalles.color) partesVariante.push(detalles.color);
+              if (detalles.rom) partesVariante.push(detalles.rom);
+              if (detalles.estado) partesVariante.push(`Estado: ${detalles.estado}/10`);
+              if (detalles.porcentajeBateria) partesVariante.push(`Batería: ${detalles.porcentajeBateria}%`);
+              variante = partesVariante.length > 0 ? partesVariante.join(", ") : null;
+            }
+            imagenUrl = item.telefonoSeminuevo.modelo?.imagenes[0]?.url || null;
+          } else if (item.tipoProducto === "ACCESORIO" && item.accesorio) {
+            nombreProducto = `${item.accesorio.marca.nombre} ${item.accesorio.modelo}`;
+            if (detalles && detalles.color) {
+              variante = detalles.color;
+            }
+            imagenUrl = item.accesorio.imagenes[0]?.url || null;
+          }
+
+          return {
+            id: item.id,
+            cantidad: item.cantidad,
+            precioUnitario: Number(item.precioUnitario),
+            subtotal: Number(item.subtotal),
+            tipoProducto: item.tipoProducto,
+            nombreProducto,
+            variante,
+            imagenUrl,
+          };
+        });
+
+        await sendOrdenCreatedEmail(
+          {
+          id: ordenCompleta.id,
+          numeroOrden: ordenCompleta.numeroOrden,
+          estado: ordenCompleta.estado,
+          subtotal: Number(ordenCompleta.subtotal),
+          impuestos: Number(ordenCompleta.impuestos),
+          envio: Number(ordenCompleta.envio),
+          total: Number(ordenCompleta.total),
+          tipoEnvio: ordenCompleta.tipoEnvio,
+          metodoPago: ordenCompleta.metodoPago,
+          direccionEnvio: ordenCompleta.direccionEnvio,
+          ciudadEnvio: ordenCompleta.ciudadEnvio,
+          codigoPostalEnvio: ordenCompleta.codigoPostalEnvio,
+          nombreRecibe: ordenCompleta.nombreRecibe,
+          telefonoRecibe: ordenCompleta.telefonoRecibe,
+          notas: ordenCompleta.notas,
+          createdAt: ordenCompleta.createdAt,
+          usuario: {
+            email: ordenCompleta.usuario.email,
+            nombre: ordenCompleta.usuario.nombre,
+            apellido: ordenCompleta.usuario.apellido,
+            telefono: ordenCompleta.usuario.telefono,
+          },
+          items: itemsParaEmail,
+          },
+          logoContent?.url || null
+        );
+      } catch (emailError: any) {
+        // No fallar la creación de la orden si el email falla
+        console.error("Error al enviar email de confirmación (orden creada exitosamente):", emailError);
+      }
+    }
 
     return NextResponse.json({
       success: true,
