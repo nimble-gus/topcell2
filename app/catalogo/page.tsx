@@ -9,8 +9,8 @@ import ProductGrid from "@/components/catalog/ProductGrid";
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "Teléfonos Nuevos y Accesorios",
-  description: "Explora nuestro catálogo de teléfonos nuevos y accesorios. Filtra por marca, precio y características. Encuentra el dispositivo perfecto para ti.",
+  title: "Teléfonos Nuevos",
+  description: "Explora nuestro catálogo de teléfonos nuevos. Filtra por marca, precio y características. Encuentra el dispositivo perfecto para ti.",
 };
 
 export default async function CatalogoPage() {
@@ -63,14 +63,7 @@ export default async function CatalogoPage() {
   const footerLinkPrivacidad = footerData.find((item) => item.tipo === "footer-link-privacidad")?.urlDestino || null;
   const footerLinkTerminos = footerData.find((item) => item.tipo === "footer-link-terminos")?.urlDestino || null;
 
-  // Obtener todas las marcas para los filtros
-  const marcas = await prisma.marca.findMany({
-    orderBy: {
-      nombre: "asc",
-    },
-  });
-
-  // Obtener productos activos (solo teléfonos nuevos y accesorios, NO seminuevos)
+  // Obtener productos activos (solo teléfonos nuevos, NO accesorios ni seminuevos)
   const telefonosNuevos = await prisma.telefonoNuevo.findMany({
     where: {
       activo: true,
@@ -92,59 +85,40 @@ export default async function CatalogoPage() {
     },
   });
 
-  const accesorios = await prisma.accesorio.findMany({
-    where: {
-      activo: true,
-    },
-    include: {
-      marca: true,
-      imagenes: {
-        orderBy: { orden: "asc" },
-      },
-      colores: {
-        include: {
-          color: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+  // Formatear productos para el grid (solo teléfonos nuevos)
+  const productos = telefonosNuevos.map((telefono) => {
+    // Para teléfonos nuevos, cada variante tiene su propio precio
+    const precios = telefono.variantes.length > 0
+      ? telefono.variantes.map(v => Number(v.precio))
+      : [Number(telefono.precio)];
+    const precio = Math.min(...precios);
+    const precioMax = Math.max(...precios);
+    return {
+      id: telefono.id,
+      tipo: "telefono-nuevo" as const,
+      modelo: telefono.modelo,
+      marca: telefono.marca.nombre,
+      marcaId: telefono.marca.id,
+      precio: precio,
+      precioMax: precioMax,
+      imagenes: telefono.imagenes.map(img => img.url),
+      tieneVariantes: telefono.variantes.length > 0,
+    };
   });
 
-  // Formatear productos para el grid (solo teléfonos nuevos y accesorios)
-  const productos = [
-    ...telefonosNuevos.map((telefono) => {
-      // Para teléfonos nuevos, cada variante tiene su propio precio
-      const precios = telefono.variantes.length > 0
-        ? telefono.variantes.map(v => Number(v.precio))
-        : [Number(telefono.precio)];
-      const precio = Math.min(...precios);
-      const precioMax = Math.max(...precios);
-      return {
-        id: telefono.id,
-        tipo: "telefono-nuevo" as const,
-        modelo: telefono.modelo,
-        marca: telefono.marca.nombre,
-        marcaId: telefono.marca.id,
-        precio: precio,
-        precioMax: precioMax,
-        imagenes: telefono.imagenes.map(img => img.url),
-        tieneVariantes: telefono.variantes.length > 0,
-      };
-    }),
-    ...accesorios.map((accesorio) => ({
-      id: accesorio.id,
-      tipo: "accesorio" as const,
-      modelo: accesorio.modelo,
-      marca: accesorio.marca.nombre,
-      marcaId: accesorio.marca.id,
-      precio: Number(accesorio.precio),
-      precioMax: Number(accesorio.precio),
-      imagenes: accesorio.imagenes.map(img => img.url),
-      tieneVariantes: false,
-    })),
-  ];
+  // Extraer solo las marcas que tienen teléfonos nuevos
+  const marcasUnicas = new Map<number, { id: number; nombre: string }>();
+  telefonosNuevos.forEach((telefono) => {
+    if (!marcasUnicas.has(telefono.marca.id)) {
+      marcasUnicas.set(telefono.marca.id, {
+        id: telefono.marca.id,
+        nombre: telefono.marca.nombre,
+      });
+    }
+  });
+  const marcas = Array.from(marcasUnicas.values()).sort((a, b) =>
+    a.nombre.localeCompare(b.nombre)
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -152,7 +126,7 @@ export default async function CatalogoPage() {
       
       <main className="pt-16 sm:pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Teléfonos Nuevos y Accesorios</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Teléfonos Nuevos</h1>
           
           <Suspense fallback={<div className="text-center py-12">Cargando catálogo...</div>}>
             <div className="flex flex-col lg:flex-row gap-8">

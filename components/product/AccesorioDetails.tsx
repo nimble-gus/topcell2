@@ -19,6 +19,7 @@ interface AccesorioDetailsProps {
       colorId: number;
       color: string;
       stock: number;
+      imagenes?: string[]; // Imágenes específicas de este color
     }[];
   };
 }
@@ -38,12 +39,22 @@ export default function AccesorioDetails({ accesorio }: AccesorioDetailsProps) {
 
   const colorSeleccionado = accesorio.colores.find(c => c.colorId === selectedColorId);
 
+  // Imágenes a mostrar: si el color tiene imágenes, usar esas; si no, usar las del producto
+  const imagenesAMostrar = colorSeleccionado && colorSeleccionado.imagenes && colorSeleccionado.imagenes.length > 0
+    ? colorSeleccionado.imagenes
+    : accesorio.imagenes;
+
+  // Resetear índice de imagen cuando cambian las imágenes
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [imagenesAMostrar]);
+
   const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % accesorio.imagenes.length);
+    setCurrentImageIndex((prev) => (prev + 1) % imagenesAMostrar.length);
   };
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + accesorio.imagenes.length) % accesorio.imagenes.length);
+    setCurrentImageIndex((prev) => (prev - 1 + imagenesAMostrar.length) % imagenesAMostrar.length);
   };
 
   const handleAddToCart = () => {
@@ -59,7 +70,7 @@ export default function AccesorioDetails({ accesorio }: AccesorioDetailsProps) {
       precio: accesorio.precio,
       modelo: accesorio.modelo,
       marca: accesorio.marca,
-      imagen: accesorio.imagenes[0] || "",
+      imagen: imagenesAMostrar[0] || "",
       color: colorSeleccionado.color,
     });
     
@@ -77,15 +88,15 @@ export default function AccesorioDetails({ accesorio }: AccesorioDetailsProps) {
         <div className="space-y-4">
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
-              src={accesorio.imagenes[currentImageIndex] || "/placeholder-phone.jpg"}
-              alt={`${accesorio.marca} ${accesorio.modelo}`}
+              src={imagenesAMostrar[currentImageIndex] || "/placeholder-phone.jpg"}
+              alt={`${accesorio.marca} ${accesorio.modelo}${colorSeleccionado ? ` - ${colorSeleccionado.color}` : ""}`}
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority
             />
             
-            {accesorio.imagenes.length > 1 && (
+            {imagenesAMostrar.length > 1 && (
               <>
                 <button
                   onClick={handlePrevImage}

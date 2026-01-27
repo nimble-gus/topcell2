@@ -138,6 +138,7 @@ export default async function TelefonoNuevoPage({
             mpxlsCamara: telefono.mpxlsCamara,
             tamanoPantalla: telefono.tamanoPantalla,
             tipoEntrada: telefono.tipoEntrada,
+            capacidadBateria: telefono.capacidadBateria,
             descripcion: telefono.descripcion,
             imagenes: telefono.imagenes.map(img => img.url),
             variantes: telefono.variantes.map(v => ({

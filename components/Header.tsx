@@ -92,6 +92,12 @@ export default function Header({ logoUrl }: HeaderProps) {
               Seminuevos
             </Link>
             <Link
+              href="/accesorios"
+              className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors rounded-lg px-3 py-2 hover:bg-orange-50"
+            >
+              Accesorios
+            </Link>
+            <Link
               href="/ubicaciones"
               className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors rounded-lg px-3 py-2 hover:bg-orange-50"
             >
@@ -233,6 +239,13 @@ export default function Header({ logoUrl }: HeaderProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Seminuevos
+              </Link>
+              <Link
+                href="/accesorios"
+                className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Accesorios
               </Link>
               <Link
                 href="/ubicaciones"

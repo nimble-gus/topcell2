@@ -16,7 +16,6 @@ export default function CatalogFilters({ marcas }: CatalogFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const [tipoProducto, setTipoProducto] = useState<string>(searchParams.get("tipo") || "todos");
   const [marcaSeleccionada, setMarcaSeleccionada] = useState<string>(searchParams.get("marca") || "todas");
   const [precioMin, setPrecioMin] = useState<string>(searchParams.get("precioMin") || "");
   const [precioMax, setPrecioMax] = useState<string>(searchParams.get("precioMax") || "");
@@ -25,9 +24,6 @@ export default function CatalogFilters({ marcas }: CatalogFiltersProps) {
   useEffect(() => {
     const params = new URLSearchParams();
     
-    if (tipoProducto !== "todos") {
-      params.set("tipo", tipoProducto);
-    }
     if (marcaSeleccionada !== "todas") {
       params.set("marca", marcaSeleccionada);
     }
@@ -39,16 +35,18 @@ export default function CatalogFilters({ marcas }: CatalogFiltersProps) {
     }
 
     const queryString = params.toString();
-    const newUrl = queryString ? `/catalogo?${queryString}` : "/catalogo";
+    // Detectar la ruta actual para mantenerla
+    const currentPath = typeof window !== "undefined" ? window.location.pathname : "/catalogo";
+    const newUrl = queryString ? `${currentPath}?${queryString}` : currentPath;
     router.push(newUrl, { scroll: false });
-  }, [tipoProducto, marcaSeleccionada, precioMin, precioMax, router]);
+  }, [marcaSeleccionada, precioMin, precioMax, router]);
 
   const handleReset = () => {
-    setTipoProducto("todos");
     setMarcaSeleccionada("todas");
     setPrecioMin("");
     setPrecioMax("");
-    router.push("/catalogo", { scroll: false });
+    const currentPath = typeof window !== "undefined" ? window.location.pathname : "/catalogo";
+    router.push(currentPath, { scroll: false });
   };
 
   return (
@@ -64,46 +62,6 @@ export default function CatalogFilters({ marcas }: CatalogFiltersProps) {
       </div>
 
       <div className="space-y-6">
-        {/* Filtro por tipo de producto */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Tipo de Producto</h3>
-          <div className="space-y-2">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="tipo"
-                value="todos"
-                checked={tipoProducto === "todos"}
-                onChange={(e) => setTipoProducto(e.target.value)}
-                className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300"
-              />
-              <span className="ml-2 text-sm text-gray-700">Todos</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="tipo"
-                value="telefono-nuevo"
-                checked={tipoProducto === "telefono-nuevo"}
-                onChange={(e) => setTipoProducto(e.target.value)}
-                className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300"
-              />
-              <span className="ml-2 text-sm text-gray-700">Teléfonos Nuevos</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="tipo"
-                value="accesorio"
-                checked={tipoProducto === "accesorio"}
-                onChange={(e) => setTipoProducto(e.target.value)}
-                className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300"
-              />
-              <span className="ml-2 text-sm text-gray-700">Accesorios</span>
-            </label>
-          </div>
-        </div>
-
         {/* Filtro por marca */}
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-3">Marca</h3>

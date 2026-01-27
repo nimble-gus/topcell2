@@ -141,11 +141,12 @@ export default function ProductDetails({ tipo, varianteIdInicial, producto }: Pr
 
   // Imágenes a mostrar: si la variante tiene imágenes, usar esas; si no, usar las del producto
   const imagenesAMostrar = useMemo(() => {
+    // Si hay una variante específica seleccionada (con color y ROM), usar sus imágenes
     if (varianteSeleccionada) {
       // Para teléfonos nuevos
       if (tipo === "telefono-nuevo") {
         const varianteNuevo = varianteSeleccionada as VarianteNuevo;
-        // Si la variante tiene imágenes, usar esas; si no, usar las del producto
+        // Si la variante tiene imágenes, usar esas; si no, buscar imágenes de otras variantes del mismo color
         if (varianteNuevo.imagenes && varianteNuevo.imagenes.length > 0) {
           return varianteNuevo.imagenes;
         }
@@ -159,8 +160,21 @@ export default function ProductDetails({ tipo, varianteIdInicial, producto }: Pr
         }
       }
     }
+    
+    // Si solo se ha seleccionado un color (sin ROM aún), buscar imágenes de la primera variante de ese color
+    if (selectedColorId && !varianteSeleccionada && tipo === "telefono-nuevo") {
+      const primeraVarianteDelColor = producto.variantes.find(
+        (v) => v.colorId === selectedColorId
+      ) as VarianteNuevo | undefined;
+      
+      if (primeraVarianteDelColor && primeraVarianteDelColor.imagenes && primeraVarianteDelColor.imagenes.length > 0) {
+        return primeraVarianteDelColor.imagenes;
+      }
+    }
+    
+    // Si no hay imágenes específicas de variante, usar las imágenes generales del producto
     return producto.imagenes;
-  }, [varianteSeleccionada, producto.imagenes, tipo]);
+  }, [varianteSeleccionada, selectedColorId, producto.imagenes, producto.variantes, tipo]);
 
   // Resetear índice de imagen cuando cambian las imágenes
   useEffect(() => {
@@ -507,6 +521,12 @@ export default function ProductDetails({ tipo, varianteIdInicial, producto }: Pr
                 <span className="text-gray-500">Entrada:</span>
                 <span className="ml-2 font-medium text-gray-900">{producto.tipoEntrada}</span>
               </div>
+              {producto.capacidadBateria && (
+                <div>
+                  <span className="text-gray-500">Batería:</span>
+                  <span className="ml-2 font-medium text-gray-900">{producto.capacidadBateria}</span>
+                </div>
+              )}
             </div>
           </div>
 

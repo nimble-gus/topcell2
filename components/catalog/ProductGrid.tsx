@@ -27,7 +27,6 @@ export default function ProductGrid({ productos }: ProductGridProps) {
   const router = useRouter();
   
   // Obtener filtros de la URL
-  const tipoFiltro = searchParams.get("tipo") || "todos";
   const marcaFiltro = searchParams.get("marca") || "todas";
   const precioMinFiltro = searchParams.get("precioMin");
   const precioMaxFiltro = searchParams.get("precioMax");
@@ -35,13 +34,6 @@ export default function ProductGrid({ productos }: ProductGridProps) {
 
   // Filtrar productos
   let productosFiltrados = productos;
-
-  // Filtro por tipo
-  if (tipoFiltro !== "todos") {
-    productosFiltrados = productosFiltrados.filter(
-      (p) => p.tipo === tipoFiltro
-    );
-  }
 
   // Filtro por marca
   if (marcaFiltro !== "todas") {
@@ -82,7 +74,8 @@ export default function ProductGrid({ productos }: ProductGridProps) {
     if (paginaActual > totalPaginas && totalPaginas > 0) {
       const params = new URLSearchParams(searchParams.toString());
       params.set("pagina", "1");
-      router.push(`/catalogo?${params.toString()}`, { scroll: false });
+      const currentPath = window.location.pathname;
+      router.push(`${currentPath}?${params.toString()}`, { scroll: false });
     }
   }, [paginaActual, totalPaginas, searchParams, router]);
 
@@ -93,8 +86,11 @@ export default function ProductGrid({ productos }: ProductGridProps) {
     } else {
       params.set("pagina", nuevaPagina.toString());
     }
-    router.push(`/catalogo?${params.toString()}`, { scroll: false });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const currentPath = typeof window !== "undefined" ? window.location.pathname : "/catalogo";
+    router.push(`${currentPath}?${params.toString()}`, { scroll: false });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   if (productosFiltrados.length === 0) {

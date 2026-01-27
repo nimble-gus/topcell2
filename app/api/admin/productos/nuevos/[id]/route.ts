@@ -100,6 +100,7 @@ export async function PUT(
       mpxlsCamara,
       tamanoPantalla,
       tipoEntrada,
+      capacidadBateria,
       descripcion,
       featured,
       variantes, // variantes con imágenes
@@ -189,6 +190,7 @@ export async function PUT(
           mpxlsCamara,
           tamanoPantalla,
           tipoEntrada,
+          capacidadBateria: capacidadBateria?.trim() || null,
           descripcion: descripcion || null,
           featured: featured === true || featured === "true",
           stock: 0, // Se recalculará después

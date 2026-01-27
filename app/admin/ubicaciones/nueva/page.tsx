@@ -15,6 +15,7 @@ export default function NuevaLocalidadPage() {
     titulo: "",
     direccion: "",
     telefono: "",
+    horario: "",
     linkGoogleMaps: "",
     linkWaze: "",
     orden: 0,
@@ -38,6 +39,7 @@ export default function NuevaLocalidadPage() {
         body: JSON.stringify({
           ...formData,
           telefono: formData.telefono || null,
+          horario: formData.horario || null,
           linkGoogleMaps: formData.linkGoogleMaps || null,
           linkWaze: formData.linkWaze || null,
         }),
@@ -127,6 +129,19 @@ export default function NuevaLocalidadPage() {
               onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               placeholder="Ej: +502 1234-5678"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Horario de Atención
+            </label>
+            <textarea
+              value={formData.horario}
+              onChange={(e) => setFormData({ ...formData, horario: e.target.value })}
+              rows={3}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="Ej: Lunes a Viernes: 9:00 AM - 6:00 PM&#10;Sábados: 9:00 AM - 1:00 PM"
             />
           </div>
         </div>

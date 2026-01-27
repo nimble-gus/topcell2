@@ -30,6 +30,9 @@ export async function GET(
         colores: {
           include: {
             color: true,
+            imagenes: {
+              orderBy: { orden: "asc" },
+            },
           },
         },
         imagenes: true,
@@ -149,11 +152,36 @@ export async function PUT(
         where: { accesorioId: id },
       });
 
+      // Eliminar imágenes generales del producto (no las de colores, que se eliminan con cascade)
       await tx.imagenProducto.deleteMany({
-        where: { accesorioId: id },
+        where: { 
+          accesorioId: id,
+          accesorioColorId: null, // Solo eliminar imágenes generales
+        },
       });
 
-      // Actualizar datos del accesorio
+      // Crear colores con sus imágenes
+      const coloresConImagenes = await Promise.all(
+        colores.map(async (c: any) => {
+          const colorCreado = await tx.accesorioColor.create({
+            data: {
+              accesorioId: id,
+              colorId: parseInt(c.colorId),
+              stock: parseInt(c.stock || 0),
+              imagenes: {
+                create: (c.imagenes || []).map((url: string, imgIndex: number) => ({
+                  url,
+                  tipo: imgIndex === 0 ? "principal" : "galeria",
+                  orden: imgIndex,
+                })),
+              },
+            },
+          });
+          return colorCreado;
+        })
+      );
+
+      // Actualizar datos del accesorio con imágenes generales
       const accesorioActualizado = await tx.accesorio.update({
         where: { id },
         data: {
@@ -163,12 +191,6 @@ export async function PUT(
           descripcion: descripcion.trim(),
           featured: featured === true || featured === "true",
           stock: 0, // Se recalculará después
-          colores: {
-            create: colores.map((c: any) => ({
-              colorId: parseInt(c.colorId),
-              stock: parseInt(c.stock || 0),
-            })),
-          },
           imagenes: {
             create: (imagenes || []).map((url: string, index: number) => ({
               url,
@@ -182,6 +204,9 @@ export async function PUT(
           colores: {
             include: {
               color: true,
+              imagenes: {
+                orderBy: { orden: "asc" },
+              },
             },
           },
           imagenes: true,

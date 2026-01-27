@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       mpxlsCamara,
       tamanoPantalla,
       tipoEntrada,
+      capacidadBateria,
       stock,
       descripcion,
       featured,
@@ -131,6 +132,7 @@ export async function POST(request: NextRequest) {
         mpxlsCamara,
         tamanoPantalla,
         tipoEntrada,
+        capacidadBateria: capacidadBateria?.trim() || null,
         stock: 0, // Se calculará después desde las variantes
         descripcion: descripcion || null,
         featured: featured === true || featured === "true",

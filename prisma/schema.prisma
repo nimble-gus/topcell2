@@ -104,8 +104,9 @@ model AccesorioColor {
   stock       Int      @default(0) // Stock específico para este color
   createdAt   DateTime @default(now())
 
-  accesorio Accesorio @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
-  color     Color     @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  accesorio Accesorio        @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
+  color     Color            @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  imagenes  ImagenProducto[] @relation("AccesorioColorImagenes") // Imágenes específicas de este color
 
   @@unique([accesorioId, colorId])
   @@index([accesorioId])
@@ -113,22 +114,23 @@ model AccesorioColor {
 }
 
 model TelefonoNuevo {
-  id             Int      @id @default(autoincrement())
-  marcaId        Int
-  modelo         String
-  precio         Decimal  @db.Decimal(10, 2)
-  procesador     String
-  ram            String // Ej: "8GB", "12GB"
-  rom            String // Ej: "128GB", "256GB" - Este campo ahora es solo para referencia, las variantes tienen su propio ROM
-  mpxlsCamara    String // Ej: "48MP", "108MP"
-  tamanoPantalla String // Ej: "6.1 pulgadas"
-  tipoEntrada    String // Ej: "USB-C", "Lightning"
-  stock          Int      @default(0) // Stock total (calculado desde colores)
-  descripcion    String?  @db.Text
-  activo         Boolean  @default(true)
-  featured       Boolean  @default(false) // Producto destacado para FeaturedSection
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  marcaId           Int
+  modelo            String
+  precio            Decimal  @db.Decimal(10, 2)
+  procesador        String
+  ram               String // Ej: "8GB", "12GB"
+  rom               String // Ej: "128GB", "256GB" - Este campo ahora es solo para referencia, las variantes tienen su propio ROM
+  mpxlsCamara       String // Ej: "48MP", "108MP"
+  tamanoPantalla    String // Ej: "6.1 pulgadas"
+  tipoEntrada       String // Ej: "USB-C", "Lightning"
+  capacidadBateria  String? // Ej: "4000 mAh", "5000 mAh"
+  stock             Int      @default(0) // Stock total (calculado desde colores)
+  descripcion       String?  @db.Text
+  activo            Boolean  @default(true)
+  featured          Boolean  @default(false) // Producto destacado para FeaturedSection
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   marca      Marca                   @relation(fields: [marcaId], references: [id], onDelete: Restrict)
   variantes  TelefonoNuevoVariante[]
@@ -198,6 +200,7 @@ model ImagenProducto {
   modeloId                    Int? // Imagen de catálogo del modelo (foto oficial)
   telefonoSeminuevoVarianteId Int? // Imagen específica de la variante (foto real del teléfono)
   accesorioId                 Int?
+  accesorioColorId            Int? // Imagen específica del color del accesorio
   orden                       Int      @default(0) // Para ordenar imágenes
   createdAt                   DateTime @default(now())
 
@@ -206,12 +209,14 @@ model ImagenProducto {
   modelo                     Modelo?                    @relation(fields: [modeloId], references: [id], onDelete: Cascade)
   telefonoSeminuevoVariante  TelefonoSeminuevoVariante? @relation(fields: [telefonoSeminuevoVarianteId], references: [id], onDelete: Cascade)
   accesorio                  Accesorio?                 @relation(fields: [accesorioId], references: [id], onDelete: Cascade)
+  accesorioColor             AccesorioColor?            @relation("AccesorioColorImagenes", fields: [accesorioColorId], references: [id], onDelete: Cascade)
 
   @@index([telefonoNuevoId])
   @@index([telefonoNuevoVarianteId])
   @@index([modeloId])
   @@index([telefonoSeminuevoVarianteId])
   @@index([accesorioId])
+  @@index([accesorioColorId])
 }
 
 // ============================================
@@ -244,6 +249,7 @@ model Localidad {
   titulo         String // Título del lugar
   direccion      String   @db.Text
   telefono       String?
+  horario        String?  @db.Text // Horario de atención (ej: "Lunes a Viernes: 9:00 AM - 6:00 PM")
   linkGoogleMaps String? // URL de Google Maps
   linkWaze       String? // URL de Waze
   activo         Boolean  @default(true)

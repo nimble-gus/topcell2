@@ -18,6 +18,7 @@ interface Color {
 interface ColorStock {
   colorId: number;
   stock: number;
+  imagenes?: string[]; // Imágenes específicas de este color
 }
 
 interface AccesorioFormData {
@@ -78,11 +79,12 @@ export default function EditarAccesorioPage() {
           featured: accesorioData.featured || false,
         });
 
-        // Cargar colores con stock
+        // Cargar colores con stock e imágenes
         setColoresStock(
           accesorioData.colores.map((c: any) => ({
             colorId: c.colorId,
             stock: c.stock,
+            imagenes: c.imagenes ? c.imagenes.map((img: any) => img.url) : [],
           }))
         );
 
@@ -122,7 +124,7 @@ export default function EditarAccesorioPage() {
       return;
     }
 
-    setColoresStock([...coloresStock, { colorId, stock }]);
+    setColoresStock([...coloresStock, { colorId, stock, imagenes: [] }]);
 
     // Limpiar campos
     colorSelect.value = "";
@@ -136,6 +138,12 @@ export default function EditarAccesorioPage() {
   const handleUpdateColorStock = (colorId: number, stock: number) => {
     setColoresStock(
       coloresStock.map((c) => (c.colorId === colorId ? { ...c, stock } : c))
+    );
+  };
+
+  const handleUpdateColorImages = (colorId: number, imagenes: string[]) => {
+    setColoresStock(
+      coloresStock.map((c) => (c.colorId === colorId ? { ...c, imagenes } : c))
     );
   };
 
@@ -157,8 +165,9 @@ export default function EditarAccesorioPage() {
         colores: coloresStock.map((c) => ({
           colorId: c.colorId,
           stock: c.stock,
+          imagenes: c.imagenes || [], // Incluir imágenes por color
         })),
-        imagenes: imagenes,
+        imagenes: imagenes, // Imágenes generales del producto
       };
 
       const response = await fetch(`/api/admin/productos/accesorios/${id}`, {
@@ -347,38 +356,57 @@ export default function EditarAccesorioPage() {
                   return (
                     <div
                       key={colorStock.colorId}
-                      className="flex items-center gap-3 rounded-md border border-gray-200 bg-gray-50 p-3"
+                      className="rounded-md border border-gray-200 bg-gray-50 p-4 space-y-3"
                     >
-                      <span
-                        className="inline-block h-5 w-5 rounded-full"
-                        style={{ backgroundColor: color?.color.toLowerCase() }}
-                        title={color?.color}
-                      ></span>
-                      <span className="flex-1 text-sm font-medium text-gray-700">
-                        {color?.color || "Color"}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-600">Stock:</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={colorStock.stock}
-                          onChange={(e) =>
-                            handleUpdateColorStock(
-                              colorStock.colorId,
-                              parseInt(e.target.value) || 0
-                            )
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="inline-block h-5 w-5 rounded-full"
+                          style={{ backgroundColor: color?.color.toLowerCase() }}
+                          title={color?.color}
+                        ></span>
+                        <span className="flex-1 text-sm font-medium text-gray-700">
+                          {color?.color || "Color"}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-gray-600">Stock:</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={colorStock.stock}
+                            onChange={(e) =>
+                              handleUpdateColorStock(
+                                colorStock.colorId,
+                                parseInt(e.target.value) || 0
+                              )
+                            }
+                            className="w-20 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveColor(colorStock.colorId)}
+                          className="text-sm text-red-600 hover:text-red-900"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                      
+                      {/* Imágenes específicas de este color */}
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <label className="block text-xs font-medium text-gray-700 mb-2">
+                          Imágenes de este color ({color?.color || "N/A"})
+                        </label>
+                        <p className="text-xs text-gray-500 mb-2">
+                          Sube imágenes específicas de este accesorio en este color. Si no subes imágenes, se usarán las imágenes generales del producto.
+                        </p>
+                        <ImageUploader
+                          images={colorStock.imagenes || []}
+                          onImagesChange={(images) =>
+                            handleUpdateColorImages(colorStock.colorId, images)
                           }
-                          className="w-20 rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          maxImages={10}
                         />
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveColor(colorStock.colorId)}
-                        className="text-sm text-red-600 hover:text-red-900"
-                      >
-                        Eliminar
-                      </button>
                     </div>
                   );
                 })}

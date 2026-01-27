@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Crear el accesorio
+    // Crear el accesorio con colores e imágenes
     const accesorio = await prisma.accesorio.create({
       data: {
         marcaId: parseInt(marcaId),
@@ -113,6 +113,13 @@ export async function POST(request: NextRequest) {
           create: colores.map((c: any) => ({
             colorId: parseInt(c.colorId),
             stock: parseInt(c.stock || 0),
+            imagenes: {
+              create: (c.imagenes || []).map((url: string, imgIndex: number) => ({
+                url,
+                tipo: imgIndex === 0 ? "principal" : "galeria",
+                orden: imgIndex,
+              })),
+            },
           })),
         },
         imagenes: {
@@ -128,6 +135,9 @@ export async function POST(request: NextRequest) {
         colores: {
           include: {
             color: true,
+            imagenes: {
+              orderBy: { orden: "asc" },
+            },
           },
         },
         imagenes: true,

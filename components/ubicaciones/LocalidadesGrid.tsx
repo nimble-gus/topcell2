@@ -8,6 +8,7 @@ interface Localidad {
   titulo: string;
   direccion: string;
   telefono: string | null;
+  horario: string | null;
   linkGoogleMaps: string | null;
   linkWaze: string | null;
 }
@@ -96,6 +97,28 @@ export default function LocalidadesGrid({ localidades }: LocalidadesGridProps) {
                   >
                     {localidad.telefono}
                   </a>
+                </div>
+              )}
+
+              {/* Horario */}
+              {localidad.horario && (
+                <div className="flex items-start gap-2">
+                  <svg
+                    className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div className="text-gray-600 text-sm whitespace-pre-line">
+                    {localidad.horario}
+                  </div>
                 </div>
               )}
 

@@ -33,6 +33,7 @@ interface TelefonoNuevoFormData {
   mpxlsCamara: string;
   tamanoPantalla: string;
   tipoEntrada: string;
+  capacidadBateria: string;
   descripcion: string;
   featured: boolean;
   variantes: Variante[];
@@ -55,6 +56,7 @@ export default function EditarTelefonoPage() {
     mpxlsCamara: "",
     tamanoPantalla: "",
     tipoEntrada: "",
+    capacidadBateria: "",
     descripcion: "",
     featured: false,
     variantes: [],
@@ -95,6 +97,7 @@ export default function EditarTelefonoPage() {
           mpxlsCamara: telefonoData.mpxlsCamara,
           tamanoPantalla: telefonoData.tamanoPantalla,
           tipoEntrada: telefonoData.tipoEntrada,
+          capacidadBateria: telefonoData.capacidadBateria || "",
           descripcion: telefonoData.descripcion || "",
           featured: telefonoData.featured || false,
           variantes: telefonoData.variantes.map((v: any) => ({
@@ -461,6 +464,23 @@ export default function EditarTelefonoPage() {
                 <option value="Lightning">Lightning</option>
                 <option value="Micro USB">Micro USB</option>
               </select>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Capacidad de Batería
+                </label>
+                <input
+                  type="text"
+                  value={formData.capacidadBateria}
+                  onChange={(e) =>
+                    setFormData({ ...formData, capacidadBateria: e.target.value })
+                  }
+                  placeholder="Ej: 4000 mAh"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
             </div>
           </div>
         </div>
