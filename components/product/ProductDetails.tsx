@@ -36,6 +36,7 @@ interface ProductDetailsProps {
     mpxlsCamara: string;
     tamanoPantalla: string;
     tipoEntrada: string;
+    capacidadBateria: string | null;
     descripcion: string | null;
     imagenes: string[];
     variantes: VarianteNuevo[] | VarianteSeminuevo[];
