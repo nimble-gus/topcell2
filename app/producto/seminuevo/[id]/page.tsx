@@ -147,6 +147,7 @@ export default async function TelefonoSeminuevoPage({
             mpxlsCamara: telefono.mpxlsCamara,
             tamanoPantalla: telefono.tamanoPantalla,
             tipoEntrada: telefono.tipoEntrada,
+            capacidadBateria: null, // Los teléfonos seminuevos no tienen capacidad de batería fija
             descripcion: telefono.descripcion,
             imagenes: telefono.modelo?.imagenes.map(img => img.url) || [], // Imágenes de catálogo del modelo
             variantes: telefono.variantes.map(v => ({
