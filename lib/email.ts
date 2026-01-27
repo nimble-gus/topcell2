@@ -1,6 +1,18 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Inicialización lazy de Resend para evitar errores durante el build
+let resendInstance: Resend | null = null;
+
+function getResend(): Resend {
+  if (!resendInstance) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error("RESEND_API_KEY no está configurada. Por favor, configura la variable de entorno RESEND_API_KEY.");
+    }
+    resendInstance = new Resend(apiKey);
+  }
+  return resendInstance;
+}
 
 // Tipo para los datos de una orden
 interface OrdenData {
@@ -272,6 +284,7 @@ export async function sendOrdenCreatedEmail(orden: OrdenData, logoUrl?: string |
       </html>
     `;
 
+    const resend = getResend();
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || "TopCell <noreply@topcellgt.com>",
       to: [orden.usuario.email],
@@ -491,6 +504,7 @@ export async function sendOrdenUpdatedEmail(orden: OrdenData, estadoAnterior?: s
       </html>
     `;
 
+    const resend = getResend();
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || "TopCell <noreply@topcellgt.com>",
       to: [orden.usuario.email],
