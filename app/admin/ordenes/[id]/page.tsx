@@ -521,33 +521,68 @@ export default function DetalleOrdenPage() {
             </div>
           </div>
 
-          {/* Descargar Voucher */}
-          {(orden.metodoPago === "TARJETA" && (orden.estadoPago === "APROBADO" || orden.estadoPago === "ANULADO")) ? (
-            <div className="bg-white rounded-lg border border-gray-200 shadow p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Comprobante de Pago</h2>
-              <button
-                onClick={() => {
-                  window.open(`/api/ordenes/${ordenId}/voucher`, "_blank");
-                }}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+        {/* Descargar Voucher */}
+        {(orden.metodoPago === "TARJETA" && (orden.estadoPago === "APROBADO" || orden.estadoPago === "ANULADO")) ? (
+          <div className="bg-white rounded-lg border border-gray-200 shadow p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Comprobante de Pago</h2>
+            <button
+              onClick={() => {
+                window.open(`/api/ordenes/${ordenId}/voucher`, "_blank");
+              }}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                Descargar Voucher
-              </button>
-            </div>
-          ) : null}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Descargar Voucher
+            </button>
+          </div>
+        ) : null}
+
+        {/* Anulación de pago y cancelación */}
+        {puedeAnularPagoYCancelar && (
+          <div className="bg-white rounded-lg border border-red-200 shadow p-6">
+            <h2 className="text-xl font-bold text-red-800 mb-3">Anular Pago y Cancelar</h2>
+            <p className="text-sm text-red-700 mb-4">
+              Esta acción intentará <span className="font-semibold">anular el pago con tarjeta</span> en el
+              procesador y, si es exitosa, la orden pasará a estado <span className="font-semibold">CANCELADO</span> y
+              se restaurará el stock de los productos.
+            </p>
+            <button
+              onClick={handleCancelarConAnulacion}
+              disabled={cancelando}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v4m0 4h.01M4.93 4.93l14.14 14.14M12 4a8 8 0 100 16 8 8 0 000-16z"
+                />
+              </svg>
+              {cancelando ? "Anulando pago y cancelando..." : "Anular pago con tarjeta y cancelar orden"}
+            </button>
+            <p className="mt-2 text-xs text-red-600">
+              ⚠️ Solo disponible para órdenes con pago con tarjeta <span className="font-semibold">APROBADO</span> y que aún no han sido canceladas.
+            </p>
+          </div>
+        )}
 
           {/* Cambiar estado */}
           <div className="bg-white rounded-lg border border-gray-200 shadow p-6">
