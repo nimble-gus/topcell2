@@ -1,3 +1,12 @@
+/**
+ * Middleware para manejar autenticación, redirecciones y protección de rutas
+ * 
+ * NOTA: Next.js 16 muestra una advertencia sobre la deprecación del middleware.
+ * Esta es solo una advertencia y no afecta la funcionalidad. El middleware
+ * sigue siendo la forma correcta de manejar autenticación y redirecciones.
+ * La migración a "proxy" se recomendará en futuras versiones, pero por ahora
+ * este middleware funciona correctamente.
+ */
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
