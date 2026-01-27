@@ -90,6 +90,7 @@ export default function DetalleOrdenPage() {
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState(false);
   const [newEstado, setNewEstado] = useState("");
+  const [cancelando, setCancelando] = useState(false);
 
   useEffect(() => {
     loadOrden();
@@ -115,6 +116,17 @@ export default function DetalleOrdenPage() {
   const handleUpdateEstado = async () => {
     if (!newEstado || newEstado === orden?.estado) return;
 
+    // Confirmación extra cuando se cancela desde el selector
+    if (newEstado === "CANCELADO") {
+      const confirmado = window.confirm(
+        "¿Estás seguro de que deseas cancelar esta orden?\n\n" +
+        "- Se restaurará el stock de los productos.\n" +
+        "- Si la orden fue pagada con tarjeta y el pago está aprobado, se intentará anular el pago en el adquirente.\n\n" +
+        "Esta acción no se puede deshacer."
+      );
+      if (!confirmado) return;
+    }
+
     setUpdating(true);
     setError("");
 
@@ -139,6 +151,46 @@ export default function DetalleOrdenPage() {
       setError(error.message || "Error al actualizar el estado");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleCancelarConAnulacion = async () => {
+    if (!orden) return;
+
+    const confirmado = window.confirm(
+      "¿Confirmas que deseas ANULAR el pago con tarjeta y CANCELAR esta orden?\n\n" +
+      "- Se intentará anular el cargo en el procesador de pagos.\n" +
+      "- Si la anulación es exitosa, la orden pasará a estado CANCELADO y se restaurará el stock.\n" +
+      "- Si la anulación falla, la orden NO será cancelada.\n\n" +
+      "Esta acción no se puede deshacer."
+    );
+
+    if (!confirmado) return;
+
+    setCancelando(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/admin/ordenes/${ordenId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ estado: "CANCELADO" }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al cancelar la orden y anular el pago");
+      }
+
+      await loadOrden();
+    } catch (error: any) {
+      console.error("Error al cancelar y anular pago:", error);
+      setError(error.message || "Error al cancelar la orden y anular el pago");
+    } finally {
+      setCancelando(false);
     }
   };
 
@@ -207,6 +259,11 @@ export default function DetalleOrdenPage() {
 
   const estados = ["PENDIENTE", "PROCESANDO", "ENVIADO", "ENTREGADO", "CANCELADO"];
 
+  const puedeAnularPagoYCancelar =
+    orden.metodoPago === "TARJETA" &&
+    orden.estadoPago === "APROBADO" &&
+    orden.estado !== "CANCELADO";
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -222,6 +279,11 @@ export default function DetalleOrdenPage() {
             <p className="text-sm text-gray-500 mt-1">Creada el {fechaOrden}</p>
           </div>
           <div className="flex items-center gap-4">
+            {orden.metodoPago === "TARJETA" && orden.estadoPago && (
+              <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                Pago: {orden.estadoPago}
+              </span>
+            )}
             <span
               className={`px-3 py-1 text-sm font-semibold rounded-full ${getEstadoColor(orden.estado)}`}
             >
