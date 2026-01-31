@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendOrderConfirmationEmailForOrdenId } from "@/lib/email";
 import {
   buildPaso3Payload,
   callNeoPayAPI,
-  generateSystemsTraceNo,
   ejecutarReversaAutomatica,
   getResponseCodeMessage,
   isTimeoutResponseCode,
@@ -43,8 +43,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Usar el systemsTraceNo proporcionado o el original de la orden
-    const traceNo = systemsTraceNo || orden.systemsTraceNoOriginal || generateSystemsTraceNo();
+    // Usar el systemsTraceNo original de la orden (mismo que Paso 1)
+    const traceNo = systemsTraceNo || orden.systemsTraceNoOriginal;
+    if (!traceNo) {
+      return NextResponse.json(
+        { error: "Falta SystemsTraceNo de la transacción original" },
+        { status: 400 }
+      );
+    }
 
     // ✅ Validar que el ReferenceId coincida con el guardado en la orden
     const referenceIdOrden = orden.referenciaPago;
@@ -139,7 +145,7 @@ export async function POST(request: NextRequest) {
     try {
       // Usar timeout de 90 segundos para el Paso 3 porque NeoPay puede estar esperando
       // la respuesta de Cardinal Commerce, lo cual puede tardar más tiempo
-      neopayResponse = await callNeoPayAPI(payload, request.headers, 90000); // 90 segundos
+      neopayResponse = await callNeoPayAPI(payload, request.headers, 60000); // 60 segundos - timeout requiere reversa automática
     } catch (error: any) {
       // Si hay timeout, ejecutar reversa automática
       if (error.isTimeout) {
@@ -497,6 +503,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (aprobado) {
+      // Enviar email de confirmación solo cuando pago aprobado
+      try {
+        await sendOrderConfirmationEmailForOrdenId(orden.id);
+      } catch (emailError: any) {
+        console.error("Error al enviar email de confirmación (Paso 3 aprobado):", emailError);
+      }
       return NextResponse.json({
         success: true,
         aprobado: true,

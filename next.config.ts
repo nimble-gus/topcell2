@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Evitar empaquetar pdfkit: usa fs.readFileSync(__dirname + '/data/*.afm')
+  // y en el bundle __dirname apunta a .next/server/vendor-chunks donde no existen los .afm
+  serverExternalPackages: ["pdfkit"],
   // Usar webpack explícitamente para tener control sobre la configuración
   // Alternativamente, puedes usar Turbopack agregando: turbopack: {}
   webpack: (config, { isServer }) => {

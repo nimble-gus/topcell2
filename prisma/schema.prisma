@@ -424,6 +424,20 @@ model ItemOrden {
 }
 
 // ============================================
+// CONFIGURACIÓN - SISTEMA
+// ============================================
+
+// Contador cíclico para SystemsTraceNo de NeoPay (000001 a 999999)
+model ConfiguracionSistema {
+  id        Int      @id @default(autoincrement())
+  clave     String   @unique // ej: "neopay_systemsTraceNo"
+  valor     String   // ej: "000123"
+  updatedAt DateTime @updatedAt
+
+  @@index([clave])
+}
+
+// ============================================
 // CONFIGURACIÓN - CUENTAS BANCARIAS
 // ============================================
 

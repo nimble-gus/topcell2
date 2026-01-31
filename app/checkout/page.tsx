@@ -14,6 +14,7 @@ import {
   clearCart,
   type CartItem,
 } from "@/lib/cart";
+import { luhnCheck, isCardExpired, DEPARTAMENTOS_GT } from "@/lib/neopay";
 import SingleImageUploader from "@/components/admin/SingleImageUploader";
 
 interface CuentaBancaria {
@@ -72,6 +73,14 @@ export default function CheckoutPage() {
     telefonoRecibe: "",
     notas: "",
   });
+  // Dirección de facturación (BillTo) - obligatoria cuando pago con tarjeta
+  const [facturacionData, setFacturacionData] = useState({
+    direccion: "",
+    ciudad: "",
+    departamento: "GU",
+    codigoPostal: "",
+    usarMismaDireccion: true,
+  });
   const [boletaPagoUrl, setBoletaPagoUrl] = useState<string>("");
   
   // Datos de tarjeta
@@ -82,12 +91,27 @@ export default function CheckoutPage() {
     nombreTitular: "",
   });
 
+  // NeoCuotas: null = contado, número = cuotas (3, 6, 10, 12, 18, 24)
+  const [cuotas, setCuotas] = useState<number | null>(null);
+
   useEffect(() => {
     loadCart();
     loadServerData();
     loadCuentasBancarias();
     loadUserProfile();
   }, [session]);
+
+  // Sincronizar facturación con datos de envío cuando "usar misma dirección" y es ENVIO
+  useEffect(() => {
+    if (facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO") {
+      setFacturacionData((prev) => ({
+        ...prev,
+        direccion: formData.direccion,
+        ciudad: formData.ciudad,
+        codigoPostal: formData.codigoPostal,
+      }));
+    }
+  }, [formData.direccion, formData.ciudad, formData.codigoPostal, tipoEnvio]);
 
   const loadUserProfile = async () => {
     // Verificar si hay sesión de usuario (no admin)
@@ -235,12 +259,38 @@ export default function CheckoutPage() {
     }
 
     if (metodoPago === "TARJETA") {
-      if (!tarjetaData.numero || tarjetaData.numero.replace(/\s/g, "").length < 13) {
+      // Validar dirección de facturación (BillTo)
+      const dirFact = facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO"
+        ? formData.direccion.trim()
+        : facturacionData.direccion.trim();
+      const ciudadFact = facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO"
+        ? formData.ciudad.trim()
+        : facturacionData.ciudad.trim();
+      if (!dirFact || dirFact.length < 10) {
+        setError("Por favor ingresa la dirección de facturación (asociada a tu tarjeta)");
+        return false;
+      }
+      if (!ciudadFact || ciudadFact.length < 2) {
+        setError("Por favor ingresa la ciudad de facturación");
+        return false;
+      }
+      const numeroLimpio = tarjetaData.numero.replace(/\s/g, "");
+      if (!numeroLimpio || numeroLimpio.length < 13) {
         setError("Por favor ingresa un número de tarjeta válido");
+        return false;
+      }
+      if (!luhnCheck(numeroLimpio)) {
+        setError("El número de tarjeta no es válido. Verifica los dígitos ingresados.");
         return false;
       }
       if (!tarjetaData.fechaVencimiento || !/^\d{4}$/.test(tarjetaData.fechaVencimiento)) {
         setError("Por favor ingresa una fecha de vencimiento válida (MMAA)");
+        return false;
+      }
+      const mm = tarjetaData.fechaVencimiento.slice(0, 2);
+      const yy = tarjetaData.fechaVencimiento.slice(2, 4);
+      if (isCardExpired(mm, yy)) {
+        setError("La fecha de vencimiento de la tarjeta ha expirado");
         return false;
       }
       if (!tarjetaData.cvv || tarjetaData.cvv.length < 3) {
@@ -341,6 +391,7 @@ export default function CheckoutPage() {
           },
           body: JSON.stringify({
             ordenId: data.ordenId,
+            cuotas: cuotas ?? undefined,
             tarjeta: {
               numero: tarjetaData.numero.replace(/\s/g, ""),
               fechaVencimiento: tarjetaData.fechaVencimiento,
@@ -355,6 +406,17 @@ export default function CheckoutPage() {
               ciudad: tipoEnvio === "ENVIO" ? formData.ciudad.trim() : "Ciudad de Guatemala",
               codigoPostal: formData.codigoPostal.trim() || undefined,
               pais: "GT",
+              direccionFacturacion: (facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO")
+                ? formData.direccion.trim()
+                : facturacionData.direccion.trim(),
+              ciudadFacturacion: (facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO")
+                ? formData.ciudad.trim()
+                : facturacionData.ciudad.trim(),
+              departamento: facturacionData.departamento,
+              codigoPostalFacturacion: (facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO"
+                ? formData.codigoPostal.trim()
+                : facturacionData.codigoPostal.trim())
+                || DEPARTAMENTOS_GT[facturacionData.departamento]?.codigoPostal,
             },
             monto: total,
           }),
@@ -371,8 +433,12 @@ export default function CheckoutPage() {
           if (paso1Data.detalles) {
             errorMessage += ` - ${paso1Data.detalles}`;
           }
-          // En desarrollo, mostrar más detalles
-          if (process.env.NODE_ENV === "development" && paso1Data.respuestaCompleta) {
+          // Código -1: sugerencias para ERROR GENERAL EN LA OPERACIÓN
+          if (paso1Data.codigoRespuesta === "-1" || paso1Data.codigoRespuesta === -1) {
+            errorMessage += ". Posibles causas: credenciales NeoPay incorrectas (.env), URL de callback (NEOPAY_URL_COMMERCE) no accesible, o error temporal del servicio. Verifica que ngrok esté activo si usas túnel.";
+          }
+          // En desarrollo, mostrar respuesta de NeoPay solo si tiene contenido
+          if (process.env.NODE_ENV === "development" && paso1Data.respuestaCompleta && Object.keys(paso1Data.respuestaCompleta).length > 0) {
             console.error("Respuesta completa de NeoPay:", paso1Data.respuestaCompleta);
           }
           throw new Error(errorMessage);
@@ -584,7 +650,16 @@ export default function CheckoutPage() {
                           name="tipoEnvio"
                           value="ENVIO"
                           checked={tipoEnvio === "ENVIO"}
-                          onChange={(e) => setTipoEnvio(e.target.value as "ENVIO")}
+                          onChange={(e) => {
+                            setTipoEnvio(e.target.value as "ENVIO");
+                            setFacturacionData((prev) => ({
+                              ...prev,
+                              usarMismaDireccion: true,
+                              direccion: formData.direccion,
+                              ciudad: formData.ciudad,
+                              codigoPostal: formData.codigoPostal,
+                            }));
+                          }}
                           className="w-5 h-5 text-orange-500 focus:ring-orange-500"
                         />
                         <div>
@@ -601,7 +676,16 @@ export default function CheckoutPage() {
                           name="tipoEnvio"
                           value="RECOGER_BODEGA"
                           checked={tipoEnvio === "RECOGER_BODEGA"}
-                          onChange={(e) => setTipoEnvio(e.target.value as "RECOGER_BODEGA")}
+                          onChange={(e) => {
+                            setTipoEnvio(e.target.value as "RECOGER_BODEGA");
+                            setFacturacionData((prev) => ({
+                              ...prev,
+                              usarMismaDireccion: false,
+                              direccion: "",
+                              ciudad: "",
+                              codigoPostal: "",
+                            }));
+                          }}
                           className="w-5 h-5 text-orange-500 focus:ring-orange-500"
                         />
                         <div>
@@ -830,6 +914,177 @@ export default function CheckoutPage() {
                         </div>
 
                         <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            NeoCuotas - Paga en cuotas sin interés
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            <label
+                              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer hover:bg-gray-50 transition-colors ${
+                                cuotas === null
+                                  ? "border-orange-500 bg-orange-50"
+                                  : "border-gray-300"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="cuotas"
+                                checked={cuotas === null}
+                                onChange={() => setCuotas(null)}
+                                className="text-orange-500 focus:ring-orange-500 sr-only"
+                              />
+                              <span className="text-sm font-medium">Contado</span>
+                            </label>
+                            {[3, 6, 10, 12, 18, 24].map((n) => (
+                              <label
+                                key={n}
+                                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer hover:bg-gray-50 transition-colors ${
+                                  cuotas === n ? "border-orange-500 bg-orange-50" : "border-gray-300"
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="cuotas"
+                                  checked={cuotas === n}
+                                  onChange={() => setCuotas(n)}
+                                  className="text-orange-500 focus:ring-orange-500 sr-only"
+                                />
+                                <span className="text-sm font-medium">{n} cuotas</span>
+                              </label>
+                            ))}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2">
+                            Compra en cuotas a precio de contado. Selecciona el número de cuotas que deseas.
+                          </p>
+                        </div>
+
+                        <div className="space-y-4 border-t border-gray-200 pt-4">
+                          <h3 className="text-sm font-semibold text-gray-900">
+                            Dirección de facturación (asociada a tu tarjeta)
+                          </h3>
+                          {tipoEnvio === "ENVIO" && (
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={facturacionData.usarMismaDireccion}
+                                onChange={(e) => setFacturacionData((prev) => ({
+                                  ...prev,
+                                  usarMismaDireccion: e.target.checked,
+                                  ...(e.target.checked ? {
+                                    direccion: formData.direccion,
+                                    ciudad: formData.ciudad,
+                                    codigoPostal: formData.codigoPostal,
+                                  } : {}),
+                                }))}
+                                className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                              />
+                              <span className="text-sm text-gray-700">Usar misma dirección de envío</span>
+                            </label>
+                          )}
+                          {(!facturacionData.usarMismaDireccion || tipoEnvio === "RECOGER_BODEGA") && (
+                            <>
+                              <div>
+                                <label htmlFor="factDireccion" className="block text-sm font-medium text-gray-700 mb-2">
+                                  Dirección de facturación <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                  id="factDireccion"
+                                  value={facturacionData.direccion}
+                                  onChange={(e) => setFacturacionData((prev) => ({ ...prev, direccion: e.target.value }))}
+                                  rows={2}
+                                  required={!facturacionData.usarMismaDireccion || tipoEnvio === "RECOGER_BODEGA"}
+                                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                  placeholder="Calle, número, colonia (sin tildes)"
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label htmlFor="factCiudad" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Ciudad <span className="text-red-500">*</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id="factCiudad"
+                                    value={facturacionData.ciudad}
+                                    onChange={(e) => setFacturacionData((prev) => ({ ...prev, ciudad: e.target.value }))}
+                                    required={!facturacionData.usarMismaDireccion || tipoEnvio === "RECOGER_BODEGA"}
+                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                    placeholder="Sin tildes"
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="factDepartamento" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Departamento <span className="text-red-500">*</span>
+                                  </label>
+                                  <select
+                                    id="factDepartamento"
+                                    value={facturacionData.departamento}
+                                    onChange={(e) => setFacturacionData((prev) => ({
+                                      ...prev,
+                                      departamento: e.target.value,
+                                      codigoPostal: DEPARTAMENTOS_GT[e.target.value]?.codigoPostal || prev.codigoPostal,
+                                    }))}
+                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                  >
+                                    {Object.entries(DEPARTAMENTOS_GT).map(([code, { nombre }]) => (
+                                      <option key={code} value={code}>{nombre}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                              <div>
+                                <label htmlFor="factCodigoPostal" className="block text-sm font-medium text-gray-700 mb-2">
+                                  Código postal
+                                </label>
+                                <input
+                                  type="text"
+                                  id="factCodigoPostal"
+                                  value={facturacionData.codigoPostal}
+                                  onChange={(e) => setFacturacionData((prev) => ({ ...prev, codigoPostal: e.target.value }))}
+                                  placeholder={DEPARTAMENTOS_GT[facturacionData.departamento]?.codigoPostal || "Según departamento"}
+                                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                />
+                              </div>
+                            </>
+                          )}
+                          {(facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO") && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label htmlFor="factDepartamentoEnv" className="block text-sm font-medium text-gray-700 mb-2">
+                                  Departamento <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                  id="factDepartamentoEnv"
+                                  value={facturacionData.departamento}
+                                  onChange={(e) => setFacturacionData((prev) => ({
+                                    ...prev,
+                                    departamento: e.target.value,
+                                    codigoPostal: DEPARTAMENTOS_GT[e.target.value]?.codigoPostal || prev.codigoPostal,
+                                  }))}
+                                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                >
+                                  {Object.entries(DEPARTAMENTOS_GT).map(([code, { nombre }]) => (
+                                    <option key={code} value={code}>{nombre}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label htmlFor="factCodigoPostalEnv" className="block text-sm font-medium text-gray-700 mb-2">
+                                  Código postal
+                                </label>
+                                <input
+                                  type="text"
+                                  id="factCodigoPostalEnv"
+                                  value={facturacionData.codigoPostal || formData.codigoPostal}
+                                  onChange={(e) => setFacturacionData((prev) => ({ ...prev, codigoPostal: e.target.value }))}
+                                  placeholder={DEPARTAMENTOS_GT[facturacionData.departamento]?.codigoPostal || "Según departamento"}
+                                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
                           <label htmlFor="numeroTarjeta" className="block text-sm font-medium text-gray-700 mb-2">
                             Número de Tarjeta <span className="text-red-500">*</span>
                           </label>
@@ -883,7 +1138,7 @@ export default function CheckoutPage() {
                               CVV <span className="text-red-500">*</span>
                             </label>
                             <input
-                              type="text"
+                              type="password"
                               id="cvv"
                               name="cvv"
                               value={tarjetaData.cvv}
@@ -893,6 +1148,7 @@ export default function CheckoutPage() {
                               }}
                               maxLength={4}
                               required
+                              autoComplete="off"
                               className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
                               placeholder="123"
                             />

@@ -196,29 +196,29 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
       doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
       doc.moveDown();
 
-      // Totales
+      // Totales: etiqueta a la izquierda, valor a la derecha (evitar superposición)
       doc.fontSize(12);
       const subtotalY = doc.y;
-      doc.text("Subtotal:", 400, subtotalY, { width: 100, align: "right" });
-      doc.text(`Q ${data.subtotal.toFixed(2)}`, 400, subtotalY, { width: 100, align: "right" });
+      doc.text("Subtotal:", 350, subtotalY, { width: 100 });
+      doc.text(`Q ${data.subtotal.toFixed(2)}`, 400, subtotalY, { width: 150, align: "right" });
       doc.moveDown(0.5);
-      
+
       if (data.envio > 0) {
         const envioY = doc.y;
-        doc.text("Envío:", 400, envioY, { width: 100, align: "right" });
-        doc.text(`Q ${data.envio.toFixed(2)}`, 400, envioY, { width: 100, align: "right" });
+        doc.text("Envío:", 350, envioY, { width: 100 });
+        doc.text(`Q ${data.envio.toFixed(2)}`, 400, envioY, { width: 150, align: "right" });
         doc.moveDown(0.5);
       }
-      
+
       // Total (negativo si es anulación)
       const totalY = doc.y;
       doc.fontSize(14);
       if (data.esAnulacion) {
-        doc.text("TOTAL (ANULACIÓN):", 400, totalY, { width: 100, align: "right" });
-        doc.text(`Q -${data.total.toFixed(2)}`, 400, totalY, { width: 100, align: "right" });
+        doc.text("TOTAL (ANULACIÓN):", 350, totalY, { width: 100 });
+        doc.text(`Q -${data.total.toFixed(2)}`, 400, totalY, { width: 150, align: "right" });
       } else {
-        doc.text("TOTAL:", 400, totalY, { width: 100, align: "right" });
-        doc.text(`Q ${data.total.toFixed(2)}`, 400, totalY, { width: 100, align: "right" });
+        doc.text("TOTAL:", 350, totalY, { width: 100 });
+        doc.text(`Q ${data.total.toFixed(2)}`, 400, totalY, { width: 150, align: "right" });
       }
       doc.moveDown();
 

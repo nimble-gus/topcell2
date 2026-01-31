@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendOrderConfirmationEmailForOrdenId } from "@/lib/email";
 import {
   buildPaso5Payload,
   callNeoPayAPI,
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
     let reversaEjecutada = false;
     
     try {
-      neopayResponse = await callNeoPayAPI(payload, request.headers, 90000); // 90 segundos
+      neopayResponse = await callNeoPayAPI(payload, request.headers, 60000); // 60 segundos - timeout requiere reversa automática
     } catch (error: any) {
       // Si hay timeout, ejecutar reversa automática
       if (error.isTimeout) {
@@ -293,6 +294,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (aprobado) {
+      // Enviar email de confirmación solo cuando pago aprobado
+      try {
+        await sendOrderConfirmationEmailForOrdenId(orden.id);
+      } catch (emailError: any) {
+        console.error("Error al enviar email de confirmación (Paso 5 aprobado):", emailError);
+      }
       return NextResponse.json({
         success: true,
         aprobado: true,

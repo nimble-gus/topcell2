@@ -12,12 +12,14 @@ function ThreeDSecurePaso4Content() {
   const formRef = useRef<HTMLFormElement>(null);
   const redirectingRef = useRef(false);
   const formSubmittedRef = useRef(false); // Bandera para prevenir múltiples submits
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const [accessToken, setAccessToken] = useState<string>("");
   const [deviceDataCollectionUrl, setDeviceDataCollectionUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [serverData, setServerData] = useState<any>(null);
+  const [countdown, setCountdown] = useState<number | null>(null); // Segundos restantes antes de redirigir
 
   const ordenId = searchParams.get("ordenId");
   const referenceId = searchParams.get("referenceId");
@@ -165,18 +167,28 @@ function ThreeDSecurePaso4Content() {
         }
         redirectingRef.current = true;
         
-        // Esperar un momento para asegurar que Cardinal Commerce notifique a NeoPay
-        console.log("⏳ Esperando 15 segundos para que Cardinal Commerce notifique a NeoPay (Paso 4)...");
+        // Espera reducida (5 seg) para que Cardinal notifique a NeoPay - antes 15s parecía que no avanzaba
+        const SEGUNDOS_ESPERA = 5;
+        setCountdown(SEGUNDOS_ESPERA);
+        console.log(`⏳ Redirigiendo en ${SEGUNDOS_ESPERA} segundos (Paso 4)...`);
         
-        setTimeout(() => {
-          console.log("✅ Redirigiendo al callback para proceder con Paso 5...");
-          if (ordenId && referenceId) {
-            redirectingRef.current = false;
-            router.push(
-              `/pago/3dsecure/callback-page?ordenId=${ordenId}&referenceId=${referenceId}&systemsTraceNo=${systemsTraceNo || ""}&paso=5`
-            );
+        let segundosRestantes = SEGUNDOS_ESPERA;
+        const intervalId = setInterval(() => {
+          segundosRestantes -= 1;
+          setCountdown(segundosRestantes);
+          if (segundosRestantes <= 0) {
+            clearInterval(intervalId);
+            countdownIntervalRef.current = null;
+            console.log("✅ Redirigiendo al callback para proceder con Paso 5...");
+            if (ordenId && referenceId) {
+              redirectingRef.current = false;
+              router.push(
+                `/pago/3dsecure/callback-page?ordenId=${ordenId}&referenceId=${referenceId}&systemsTraceNo=${systemsTraceNo || ""}&paso=5`
+              );
+            }
           }
-        }, 15000); // Esperar 15 segundos antes de redirigir
+        }, 1000);
+        countdownIntervalRef.current = intervalId;
       } 
       // Verificar si hay error o fallo
       else if (status === "FAILURE" || status === "ERROR" || status === "Error" || 
@@ -196,6 +208,10 @@ function ThreeDSecurePaso4Content() {
     
     return () => {
       window.removeEventListener("message", handleMessage);
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
       console.log("Listener de mensajes removido");
     };
   }, [ordenId, referenceId, systemsTraceNo, router]);
@@ -437,9 +453,15 @@ function ThreeDSecurePaso4Content() {
                   {/* Mensaje mientras se procesa */}
                   <div className="p-8 text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
-                    <p className="text-gray-600">Procesando autenticación adicional (Paso 4)...</p>
+                    <p className="text-gray-600">
+                      {countdown !== null
+                        ? `Autenticación completada. Redirigiendo en ${countdown} segundos...`
+                        : "Procesando autenticación adicional (Paso 4)..."}
+                    </p>
                     <p className="text-sm text-gray-500 mt-2">
-                      Cardinal Commerce está verificando tu tarjeta. Por favor espera...
+                      {countdown !== null
+                        ? "Cardinal Commerce verificó tu tarjeta. Procediendo a confirmar el pago..."
+                        : "Cardinal Commerce está verificando tu tarjeta. Por favor espera..."}
                     </p>
                   </div>
                 </>

@@ -33,14 +33,24 @@ function ThreeDSecureCallbackContent() {
   useEffect(() => {
     loadServerData();
     
-    // Prevenir ejecuciones duplicadas usando useRef (más confiable que variables globales)
+    // Prevenir ejecuciones duplicadas (React Strict Mode monta 2 veces en dev)
+    // sessionStorage persiste entre remounts; useRef no sobrevive unmount
+    const paso = searchParams.get("paso") || "3";
+    const storageKey = `3ds-confirmar-${ordenId}-${paso}`;
+    if (typeof window !== "undefined" && sessionStorage.getItem(storageKey)) {
+      console.log("⚠️ Confirmación ya en curso o ejecutada, ignorando duplicado...");
+      return;
+    }
     if (hasExecutedRef.current) {
-      console.log("⚠️ Callback ya se ejecutó, ignorando ejecución duplicada...");
+      console.log("⚠️ Callback ya se ejecutó (ref), ignorando...");
       return;
     }
     
     if (ordenId && referenceId) {
       hasExecutedRef.current = true;
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(storageKey, "1");
+      }
       console.log("✅ Ejecutando confirmarPago por primera vez...");
       confirmarPago();
     } else {
@@ -163,10 +173,15 @@ function ThreeDSecureCallbackContent() {
         console.error("  Data completa:", JSON.stringify(data, null, 2));
         
         setError(errorCompleto);
+        // Limpiar flag para permitir reintento si el usuario recarga
+        const paso = searchParams.get("paso") || "3";
+        sessionStorage.removeItem(`3ds-confirmar-${ordenId}-${paso}`);
       }
     } catch (error: any) {
       console.error("❌ Error al confirmar pago:", error);
       setError(error.message || "Error al confirmar el pago. Por favor intenta nuevamente.");
+      const paso = searchParams.get("paso") || "3";
+      sessionStorage.removeItem(`3ds-confirmar-${ordenId}-${paso}`);
     } finally {
       setLoading(false);
     }

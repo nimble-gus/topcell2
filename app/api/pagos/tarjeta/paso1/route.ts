@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendOrderConfirmationEmailForOrdenId } from "@/lib/email";
 import {
   buildPaso1Payload,
+  cuotasToAdditionalData,
   callNeoPayAPI,
-  generateSystemsTraceNo,
   getLast4Digits,
   getCardType,
   ejecutarReversaAutomatica,
@@ -11,7 +12,9 @@ import {
   isTimeoutResponseCode,
   isApprovedResponseCode,
   isPartialAuthorizationCode,
+  generateSystemsTraceNo,
 } from "@/lib/neopay";
+import { getNextSystemsTraceNo } from "@/lib/systemTraceNo";
 import { Prisma } from "@/app/generated/prisma/client";
 
 export async function POST(request: NextRequest) {
@@ -22,6 +25,7 @@ export async function POST(request: NextRequest) {
       tarjeta,
       cliente,
       monto,
+      cuotas, // Opcional: número de cuotas para NeoCuotas (3, 6, 10, 12, 18, 24). null/undefined = contado
     } = body;
 
     // Validar datos requeridos
@@ -66,11 +70,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generar SystemsTraceNo único
-    const systemsTraceNo = generateSystemsTraceNo();
+    // Obtener SystemsTraceNo correlativo cíclico (000001-999999)
+    // Fallback a aleatorio si la tabla ConfiguracionSistema no existe (migración pendiente)
+    let systemsTraceNo: string;
+    try {
+      systemsTraceNo = await getNextSystemsTraceNo();
+    } catch (err) {
+      console.warn("ConfiguracionSistema no disponible, usando SystemsTraceNo aleatorio:", err);
+      systemsTraceNo = generateSystemsTraceNo();
+    }
 
     // Obtener URL de retorno
     const config = await import("@/lib/neopay").then(m => m.getNeoPayConfig());
+
+    // Construir AdditionalData para NeoCuotas si se seleccionaron cuotas
+    const additionalData = cuotasToAdditionalData(cuotas);
 
     // Construir payload para Paso 1
     const payload = buildPaso1Payload(
@@ -78,7 +92,8 @@ export async function POST(request: NextRequest) {
       cliente,
       monto,
       systemsTraceNo,
-      config.urlCommerce
+      config.urlCommerce,
+      additionalData || undefined
     );
 
     // Llamar a NeoPay con manejo de timeout
@@ -424,6 +439,13 @@ export async function POST(request: NextRequest) {
           typeOperation: typeOperation || ordenActualizada?.typeOperation || null,
         },
       });
+
+      // Enviar email de confirmación solo cuando pago aprobado
+      try {
+        await sendOrderConfirmationEmailForOrdenId(orden.id);
+      } catch (emailError: any) {
+        console.error("Error al enviar email de confirmación (pago aprobado):", emailError);
+      }
 
       return NextResponse.json({
         success: true,

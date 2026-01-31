@@ -442,8 +442,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Enviar email de confirmación (no bloqueamos si falla)
-    if (ordenCompleta) {
+    // Enviar email de confirmación solo cuando la transacción está confirmada
+    // Para TARJETA: el email se envía cuando el pago es aprobado (paso1, paso3 o paso5)
+    // Para CONTRA_ENTREGA y TRANSFERENCIA: la orden está confirmada al crearse
+    if (ordenCompleta && metodoPago !== "TARJETA") {
       try {
         const itemsParaEmail = ordenCompleta.items.map((item) => {
           let nombreProducto = "Producto";

@@ -1,4 +1,41 @@
 /**
+ * Valida número de tarjeta con algoritmo Luhn (mod10)
+ */
+export function luhnCheck(cardNumber: string): boolean {
+  const digits = cardNumber.replace(/\D/g, "");
+  if (digits.length < 13 || digits.length > 19) return false;
+
+  let sum = 0;
+  let isEven = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i], 10);
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    isEven = !isEven;
+  }
+  return sum % 10 === 0;
+}
+
+/**
+ * Verifica si la fecha de vencimiento (MMYY) está vencida
+ */
+export function isCardExpired(mm: string, yy: string): boolean {
+  if (!mm || !yy || mm.length !== 2 || yy.length !== 2) return true;
+  const month = parseInt(mm, 10);
+  const year = parseInt(yy, 10);
+  if (month < 1 || month > 12) return true;
+  const now = new Date();
+  const currentYear = now.getFullYear() % 100;
+  const currentMonth = now.getMonth() + 1;
+  if (year < currentYear) return true;
+  if (year === currentYear && month < currentMonth) return true;
+  return false;
+}
+
+/**
  * Configuración de NeoPay según el ambiente
  */
 export function getNeoPayConfig() {
@@ -174,6 +211,72 @@ export interface ClienteData {
   ciudad: string;
   codigoPostal?: string;
   pais?: string;
+  /** Dirección de facturación (BillTo) - ingresada por el tarjetahabiente. Si no se envía, se usa direccion. */
+  direccionFacturacion?: string;
+  /** Ciudad de facturación. Si no se envía, se usa ciudad. */
+  ciudadFacturacion?: string;
+  /** Código ISO 3166-2 del departamento (ej: GU, PE, PR). Obligatorio para BillTo. */
+  departamento?: string;
+  /** Código postal de facturación según departamento. Si no se envía, se infiere del departamento. */
+  codigoPostalFacturacion?: string;
+}
+
+/** Normaliza texto para BillTo: sin tildes ni caracteres especiales (solo A-Z, a-z, 0-9, espacios) */
+export function normalizeBillToText(str: string): string {
+  if (!str) return "";
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // quitar tildes
+    .replace(/[^a-zA-Z0-9\s]/g, "") // quitar caracteres especiales
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Normaliza dirección para BillTo: sin tildes, solo permite punto(.), coma(,) y guión(-) como excepciones */
+export function normalizeBillToAddress(str: string): string {
+  if (!str) return "";
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // quitar tildes
+    .replace(/[^a-zA-Z0-9\s.,\-]/g, "") // solo letras, números, espacios, . , -
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Códigos ISO 3166-2 departamentos Guatemala y código postal por defecto */
+export const DEPARTAMENTOS_GT: Record<string, { nombre: string; codigoPostal: string }> = {
+  AV: { nombre: "Alta Verapaz", codigoPostal: "16001" },
+  BV: { nombre: "Baja Verapaz", codigoPostal: "15001" },
+  CM: { nombre: "Chimaltenango", codigoPostal: "04001" },
+  CQ: { nombre: "Chiquimula", codigoPostal: "20001" },
+  PR: { nombre: "El Progreso", codigoPostal: "02001" },
+  ES: { nombre: "Escuintla", codigoPostal: "05001" },
+  GU: { nombre: "Guatemala", codigoPostal: "01001" },
+  HU: { nombre: "Huehuetenango", codigoPostal: "13001" },
+  IZ: { nombre: "Izabal", codigoPostal: "18001" },
+  JA: { nombre: "Jalapa", codigoPostal: "21001" },
+  JU: { nombre: "Jutiapa", codigoPostal: "22001" },
+  PE: { nombre: "Petén", codigoPostal: "17001" },
+  QZ: { nombre: "Quetzaltenango", codigoPostal: "09001" },
+  QC: { nombre: "Quiché", codigoPostal: "14001" },
+  RE: { nombre: "Retalhuleu", codigoPostal: "11001" },
+  SA: { nombre: "Sacatepéquez", codigoPostal: "03001" },
+  SM: { nombre: "San Marcos", codigoPostal: "12001" },
+  SR: { nombre: "Santa Rosa", codigoPostal: "06001" },
+  SO: { nombre: "Sololá", codigoPostal: "07001" },
+  SU: { nombre: "Suchitepéquez", codigoPostal: "10001" },
+  TO: { nombre: "Totonicapán", codigoPostal: "08001" },
+  ZA: { nombre: "Zacapa", codigoPostal: "19001" },
+};
+
+/** Valores permitidos para NeoCuotas (VC##): 03, 06, 10, 12, 18, 24. Vacío = contado */
+export const NEOCUOTAS_VALIDAS = [3, 6, 10, 12, 18, 24] as const;
+
+/** Convierte número de cuotas a formato AdditionalData de NeoPay (VC##) */
+export function cuotasToAdditionalData(cuotas: number | null | undefined): string {
+  if (!cuotas || cuotas <= 1) return "";
+  const num = cuotas.toString().padStart(2, "0");
+  return NEOCUOTAS_VALIDAS.includes(cuotas as any) ? `VC${num}` : "";
 }
 
 export function buildPaso1Payload(
@@ -181,7 +284,8 @@ export function buildPaso1Payload(
   cliente: ClienteData,
   monto: number,
   systemsTraceNo: string,
-  urlCommerce: string
+  urlCommerce: string,
+  additionalData?: string
 ): Paso1Payload {
   const config = getNeoPayConfig();
   
@@ -203,7 +307,7 @@ export function buildPaso1Payload(
     PosEntryMode: "012",
     Nii: "003",
     PosConditionCode: "00",
-    AdditionalData: "", // Vacío para contado, "VC06" para cuotas, "LU" para puntos
+    AdditionalData: additionalData || "", // Vacío para contado, "VC##" para NeoCuotas (ej: VC03, VC06, VC12)
     OrderInformation: "",
     FormatId: "1",
     Merchant: {
@@ -250,14 +354,14 @@ export function buildPaso1Payload(
       PhoneNumber: "",
     },
     BillTo: {
-      FirstName: cliente.nombre,
-      LastName: cliente.apellido,
+      FirstName: normalizeBillToText(cliente.nombre),
+      LastName: normalizeBillToText(cliente.apellido),
       Company: "NA",
-      AddressOne: cliente.direccion,
+      AddressOne: normalizeBillToAddress(cliente.direccionFacturacion || cliente.direccion),
       AddressTwo: "",
-      Locality: cliente.ciudad,
-      AdministrativeArea: "GU",
-      PostalCode: cliente.codigoPostal || "01010",
+      Locality: normalizeBillToText(cliente.ciudadFacturacion || cliente.ciudad),
+      AdministrativeArea: cliente.departamento || "GU",
+      PostalCode: cliente.codigoPostalFacturacion || (cliente.departamento && DEPARTAMENTOS_GT[cliente.departamento]?.codigoPostal) || cliente.codigoPostal || "01001",
       Country: cliente.pais || "GT",
       Email: cliente.email,
       PhoneNumber: cliente.telefono,

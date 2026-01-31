@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { prisma } from "@/lib/prisma";
 
 // Inicialización lazy de Resend para evitar errores durante el build
 let resendInstance: Resend | null = null;
@@ -300,6 +301,133 @@ export async function sendOrdenCreatedEmail(orden: OrdenData, logoUrl?: string |
     return { success: true, data };
   } catch (error: any) {
     console.error("Error al enviar email de confirmación de orden:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Envía el email de confirmación de orden por ID.
+ * Usado cuando el pago con tarjeta es aprobado (paso1, paso3 o paso5).
+ */
+export async function sendOrderConfirmationEmailForOrdenId(ordenId: number) {
+  try {
+    const ordenCompleta = await prisma.orden.findUnique({
+      where: { id: ordenId },
+      include: {
+        usuario: true,
+        items: {
+          include: {
+            telefonoNuevo: {
+              include: {
+                marca: true,
+                imagenes: { orderBy: { orden: "asc" }, take: 1 },
+              },
+            },
+            telefonoSeminuevo: {
+              include: {
+                marca: true,
+                modelo: {
+                  include: {
+                    imagenes: { orderBy: { orden: "asc" }, take: 1 },
+                  },
+                },
+              },
+            },
+            accesorio: {
+              include: {
+                marca: true,
+                imagenes: { orderBy: { orden: "asc" }, take: 1 },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!ordenCompleta) return { success: false, error: "Orden no encontrada" };
+
+    const itemsParaEmail = ordenCompleta.items.map((item) => {
+      let nombreProducto = "Producto";
+      let variante = null;
+      let imagenUrl = null;
+      let detalles: any = null;
+      if (item.detallesVariante) {
+        try {
+          detalles = JSON.parse(item.detallesVariante);
+        } catch {}
+      }
+      if (item.tipoProducto === "TELEFONO_NUEVO" && item.telefonoNuevo) {
+        nombreProducto = `${item.telefonoNuevo.marca.nombre} ${item.telefonoNuevo.modelo}`;
+        if (detalles) {
+          const partes = [];
+          if (detalles.color) partes.push(detalles.color);
+          if (detalles.rom) partes.push(detalles.rom);
+          variante = partes.length > 0 ? partes.join(", ") : null;
+        }
+        imagenUrl = item.telefonoNuevo.imagenes[0]?.url || null;
+      } else if (item.tipoProducto === "TELEFONO_SEMINUEVO" && item.telefonoSeminuevo) {
+        nombreProducto = `${item.telefonoSeminuevo.marca.nombre} ${item.telefonoSeminuevo.modelo?.nombre || "Sin modelo"}`;
+        if (detalles) {
+          const partes = [];
+          if (detalles.color) partes.push(detalles.color);
+          if (detalles.rom) partes.push(detalles.rom);
+          if (detalles.estado) partes.push(`Estado: ${detalles.estado}/10`);
+          if (detalles.porcentajeBateria) partes.push(`Batería: ${detalles.porcentajeBateria}%`);
+          variante = partes.length > 0 ? partes.join(", ") : null;
+        }
+        imagenUrl = item.telefonoSeminuevo.modelo?.imagenes[0]?.url || null;
+      } else if (item.tipoProducto === "ACCESORIO" && item.accesorio) {
+        nombreProducto = `${item.accesorio.marca.nombre} ${item.accesorio.modelo}`;
+        if (detalles?.color) variante = detalles.color;
+        imagenUrl = item.accesorio.imagenes[0]?.url || null;
+      }
+      return {
+        id: item.id,
+        cantidad: item.cantidad,
+        precioUnitario: Number(item.precioUnitario),
+        subtotal: Number(item.subtotal),
+        tipoProducto: item.tipoProducto,
+        nombreProducto,
+        variante,
+        imagenUrl,
+      };
+    });
+
+    const logoContent = await prisma.contenidoTienda.findFirst({
+      where: { tipo: "logo", activo: true },
+      orderBy: { orden: "asc" },
+    });
+
+    return await sendOrdenCreatedEmail(
+      {
+        id: ordenCompleta.id,
+        numeroOrden: ordenCompleta.numeroOrden,
+        estado: ordenCompleta.estado,
+        subtotal: Number(ordenCompleta.subtotal),
+        impuestos: Number(ordenCompleta.impuestos),
+        envio: Number(ordenCompleta.envio),
+        total: Number(ordenCompleta.total),
+        tipoEnvio: ordenCompleta.tipoEnvio,
+        metodoPago: ordenCompleta.metodoPago,
+        direccionEnvio: ordenCompleta.direccionEnvio,
+        ciudadEnvio: ordenCompleta.ciudadEnvio,
+        codigoPostalEnvio: ordenCompleta.codigoPostalEnvio,
+        nombreRecibe: ordenCompleta.nombreRecibe,
+        telefonoRecibe: ordenCompleta.telefonoRecibe,
+        notas: ordenCompleta.notas,
+        createdAt: ordenCompleta.createdAt,
+        usuario: {
+          email: ordenCompleta.usuario.email,
+          nombre: ordenCompleta.usuario.nombre,
+          apellido: ordenCompleta.usuario.apellido,
+          telefono: ordenCompleta.usuario.telefono,
+        },
+        items: itemsParaEmail,
+      },
+      logoContent?.url || null
+    );
+  } catch (error: any) {
+    console.error("Error al enviar email de confirmación de orden (ordenId:", ordenId, "):", error);
     return { success: false, error: error.message };
   }
 }
