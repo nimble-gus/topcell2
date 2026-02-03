@@ -243,6 +243,43 @@ export function normalizeBillToAddress(str: string): string {
     .trim();
 }
 
+/**
+ * Extrae el número de zona de la dirección de facturación.
+ * Ej: "15 Av 7-11 Zona 13" -> "13", "Zona 1" -> "01"
+ * Retorna null si no se encuentra "zona XX" en la dirección.
+ */
+export function extraerZonaDeDireccion(direccion: string): string | null {
+  if (!direccion?.trim()) return null;
+  const match = direccion.match(/zona\s*(\d{1,2})\b/i);
+  return match ? match[1].padStart(2, "0") : null;
+}
+
+/**
+ * Construye PostalCode usando los últimos 2 dígitos según la zona en la dirección.
+ * Si la dirección contiene "Zona XX", usa XX como últimos 2 dígitos (ej: 01013 para Zona 13).
+ * Si no hay zona, usa "01" por defecto (ej: 01001 para Ciudad de Guatemala).
+ * Solo usa codigoPostalExplicito si el usuario lo ingresó y difiere del default (override manual).
+ */
+export function construirPostalCodeConZona(
+  direccionFacturacion: string,
+  codigoPostalBase: string,
+  codigoPostalExplicito?: string | null
+): string {
+  const baseCode = codigoPostalBase?.slice(0, 3) || "010"; // Primeros 3 dígitos del departamento
+  const zona = extraerZonaDeDireccion(direccionFacturacion);
+
+  // Calcular el código derivado de la zona en la dirección
+  const codigoDesdeZona = zona ? baseCode + zona : baseCode + "01";
+
+  // Si el usuario ingresó un código postal diferente al default (base+01), es un override manual
+  const explicito = codigoPostalExplicito?.trim();
+  if (explicito && /^\d{5}$/.test(explicito) && explicito !== baseCode + "01") {
+    return explicito;
+  }
+
+  return codigoDesdeZona;
+}
+
 /** Códigos ISO 3166-2 departamentos Guatemala y código postal por defecto */
 export const DEPARTAMENTOS_GT: Record<string, { nombre: string; codigoPostal: string }> = {
   AV: { nombre: "Alta Verapaz", codigoPostal: "16001" },
@@ -277,6 +314,15 @@ export function cuotasToAdditionalData(cuotas: number | null | undefined): strin
   if (!cuotas || cuotas <= 1) return "";
   const num = cuotas.toString().padStart(2, "0");
   return NEOCUOTAS_VALIDAS.includes(cuotas as any) ? `VC${num}` : "";
+}
+
+/** Extrae el número de cuotas desde AdditionalData de NeoPay (ej: "VC06" -> 6) */
+export function additionalDataToCuotas(additionalData: string | null | undefined): number | null {
+  if (!additionalData?.trim()) return null;
+  const match = additionalData.trim().match(/^VC(\d{2})$/i);
+  if (!match) return null;
+  const num = parseInt(match[1], 10);
+  return NEOCUOTAS_VALIDAS.includes(num as any) ? num : null;
 }
 
 export function buildPaso1Payload(
@@ -315,7 +361,7 @@ export function buildPaso1Payload(
       CardAcqId: config.cardAcqId || "",
     },
     Card: {
-      Type: "001",
+      Type: getCardTypeCode(tarjeta.numero), // "001" para VISA, "002" para MasterCard
       PrimaryAcctNum: tarjeta.numero.replace(/\s/g, ""),
       DateExpiration: dateExpiration, // Ya convertido a YYMM
       Cvv2: tarjeta.cvv,
@@ -361,7 +407,12 @@ export function buildPaso1Payload(
       AddressTwo: "",
       Locality: normalizeBillToText(cliente.ciudadFacturacion || cliente.ciudad),
       AdministrativeArea: cliente.departamento || "GU",
-      PostalCode: cliente.codigoPostalFacturacion || (cliente.departamento && DEPARTAMENTOS_GT[cliente.departamento]?.codigoPostal) || cliente.codigoPostal || "01001",
+      // PostalCode: últimos 2 dígitos según zona en la dirección (ej: Zona 13 -> 01013), o "01" por defecto
+      PostalCode: construirPostalCodeConZona(
+        cliente.direccionFacturacion || cliente.direccion || "",
+        DEPARTAMENTOS_GT[cliente.departamento || "GU"]?.codigoPostal || "01001",
+        cliente.codigoPostalFacturacion || cliente.codigoPostal
+      ),
       Country: cliente.pais || "GT",
       Email: cliente.email,
       PhoneNumber: cliente.telefono,
@@ -989,13 +1040,14 @@ export async function callNeoPayAPI(
 }
 
 /**
- * Ejecuta una reversa automática cuando hay timeout o fallo
+ * Ejecuta una reversa automática cuando hay timeout o fallo en Paso 1 (venta directa sin 3DS).
+ * Usa buildReversaPayload con monto, SystemsTraceNo, etc.
  */
 export async function ejecutarReversaAutomatica(
   reversaData: ReversaData,
   headers: Headers
 ): Promise<any> {
-  console.log("=== Ejecutando Reversa Automática ===");
+  console.log("=== Ejecutando Reversa Automática (Paso 1) ===");
   console.log("SystemsTraceNo Original:", reversaData.systemsTraceNoOriginal);
   console.log("Monto:", reversaData.montoOriginal);
 
@@ -1008,6 +1060,37 @@ export async function ejecutarReversaAutomatica(
     return response;
   } catch (error: any) {
     console.error("=== Error en Reversa Automática ===");
+    console.error("Error:", error.message);
+    throw error;
+  }
+}
+
+/**
+ * Ejecuta reversa automática para Paso 3 o Paso 5 de 3DS.
+ * Según el manual NeoPay: enviar los MISMOS valores del Paso 3 (o Paso 5),
+ * únicamente cambiando MessageTypeId a "0400". NO enviar Card.Type, Amount.AmountTrans, BillTo.
+ */
+export async function ejecutarReversaPaso3o5(
+  payloadOriginal: Partial<Paso1Payload> | Record<string, unknown>,
+  headers: Headers
+): Promise<any> {
+  console.log("=== Ejecutando Reversa Automática (Paso 3/5) ===");
+  console.log("Reenviando payload del paso con MessageTypeId 0400");
+  console.log("SystemsTraceNo:", (payloadOriginal as any).SystemsTraceNo);
+  console.log("ReferenceId:", (payloadOriginal as any).PayerAuthentication?.ReferenceId);
+
+  const payloadReversa = {
+    ...payloadOriginal,
+    MessageTypeId: "0400",
+  };
+
+  try {
+    const response = await callNeoPayAPI(payloadReversa, headers, 60000);
+    console.log("=== Reversa Paso 3/5 Exitosa ===");
+    console.log("ResponseCode:", response.ResponseCode);
+    return response;
+  } catch (error: any) {
+    console.error("=== Error en Reversa Paso 3/5 ===");
     console.error("Error:", error.message);
     throw error;
   }
@@ -1036,6 +1119,23 @@ export function getCardType(numeroTarjeta: string): string {
     return "American Express";
   }
   return "Desconocida";
+}
+
+/**
+ * Devuelve el código de tipo de tarjeta para NeoPay:
+ * - "001" para VISA (tarjetas que inician con 4)
+ * - "002" para MasterCard (tarjetas que inician con 2 o 5)
+ */
+export function getCardTypeCode(numeroTarjeta: string): string {
+  const cleaned = numeroTarjeta.replace(/\s/g, "");
+  if (cleaned.startsWith("4")) {
+    return "001"; // VISA
+  }
+  if (cleaned.startsWith("5") || cleaned.startsWith("2")) {
+    return "002"; // MasterCard
+  }
+  // Por defecto VISA para otras tarjetas (American Express, etc.)
+  return "001";
 }
 
 /**

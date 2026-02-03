@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generarVoucherPDF } from "@/lib/voucher";
+import { additionalDataToCuotas, getNeoPayConfig } from "@/lib/neopay";
 
 export async function GET(
   request: NextRequest,
@@ -70,6 +71,23 @@ export async function GET(
       };
     });
 
+    // Extraer cuotas, systemsTraceNo y afiliación desde respuestaPago (para pago con tarjeta)
+    let cuotas: number | null = null;
+    let afiliacion: string | null = null;
+    const systemsTraceNo = orden.systemsTraceNoOriginal;
+    if (orden.respuestaPago && orden.metodoPago === "TARJETA") {
+      try {
+        const respuestaPago = JSON.parse(orden.respuestaPago);
+        const additionalData = respuestaPago.paso1Data?.additionalData ?? respuestaPago.AdditionalData ?? "";
+        cuotas = additionalDataToCuotas(additionalData);
+        // Afiliación (CardAcqId) desde la respuesta de NeoPay o config
+        afiliacion = respuestaPago.Merchant?.CardAcqId ?? respuestaPago.paso1Data?.cardAcqId ?? getNeoPayConfig().cardAcqId ?? null;
+      } catch {
+        // Fallback para afiliación si no se puede parsear respuestaPago
+        afiliacion = getNeoPayConfig().cardAcqId ?? null;
+      }
+    }
+
     // Preparar datos para el voucher
     const voucherData = {
       numeroOrden: orden.numeroOrden,
@@ -84,11 +102,14 @@ export async function GET(
       direccionEnvio: orden.direccionEnvio,
       ciudadEnvio: orden.ciudadEnvio,
       metodoPago: orden.metodoPago,
+      cuotas,
       estadoPago: orden.estadoPago,
       numeroTarjeta: orden.numeroTarjeta,
       tipoTarjeta: orden.tipoTarjeta,
       retrievalRefNo: orden.retrievalRefNo,
       authIdResponse: orden.authIdResponse,
+      systemsTraceNo,
+      afiliacion,
       fechaTransaccion: orden.fechaTransaccion,
       timeLocalTrans: orden.timeLocalTrans,
       dateLocalTrans: orden.dateLocalTrans,

@@ -4,7 +4,7 @@ import { sendOrderConfirmationEmailForOrdenId } from "@/lib/email";
 import {
   buildPaso3Payload,
   callNeoPayAPI,
-  ejecutarReversaAutomatica,
+  ejecutarReversaPaso3o5,
   getResponseCodeMessage,
   isTimeoutResponseCode,
   isApprovedResponseCode,
@@ -148,20 +148,12 @@ export async function POST(request: NextRequest) {
       neopayResponse = await callNeoPayAPI(payload, request.headers, 60000); // 60 segundos - timeout requiere reversa automática
     } catch (error: any) {
       // Si hay timeout, ejecutar reversa automática
+      // Según el manual: enviar los MISMOS valores del Paso 3, solo cambiar MessageTypeId a "0400"
       if (error.isTimeout) {
         console.error("=== Timeout detectado en Paso 3, ejecutando reversa automática ===");
         
-        // Necesitamos el systemsTraceNo original de la orden
-        const systemsTraceNoOriginal = orden.systemsTraceNoOriginal || traceNo;
-        
         try {
-          const reversaData = {
-            systemsTraceNoOriginal: systemsTraceNoOriginal,
-            montoOriginal: Number(orden.total),
-            retrievalRefNo: orden.retrievalRefNo || undefined,
-          };
-          
-          await ejecutarReversaAutomatica(reversaData, request.headers);
+          await ejecutarReversaPaso3o5(payload, request.headers);
           reversaEjecutada = true;
           
           // Actualizar orden con estado de reversa
@@ -226,21 +218,14 @@ export async function POST(request: NextRequest) {
     const step = neopayResponse.PayerAuthentication?.Step?.toString();
 
     // ✅ Detectar códigos de timeout (68, 91, 98) y ejecutar reversa automática
+    // Según el manual: enviar los MISMOS valores del Paso 3, solo cambiar MessageTypeId a "0400"
     if (responseCode && isTimeoutResponseCode(responseCode)) {
       console.error("=== Código de timeout detectado en Paso 3, ejecutando reversa automática ===");
       console.error("ResponseCode:", responseCode);
       console.error("Mensaje:", getResponseCodeMessage(responseCode));
       
-      const systemsTraceNoOriginal = orden.systemsTraceNoOriginal || traceNo;
-      
       try {
-        const reversaData = {
-          systemsTraceNoOriginal: systemsTraceNoOriginal,
-          montoOriginal: Number(orden.total),
-          retrievalRefNo: orden.retrievalRefNo || undefined,
-        };
-        
-        await ejecutarReversaAutomatica(reversaData, request.headers);
+        await ejecutarReversaPaso3o5(payload, request.headers);
         
         // Actualizar orden con estado de reversa
         await prisma.orden.update({
@@ -484,10 +469,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Preservar paso1Data (incluye additionalData/cuotas para voucher) al actualizar respuestaPago
+    let respuestaParaGuardar = respuestaCompleta;
+    if (orden.respuestaPago) {
+      try {
+        const existente = JSON.parse(orden.respuestaPago);
+        const nuevaRespuesta = JSON.parse(respuestaCompleta);
+        respuestaParaGuardar = JSON.stringify({
+          ...nuevaRespuesta,
+          paso1Data: existente.paso1Data ?? nuevaRespuesta.paso1Data,
+        });
+      } catch {
+        /* usar respuestaCompleta tal cual */
+      }
+    }
+
     await prisma.orden.update({
       where: { id: orden.id },
       data: {
-        respuestaPago: respuestaCompleta,
+        respuestaPago: respuestaParaGuardar,
         estadoPago: aprobado ? "APROBADO" : "RECHAZADO",
         codigoRespuesta: codigoRespuesta,
         mensajeRespuesta: mensajeFinal,

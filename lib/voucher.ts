@@ -18,11 +18,14 @@ interface VoucherData {
   
   // Información del pago
   metodoPago: string;
+  cuotas: number | null; // Número de cuotas (NeoCuotas), null = contado
   estadoPago: string | null;
   numeroTarjeta: string | null; // Últimos 4 dígitos
   tipoTarjeta: string | null;
   retrievalRefNo: string | null; // Número de Referencia (12 dígitos)
   authIdResponse: string | null; // Número de Autorización (6 caracteres)
+  systemsTraceNo: string | null; // Número de Auditoría
+  afiliacion: string | null; // CardAcqId (Afiliación del comercio)
   fechaTransaccion: Date | null;
   timeLocalTrans: string | null; // HHMMSS
   dateLocalTrans: string | null; // MMDD
@@ -71,12 +74,30 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
       // Información de la orden
       doc.fontSize(12);
       doc.text(`Número de Orden: ${data.numeroOrden}`, { continued: false });
-      doc.text(`Fecha: ${data.fechaOrden.toLocaleString("es-GT", { 
+      
+      // Usar fecha de transacción de NeoPay si existe, de lo contrario fecha de la orden
+      let fechaMostrar: Date = data.fechaOrden;
+      if (data.metodoPago === "TARJETA") {
+        if (data.fechaTransaccion) {
+          fechaMostrar = data.fechaTransaccion;
+        } else if (data.dateLocalTrans && data.timeLocalTrans) {
+          // Construir fecha desde dateLocalTrans (MMDD) y timeLocalTrans (HHMMSS)
+          const mes = parseInt(data.dateLocalTrans.slice(0, 2));
+          const dia = parseInt(data.dateLocalTrans.slice(2, 4));
+          const hora = parseInt(data.timeLocalTrans.slice(0, 2));
+          const minuto = parseInt(data.timeLocalTrans.slice(2, 4));
+          const segundo = parseInt(data.timeLocalTrans.slice(4, 6));
+          const anio = new Date().getFullYear();
+          fechaMostrar = new Date(anio, mes - 1, dia, hora, minuto, segundo);
+        }
+      }
+      doc.text(`Fecha: ${fechaMostrar.toLocaleString("es-GT", { 
         year: "numeric", 
         month: "2-digit", 
         day: "2-digit",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
+        second: "2-digit"
       })}`);
       doc.text(`Estado: ${data.estado}`);
       doc.moveDown();
@@ -108,7 +129,10 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
       // Información del pago
       doc.fontSize(14).text("INFORMACIÓN DEL PAGO", { continued: false });
       doc.fontSize(12);
-      doc.text(`Método de Pago: ${data.metodoPago === "TARJETA" ? "Tarjeta" : data.metodoPago === "TRANSFERENCIA" ? "Transferencia" : "Contra Entrega"}`);
+      doc.text(`Método de Pago: ${data.metodoPago === "TARJETA" ? "NEONET" : data.metodoPago === "TRANSFERENCIA" ? "Transferencia" : "Contra Entrega"}`);
+      if (data.metodoPago === "TARJETA" && data.cuotas && data.cuotas > 1) {
+        doc.text(`Cuotas: ${data.cuotas} (NeoCuotas)`);
+      }
       
       if (data.metodoPago === "TARJETA") {
         if (data.numeroTarjeta) {
@@ -123,32 +147,11 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
         if (data.authIdResponse) {
           doc.text(`Número de Autorización: ${data.authIdResponse}`);
         }
-        if (data.fechaTransaccion) {
-          doc.text(`Fecha de Transacción: ${data.fechaTransaccion.toLocaleString("es-GT", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
-          })}`);
-        } else if (data.dateLocalTrans && data.timeLocalTrans) {
-          // Construir fecha desde dateLocalTrans (MMDD) y timeLocalTrans (HHMMSS)
-          const mes = parseInt(data.dateLocalTrans.slice(0, 2));
-          const dia = parseInt(data.dateLocalTrans.slice(2, 4));
-          const hora = parseInt(data.timeLocalTrans.slice(0, 2));
-          const minuto = parseInt(data.timeLocalTrans.slice(2, 4));
-          const segundo = parseInt(data.timeLocalTrans.slice(4, 6));
-          const anio = new Date().getFullYear(); // Asumir año actual
-          const fechaTrans = new Date(anio, mes - 1, dia, hora, minuto, segundo);
-          doc.text(`Fecha de Transacción: ${fechaTrans.toLocaleString("es-GT", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
-          })}`);
+        if (data.systemsTraceNo) {
+          doc.text(`Número de Auditoría: ${data.systemsTraceNo}`);
+        }
+        if (data.afiliacion) {
+          doc.text(`Afiliación: ${data.afiliacion}`);
         }
         if (data.typeOperation) {
           const tipoOp = data.typeOperation === "1" ? "NeoPay" : data.typeOperation === "2" ? "TMS" : "3D Secure";
@@ -157,6 +160,7 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
         if (data.estadoPago) {
           doc.text(`Estado del Pago: ${data.estadoPago}`);
         }
+        doc.text("(01) Pagado Electrónicamente");
       }
       doc.moveDown();
 

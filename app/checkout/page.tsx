@@ -14,7 +14,7 @@ import {
   clearCart,
   type CartItem,
 } from "@/lib/cart";
-import { luhnCheck, isCardExpired, DEPARTAMENTOS_GT } from "@/lib/neopay";
+import { luhnCheck, isCardExpired, DEPARTAMENTOS_GT, construirPostalCodeConZona } from "@/lib/neopay";
 import SingleImageUploader from "@/components/admin/SingleImageUploader";
 
 interface CuentaBancaria {
@@ -102,16 +102,23 @@ export default function CheckoutPage() {
   }, [session]);
 
   // Sincronizar facturación con datos de envío cuando "usar misma dirección" y es ENVIO
+  // Código postal: últimos 2 dígitos según zona en dirección (Zona 13 -> 01013), o 01 por defecto
   useEffect(() => {
     if (facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO") {
+      const baseCode = DEPARTAMENTOS_GT[facturacionData.departamento]?.codigoPostal || "01001";
+      const codigoConZona = construirPostalCodeConZona(
+        formData.direccion,
+        baseCode,
+        formData.codigoPostal || undefined
+      );
       setFacturacionData((prev) => ({
         ...prev,
         direccion: formData.direccion,
         ciudad: formData.ciudad,
-        codigoPostal: formData.codigoPostal,
+        codigoPostal: codigoConZona,
       }));
     }
-  }, [formData.direccion, formData.ciudad, formData.codigoPostal, tipoEnvio]);
+  }, [formData.direccion, formData.ciudad, formData.codigoPostal, tipoEnvio, facturacionData.departamento]);
 
   const loadUserProfile = async () => {
     // Verificar si hay sesión de usuario (no admin)
@@ -223,6 +230,10 @@ export default function CheckoutPage() {
     }
     if (!formData.nombre || formData.nombre.trim().length < 2) {
       setError("Por favor ingresa tu nombre");
+      return false;
+    }
+    if (!formData.apellido || formData.apellido.trim().length < 2) {
+      setError("Por favor ingresa tu apellido (requerido para pago con tarjeta 3DS)");
       return false;
     }
     if (!formData.telefono || formData.telefono.trim().length < 8) {
@@ -399,7 +410,7 @@ export default function CheckoutPage() {
             },
             cliente: {
               nombre: formData.nombre.trim(),
-              apellido: formData.apellido.trim() || "",
+              apellido: formData.apellido.trim(),
               email: formData.email.trim(),
               telefono: formData.telefono.trim(),
               direccion: tipoEnvio === "ENVIO" ? formData.direccion.trim() : DIRECCION_BODEGA,
@@ -414,7 +425,7 @@ export default function CheckoutPage() {
                 : facturacionData.ciudad.trim(),
               departamento: facturacionData.departamento,
               codigoPostalFacturacion: (facturacionData.usarMismaDireccion && tipoEnvio === "ENVIO"
-                ? formData.codigoPostal.trim()
+                ? (facturacionData.codigoPostal || formData.codigoPostal).trim()
                 : facturacionData.codigoPostal.trim())
                 || DEPARTAMENTOS_GT[facturacionData.departamento]?.codigoPostal,
             },
@@ -604,7 +615,7 @@ export default function CheckoutPage() {
 
                       <div>
                         <label htmlFor="apellido" className="block text-sm font-medium text-gray-700 mb-2">
-                          Apellido
+                          Apellido <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -612,6 +623,7 @@ export default function CheckoutPage() {
                           name="apellido"
                           value={formData.apellido}
                           onChange={handleInputChange}
+                          required
                           className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
                           placeholder="Tu apellido"
                         />
@@ -989,7 +1001,16 @@ export default function CheckoutPage() {
                                 <textarea
                                   id="factDireccion"
                                   value={facturacionData.direccion}
-                                  onChange={(e) => setFacturacionData((prev) => ({ ...prev, direccion: e.target.value }))}
+                                  onChange={(e) => {
+                                    const nuevaDireccion = e.target.value;
+                                    const baseCode = DEPARTAMENTOS_GT[facturacionData.departamento]?.codigoPostal || "01001";
+                                    const codigoConZona = construirPostalCodeConZona(nuevaDireccion, baseCode, facturacionData.codigoPostal || undefined);
+                                    setFacturacionData((prev) => ({
+                                      ...prev,
+                                      direccion: nuevaDireccion,
+                                      codigoPostal: codigoConZona,
+                                    }));
+                                  }}
                                   rows={2}
                                   required={!facturacionData.usarMismaDireccion || tipoEnvio === "RECOGER_BODEGA"}
                                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
@@ -1018,11 +1039,21 @@ export default function CheckoutPage() {
                                   <select
                                     id="factDepartamento"
                                     value={facturacionData.departamento}
-                                    onChange={(e) => setFacturacionData((prev) => ({
-                                      ...prev,
-                                      departamento: e.target.value,
-                                      codigoPostal: DEPARTAMENTOS_GT[e.target.value]?.codigoPostal || prev.codigoPostal,
-                                    }))}
+                                    onChange={(e) => {
+                                      const nuevoDept = e.target.value;
+                                      const baseCode = DEPARTAMENTOS_GT[nuevoDept]?.codigoPostal || "01001";
+                                      // No pasar codigoPostal actual: al cambiar depto siempre recalcular (evita que 01007 se tome como "override")
+                                      const codigoConZona = construirPostalCodeConZona(
+                                        facturacionData.direccion,
+                                        baseCode,
+                                        undefined
+                                      );
+                                      setFacturacionData((prev) => ({
+                                        ...prev,
+                                        departamento: nuevoDept,
+                                        codigoPostal: codigoConZona,
+                                      }));
+                                    }}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
                                   >
                                     {Object.entries(DEPARTAMENTOS_GT).map(([code, { nombre }]) => (
@@ -1040,7 +1071,7 @@ export default function CheckoutPage() {
                                   id="factCodigoPostal"
                                   value={facturacionData.codigoPostal}
                                   onChange={(e) => setFacturacionData((prev) => ({ ...prev, codigoPostal: e.target.value }))}
-                                  placeholder={DEPARTAMENTOS_GT[facturacionData.departamento]?.codigoPostal || "Según departamento"}
+                                  placeholder="Ej: 01013 si Zona 13 en la dirección"
                                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
                                 />
                               </div>
@@ -1055,11 +1086,21 @@ export default function CheckoutPage() {
                                 <select
                                   id="factDepartamentoEnv"
                                   value={facturacionData.departamento}
-                                  onChange={(e) => setFacturacionData((prev) => ({
-                                    ...prev,
-                                    departamento: e.target.value,
-                                    codigoPostal: DEPARTAMENTOS_GT[e.target.value]?.codigoPostal || prev.codigoPostal,
-                                  }))}
+                                  onChange={(e) => {
+                                    const nuevoDept = e.target.value;
+                                    const baseCode = DEPARTAMENTOS_GT[nuevoDept]?.codigoPostal || "01001";
+                                    // No pasar codigoPostal actual: al cambiar depto siempre recalcular
+                                    const codigoConZona = construirPostalCodeConZona(
+                                      formData.direccion,
+                                      baseCode,
+                                      undefined
+                                    );
+                                    setFacturacionData((prev) => ({
+                                      ...prev,
+                                      departamento: nuevoDept,
+                                      codigoPostal: codigoConZona,
+                                    }));
+                                  }}
                                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
                                 >
                                   {Object.entries(DEPARTAMENTOS_GT).map(([code, { nombre }]) => (
@@ -1076,7 +1117,7 @@ export default function CheckoutPage() {
                                   id="factCodigoPostalEnv"
                                   value={facturacionData.codigoPostal || formData.codigoPostal}
                                   onChange={(e) => setFacturacionData((prev) => ({ ...prev, codigoPostal: e.target.value }))}
-                                  placeholder={DEPARTAMENTOS_GT[facturacionData.departamento]?.codigoPostal || "Según departamento"}
+                                  placeholder="Ej: 01013 si Zona 13 en la dirección"
                                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
                                 />
                               </div>

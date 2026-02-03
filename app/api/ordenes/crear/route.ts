@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
         producto = await prisma.telefonoNuevo.findUnique({
           where: { id: item.productoId },
           include: { 
+            marca: true,
             variantes: {
               include: {
                 color: true,
@@ -183,6 +184,7 @@ export async function POST(request: NextRequest) {
         producto = await prisma.accesorio.findUnique({
           where: { id: item.productoId },
           include: { 
+            marca: true,
             colores: {
               include: {
                 color: true,
@@ -229,11 +231,11 @@ export async function POST(request: NextRequest) {
         // Obtener el nombre del producto según el tipo
         let nombreProducto = "producto";
         if (item.tipo === "telefono-nuevo") {
-          nombreProducto = `${producto.marca.nombre} ${producto.modelo}`;
+          nombreProducto = producto?.marca ? `${producto.marca.nombre} ${producto.modelo || ""}`.trim() : (producto?.modelo || "producto");
         } else if (item.tipo === "telefono-seminuevo") {
-          nombreProducto = `${producto.marca.nombre} ${producto.modelo?.nombre || "Sin modelo"}`;
+          nombreProducto = producto?.marca ? `${producto.marca.nombre} ${producto.modelo?.nombre || "Sin modelo"}`.trim() : "producto";
         } else if (item.tipo === "accesorio") {
-          nombreProducto = `${producto.marca.nombre} ${producto.modelo}`;
+          nombreProducto = producto?.marca ? `${producto.marca.nombre} ${producto.modelo || ""}`.trim() : (producto?.modelo || "producto");
         }
         
         return NextResponse.json(

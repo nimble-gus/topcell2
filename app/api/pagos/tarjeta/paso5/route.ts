@@ -4,7 +4,7 @@ import { sendOrderConfirmationEmailForOrdenId } from "@/lib/email";
 import {
   buildPaso5Payload,
   callNeoPayAPI,
-  ejecutarReversaAutomatica,
+  ejecutarReversaPaso3o5,
   getResponseCodeMessage,
   isTimeoutResponseCode,
   isApprovedResponseCode,
@@ -110,19 +110,12 @@ export async function POST(request: NextRequest) {
       neopayResponse = await callNeoPayAPI(payload, request.headers, 60000); // 60 segundos - timeout requiere reversa automática
     } catch (error: any) {
       // Si hay timeout, ejecutar reversa automática
+      // Según el manual: enviar los MISMOS valores del Paso 5, solo cambiar MessageTypeId a "0400"
       if (error.isTimeout) {
         console.error("=== Timeout detectado en Paso 5, ejecutando reversa automática ===");
         
-        const systemsTraceNoOriginal = orden.systemsTraceNoOriginal || traceNo;
-        
         try {
-          const reversaData = {
-            systemsTraceNoOriginal: systemsTraceNoOriginal,
-            montoOriginal: Number(orden.total),
-            retrievalRefNo: orden.retrievalRefNo || undefined,
-          };
-          
-          await ejecutarReversaAutomatica(reversaData, request.headers);
+          await ejecutarReversaPaso3o5(payload, request.headers);
           reversaEjecutada = true;
           
           await prisma.orden.update({
@@ -180,19 +173,12 @@ export async function POST(request: NextRequest) {
     const typeOperation = neopayResponse.TypeOperation?.toString();
 
     // ✅ Detectar códigos de timeout (68, 91, 98) y ejecutar reversa automática
+    // Según el manual: enviar los MISMOS valores del Paso 5, solo cambiar MessageTypeId a "0400"
     if (responseCode && isTimeoutResponseCode(responseCode)) {
       console.error("=== Código de timeout detectado en Paso 5, ejecutando reversa automática ===");
       
-      const systemsTraceNoOriginal = orden.systemsTraceNoOriginal || traceNo;
-      
       try {
-        const reversaData = {
-          systemsTraceNoOriginal: systemsTraceNoOriginal,
-          montoOriginal: Number(orden.total),
-          retrievalRefNo: orden.retrievalRefNo || undefined,
-        };
-        
-        await ejecutarReversaAutomatica(reversaData, request.headers);
+        await ejecutarReversaPaso3o5(payload, request.headers);
         
         await prisma.orden.update({
           where: { id: orden.id },
@@ -274,6 +260,22 @@ export async function POST(request: NextRequest) {
       mensajeFinal = "Autorización parcial - " + (neopayResponse.PrivateUse63?.AlternateHostResponse22 || "Fondos insuficientes para el monto completo");
     }
 
+    // Preservar paso1Data (incluye additionalData/cuotas para voucher) y paso3Data al actualizar respuestaPago
+    let respuestaParaGuardar = respuestaCompleta;
+    if (orden.respuestaPago) {
+      try {
+        const existente = JSON.parse(orden.respuestaPago);
+        const nuevaRespuesta = JSON.parse(respuestaCompleta);
+        respuestaParaGuardar = JSON.stringify({
+          ...nuevaRespuesta,
+          paso1Data: existente.paso1Data ?? nuevaRespuesta.paso1Data,
+          paso3Data: existente.paso3Data ?? nuevaRespuesta.paso3Data,
+        });
+      } catch {
+        /* usar respuestaCompleta tal cual */
+      }
+    }
+
     // Actualizar estado de la orden
     await prisma.orden.update({
       where: { id: orden.id },
@@ -281,7 +283,7 @@ export async function POST(request: NextRequest) {
         estadoPago: aprobado ? "APROBADO" : "RECHAZADO",
         codigoRespuesta: codigoRespuesta,
         mensajeRespuesta: mensajeFinal,
-        respuestaPago: respuestaCompleta,
+        respuestaPago: respuestaParaGuardar,
         estado: aprobado ? "PROCESANDO" : orden.estado,
         // Campos para voucher
         retrievalRefNo: retrievalRefNo || orden.retrievalRefNo || null,
