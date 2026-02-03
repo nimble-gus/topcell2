@@ -133,12 +133,15 @@ function ThreeDSecurePaso4Content() {
         "https://songbird.cardinalcommerce.com",
       ];
       
-      // También permitir mensajes del origen propio si es profile.completed (viene del callback API route)
+      // También permitir mensajes del origen propio: localhost, Vercel y producción (callback puede cargar en topcellgt.com)
       const isOwnOrigin = 
         event.origin.includes("localhost") || 
         event.origin.includes("ngrok") || 
         event.origin.includes("127.0.0.1") ||
-        event.origin === window.location.origin;
+        event.origin === window.location.origin ||
+        event.origin.startsWith("https://www.topcellgt.com") ||
+        event.origin.startsWith("https://topcellgt.com") ||
+        event.origin.includes("vercel.app");
       
       const isAllowedOrigin = allowedOrigins.some(origin => event.origin.startsWith(origin));
       const isAllowedOwnOrigin = isOwnOrigin && isProfileCompleted;
