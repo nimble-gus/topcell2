@@ -107,14 +107,16 @@ function ThreeDSecureContent() {
       console.log("Data type:", typeof event.data);
       console.log("Data:", event.data);
       
-      // Solo aceptar mensajes de Cardinal Commerce
+      // Solo aceptar mensajes de Cardinal Commerce (startsWith por si usan subdominios o variantes)
       const allowedOrigins = [
         "https://centinelapistag.cardinalcommerce.com",
         "https://centinelapi.cardinalcommerce.com",
         "https://songbird.cardinalcommerce.com",
+        "https://cas.client.cardinaltrusted.com",
       ];
       
-      if (!allowedOrigins.some(origin => event.origin === origin)) {
+      const isAllowedOrigin = allowedOrigins.some(origin => event.origin.startsWith(origin));
+      if (!isAllowedOrigin) {
         console.log("⚠️ Origen no permitido, ignorando mensaje:", event.origin);
         return;
       }
@@ -127,10 +129,12 @@ function ThreeDSecureContent() {
         console.log("Data completa:", JSON.stringify(data, null, 2));
 
         // Verificar si el Device Data Collection (DDC) se completó exitosamente
-        // Según el manual, cuando Songbird (Cardinal Commerce) completa el DDC, envía un mensaje profile.completed
-        // Nota: Cardinal Commerce puede enviar "status" (minúscula) o "Status" (mayúscula)
+        // Cardinal puede enviar MessageType/profile.completed con distintas variantes y Status true/"true"/SUCCESS
         const status = data.Status !== undefined ? data.Status : data.status;
-        const isCompleted = data.MessageType === "profile.completed" && (status === true || status === "true");
+        const messageType = data.MessageType || data.messageType;
+        const isCompleted =
+          (messageType === "profile.completed" || messageType === "ProfileCompleted" || messageType === "Profile.Completed") &&
+          (status === true || status === "true" || status === "SUCCESS" || status === "Success");
         
         if (isCompleted) {
           console.log("✅ Songbird (Cardinal Commerce) completó el DDC exitosamente");
