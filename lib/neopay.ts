@@ -479,7 +479,7 @@ export function buildAnulacionPayload(
       CardAcqId: config.cardAcqId || "",
     },
     Card: {
-      Type: "001", // Tipo genérico (Visa)
+      Type: "", // No enviar en anulación
       PrimaryAcctNum: "", // Vacío - NeoPay puede permitir anular solo con SystemsTraceNo
       DateExpiration: "",
       Cvv2: "",
@@ -488,7 +488,7 @@ export function buildAnulacionPayload(
       UniqueCodeofBeneciary: "",
     },
     Amount: {
-      AmountTrans: Math.round(anulacionData.montoOriginal * 100).toString(), // Convertir a centavos
+      AmountTrans: "", // No enviar en anulación
       AmountDiscount: "",
       RateDiscount: "",
       AdditionalAmounts: "",
@@ -500,7 +500,7 @@ export function buildAnulacionPayload(
     PrivateUse63: {
       LodgingFolioNumber14: "",
       NationalCard25: "",
-      HostReferenceData31: anulacionData.retrievalRefNo || "", // Usar RetrievalRefNo como referencia
+      HostReferenceData31: "", // No enviar en anulación
       TaxAmount1: "",
     },
     TokenManagement: {
@@ -733,7 +733,7 @@ export function buildPaso3Payload(
     PosEntryMode: data.posEntryMode || "012",
     Nii: data.nii || "003",
     PosConditionCode: data.posConditionCode || "00",
-    AdditionalData: data.additionalData || "", // ✅ Pasar AdditionalData del Paso 1
+    AdditionalData: "", // No enviar en Paso 3; solo se envía en el Paso 1 (primera petición con datos de tarjeta)
     OrderInformation: data.orderInformation || "", // ✅ Pasar OrderInformation del Paso 1
     FormatId: "1",
     Merchant: {
@@ -854,7 +854,7 @@ export function buildPaso5Payload(
     PosEntryMode: paso5Data.posEntryMode || "012",
     Nii: paso5Data.nii || "003",
     PosConditionCode: paso5Data.posConditionCode || "00",
-    AdditionalData: paso5Data.additionalData || "",
+    AdditionalData: "", // No enviar en Paso 5; solo se envía en el Paso 1 (primera petición con datos de tarjeta)
     OrderInformation: paso5Data.orderInformation || "",
     FormatId: "1",
     Merchant: {
@@ -1082,6 +1082,7 @@ export async function ejecutarReversaPaso3o5(
   const payloadReversa = {
     ...payloadOriginal,
     MessageTypeId: "0400",
+    AdditionalData: "", // No enviar additionalData en la petición de reversa automática
   };
 
   try {
