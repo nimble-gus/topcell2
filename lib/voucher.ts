@@ -68,7 +68,7 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
       doc.on("error", reject);
 
       // Título (usar fuente estándar sin especificar nombre)
-      doc.fontSize(20).text("COMPROBANTE DE PAGO", { align: "center" });
+      doc.fontSize(20).text(data.esAnulacion ? "COMPROBANTE DE ANULACIÓN" : "COMPROBANTE DE PAGO", { align: "center" });
       doc.moveDown();
 
       // Información de la orden

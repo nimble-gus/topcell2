@@ -521,10 +521,12 @@ export default function DetalleOrdenPage() {
             </div>
           </div>
 
-        {/* Descargar Voucher */}
+        {/* Descargar Voucher / Comprobante de Anulación */}
         {(orden.metodoPago === "TARJETA" && (orden.estadoPago === "APROBADO" || orden.estadoPago === "ANULADO")) ? (
           <div className="bg-white rounded-lg border border-gray-200 shadow p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Comprobante de Pago</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              {orden.estadoPago === "ANULADO" ? "Comprobante de Anulación" : "Comprobante de Pago"}
+            </h2>
             <button
               onClick={() => {
                 window.open(`/api/ordenes/${ordenId}/voucher`, "_blank");
@@ -544,7 +546,7 @@ export default function DetalleOrdenPage() {
                   d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              Descargar Voucher
+              {orden.estadoPago === "ANULADO" ? "Descargar Comprobante de Anulación" : "Descargar Voucher"}
             </button>
           </div>
         ) : null}
