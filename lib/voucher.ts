@@ -91,6 +91,9 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
           fechaMostrar = new Date(anio, mes - 1, dia, hora, minuto, segundo);
         }
       }
+      // Importante: aquí NO forzamos zona horaria porque la fecha ya fue construida
+      // a partir de los datos de NeoPay (dateLocalTrans/timeLocalTrans) o de la orden.
+      // Si aplicamos una zona adicional en Vercel (UTC) se corre 6 horas.
       doc.text(`Fecha: ${fechaMostrar.toLocaleString("es-GT", { 
         year: "numeric", 
         month: "2-digit", 
@@ -98,7 +101,6 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-        timeZone: "America/Guatemala",
       })}`);
       doc.text(`Estado: ${data.estado}`);
       doc.moveDown();
