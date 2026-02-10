@@ -97,7 +97,8 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit"
+        second: "2-digit",
+        timeZone: "America/Guatemala",
       })}`);
       doc.text(`Estado: ${data.estado}`);
       doc.moveDown();
@@ -237,7 +238,18 @@ export async function generarVoucherPDF(data: VoucherData): Promise<Buffer> {
         doc.text("Este comprobante corresponde a una anulación de transacción.", { align: "center" });
       }
       doc.moveDown();
-      doc.text(`Generado el: ${new Date().toLocaleString("es-GT")}`, { align: "center" });
+      doc.text(
+        `Generado el: ${new Date().toLocaleString("es-GT", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          timeZone: "America/Guatemala",
+        })}`,
+        { align: "center" }
+      );
 
       // Finalizar documento
       doc.end();
