@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import OrdenesTable from "./OrdenesTable";
 
 export default async function OrdenesPage({
   searchParams,
@@ -39,7 +40,7 @@ export default async function OrdenesPage({
     };
   }
 
-  const ordenes = await prisma.orden.findMany({
+  const ordenesRaw = await prisma.orden.findMany({
     where,
     include: {
       usuario: {
@@ -52,7 +53,7 @@ export default async function OrdenesPage({
         },
       },
       items: {
-        take: 1, // Solo para contar items
+        take: 1,
       },
     },
     orderBy: {
@@ -60,24 +61,19 @@ export default async function OrdenesPage({
     },
   });
 
-  const estados = ["PENDIENTE", "PROCESANDO", "ENVIADO", "ENTREGADO", "CANCELADO"];
+  // Serializar para el Client Component: Prisma Decimal no es serializable
+  const ordenes = ordenesRaw.map((o) => ({
+    id: o.id,
+    numeroOrden: o.numeroOrden,
+    estado: o.estado,
+    tipoEnvio: o.tipoEnvio,
+    metodoPago: o.metodoPago,
+    total: Number(o.total),
+    createdAt: o.createdAt.toISOString(),
+    usuario: o.usuario,
+  }));
 
-  const getEstadoColor = (estado: string) => {
-    switch (estado) {
-      case "PENDIENTE":
-        return "bg-yellow-100 text-yellow-800";
-      case "PROCESANDO":
-        return "bg-blue-100 text-blue-800";
-      case "ENVIADO":
-        return "bg-purple-100 text-purple-800";
-      case "ENTREGADO":
-        return "bg-green-100 text-green-800";
-      case "CANCELADO":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  const estados = ["PENDIENTE", "PROCESANDO", "ENVIADO", "ENTREGADO", "CANCELADO"];
 
   return (
     <div className="p-6">
@@ -173,98 +169,7 @@ export default async function OrdenesPage({
           <p className="text-gray-500">No se encontraron órdenes</p>
         </div>
       ) : (
-        <div className="rounded-lg border border-gray-200 bg-white shadow">
-          <table className="w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[160px]">
-                  Orden
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[180px]">
-                  Cliente
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
-                  Fecha
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">
-                  Estado
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">
-                  Envío
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[110px]">
-                  Pago
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[90px]">
-                  Total
-                </th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[80px]">
-                  Acc
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {ordenes.map((orden) => {
-                const fechaOrden = new Date(orden.createdAt).toLocaleDateString("es-GT", {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-                
-                return (
-                  <tr key={orden.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 text-xs font-medium text-gray-900">
-                      <div className="truncate" title={orden.numeroOrden}>{orden.numeroOrden}</div>
-                    </td>
-                    <td className="px-3 py-2 text-sm text-gray-500">
-                      <div>
-                        <div className="font-medium text-gray-900 truncate">
-                          {orden.usuario.nombre} {orden.usuario.apellido || ""}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">{orden.usuario.email}</div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-xs text-gray-500">
-                      {fechaOrden}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getEstadoColor(
-                          orden.estado
-                        )}`}
-                      >
-                        {orden.estado}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-xs text-gray-500">
-                      {orden.tipoEnvio === "ENVIO" ? "Envío" : "Bodega"}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-gray-500">
-                      {orden.metodoPago === "CONTRA_ENTREGA" 
-                        ? "Contra Entrega" 
-                        : orden.metodoPago === "TARJETA"
-                        ? "Pago con Tarjeta"
-                        : "Transferencia"}
-                    </td>
-                    <td className="px-3 py-2 text-xs font-semibold text-gray-900">
-                      Q{Number(orden.total).toLocaleString("es-GT")}
-                    </td>
-                    <td className="px-3 py-2 text-right text-xs font-medium">
-                      <Link
-                        href={`/admin/ordenes/${orden.id}`}
-                        className="text-indigo-600 hover:text-indigo-900 hover:underline"
-                        title="Ver Detalles"
-                      >
-                        Ver
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <OrdenesTable ordenes={ordenes} />
       )}
     </div>
   );

@@ -450,3 +450,101 @@ export async function PUT(
   }
 }
 
+// DELETE: Eliminar una orden (y sus items). Si no estaba cancelada, se restaura stock.
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "No autorizado" },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+    const ordenId = parseInt(id);
+
+    if (isNaN(ordenId)) {
+      return NextResponse.json(
+        { error: "ID de orden inválido" },
+        { status: 400 }
+      );
+    }
+
+    const ordenExistente = await prisma.orden.findUnique({
+      where: { id: ordenId },
+      include: { items: true },
+    });
+
+    if (!ordenExistente) {
+      return NextResponse.json(
+        { error: "Orden no encontrada" },
+        { status: 404 }
+      );
+    }
+
+    // Si la orden no estaba cancelada, restaurar stock antes de borrar
+    if (ordenExistente.estado !== "CANCELADO") {
+      await prisma.$transaction(async (tx) => {
+        for (const item of ordenExistente.items) {
+          if (item.tipoProducto === "TELEFONO_NUEVO" && item.telefonoNuevoId) {
+            const telefono = await tx.telefonoNuevo.findUnique({
+              where: { id: item.telefonoNuevoId },
+              include: { variantes: true },
+            });
+            if (telefono && telefono.variantes.length > 0) {
+              const variante = telefono.variantes.find(
+                (v) => Number(v.precio) === Number(item.precioUnitario)
+              ) || telefono.variantes[0];
+              await tx.telefonoNuevoVariante.update({
+                where: { id: variante.id },
+                data: { stock: { increment: item.cantidad } },
+              });
+            }
+          } else if (item.tipoProducto === "TELEFONO_SEMINUEVO" && item.telefonoSeminuevoId) {
+            const telefono = await tx.telefonoSeminuevo.findUnique({
+              where: { id: item.telefonoSeminuevoId },
+              include: { variantes: true },
+            });
+            if (telefono && telefono.variantes.length > 0) {
+              const variante = telefono.variantes.find(
+                (v) => Number(v.precio) === Number(item.precioUnitario)
+              ) || telefono.variantes[0];
+              await tx.telefonoSeminuevoVariante.update({
+                where: { id: variante.id },
+                data: { stock: { increment: item.cantidad } },
+              });
+            }
+          } else if (item.tipoProducto === "ACCESORIO" && item.accesorioId) {
+            const accesorio = await tx.accesorio.findUnique({
+              where: { id: item.accesorioId },
+              include: { colores: true },
+            });
+            if (accesorio && accesorio.colores.length > 0) {
+              await tx.accesorioColor.update({
+                where: { id: accesorio.colores[0].id },
+                data: { stock: { increment: item.cantidad } },
+              });
+            }
+          }
+        }
+      });
+    }
+
+    await prisma.orden.delete({
+      where: { id: ordenId },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Error al eliminar orden:", error);
+    return NextResponse.json(
+      { error: error.message || "Error al eliminar la orden" },
+      { status: 500 }
+    );
+  }
+}
+
