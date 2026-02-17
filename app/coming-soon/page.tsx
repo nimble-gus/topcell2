@@ -78,7 +78,7 @@ export default async function ComingSoonPage() {
           <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
             <p className="text-lg text-gray-700 mb-4">
               Nuestro sitio estará disponible el{" "}
-              <span className="font-bold text-orange-500">15 de febrero de 2026</span>
+              <span className="font-bold text-orange-500">15 de marzo de 2026</span>
             </p>
             <p className="text-gray-600">
               Mientras tanto, síguenos en nuestras redes sociales para estar al día con las novedades
