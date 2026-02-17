@@ -21,6 +21,20 @@ type OrdenRow = {
   };
 };
 
+// Formato de fecha fijo para evitar hydration mismatch (server vs client locale)
+function formatFechaOrden(isoDate: string): string {
+  const d = new Date(isoDate);
+  const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  const dia = d.getDate();
+  const mes = meses[d.getMonth()];
+  let h = d.getHours();
+  const min = d.getMinutes();
+  const ampm = h >= 12 ? "p. m." : "a. m.";
+  h = h % 12 || 12;
+  const minStr = min < 10 ? `0${min}` : String(min);
+  return `${dia} ${mes}, ${h}:${minStr} ${ampm}`;
+}
+
 function getEstadoColor(estado: string) {
   switch (estado) {
     case "PENDIENTE":
@@ -158,12 +172,7 @@ export default function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {ordenes.map((orden) => {
-            const fechaOrden = new Date(orden.createdAt).toLocaleDateString("es-GT", {
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+            const fechaOrden = formatFechaOrden(orden.createdAt);
             return (
               <tr key={orden.id} className="hover:bg-gray-50">
                 <td className="px-3 py-2">
