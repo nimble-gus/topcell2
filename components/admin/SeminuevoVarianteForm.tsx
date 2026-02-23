@@ -135,9 +135,12 @@ export default function SeminuevoVarianteForm({
           <div className="mt-3 space-y-2">
             {variantes.map((variante, index) => {
               const color = colores.find((c) => c.id === variante.colorId);
+              const stableKey = variante.id
+                ? `v-${variante.id}`
+                : `new-${variante.colorId}-${variante.rom}-${variante.estado}-${variante.porcentajeBateria ?? 0}-${variante.ciclosCarga ?? 0}-${index}`;
               return (
                 <div
-                  key={index}
+                  key={stableKey}
                   className="rounded-md border border-gray-200 bg-gray-50 p-3"
                 >
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
@@ -221,10 +224,12 @@ export default function SeminuevoVarianteForm({
                         <input
                           type="number"
                           min="0"
-                          value={variante.stock}
-                          onChange={(e) =>
-                            handleUpdateVariant(index, "stock", parseInt(e.target.value) || 0)
-                          }
+                          value={variante.stock ?? 0}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            const val = raw === "" ? 0 : parseInt(raw, 10);
+                            handleUpdateVariant(index, "stock", isNaN(val) ? 0 : Math.max(0, val));
+                          }}
                           className="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm"
                         />
                       </div>
