@@ -31,7 +31,7 @@ export default function HeroSection({ images }: HeroSectionProps) {
 
   if (!images || images.length === 0) {
     return (
-      <section className="relative h-[600px] w-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-b-3xl">
+      <section className="relative h-[600px] w-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl">
         <div className="flex h-full items-center justify-center">
           <p className="text-gray-500 font-medium">No hay imágenes disponibles</p>
         </div>
@@ -61,22 +61,25 @@ export default function HeroSection({ images }: HeroSectionProps) {
   };
 
   return (
-    <section className="relative h-[400px] sm:h-[500px] md:h-[600px] w-full overflow-hidden rounded-b-3xl">
-      {/* Images */}
-      <div className="relative h-full w-full">
+    <div className="w-full px-3 sm:px-4 md:px-6">
+      <section className="relative w-full aspect-[2/1] sm:aspect-auto sm:h-[500px] md:h-[600px] rounded-3xl overflow-hidden shadow-sm">
+        {/* Images: mismo redondeado y overflow para que no parpadee en transición */}
+        <div className="relative h-full w-full rounded-3xl overflow-hidden">
         {sortedImages.map((image, index) => (
           <div
             key={image.id}
-            className={`absolute inset-0 transition-opacity duration-700 ${
+            className={`absolute inset-0 rounded-3xl overflow-hidden transition-opacity duration-700 ${
               index === currentIndex ? "opacity-100" : "opacity-0"
             }`}
+            style={{ isolation: "isolate" }}
           >
             <Image
               src={image.url}
               alt={image.descripcion || `Hero image ${index + 1}`}
               fill
-              className="object-cover"
+              className="object-cover bg-gray-100"
               priority={index === 0}
+              sizes="(max-width: 768px) 100vw, 100vw"
             />
             {/* Overlay blurry opcional */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
@@ -145,7 +148,8 @@ export default function HeroSection({ images }: HeroSectionProps) {
           ))}
         </div>
       )}
-    </section>
+      </section>
+    </div>
   );
 }
 

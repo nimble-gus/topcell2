@@ -5,6 +5,7 @@ import {
   buildPaso3Payload,
   callNeoPayAPI,
   ejecutarReversaPaso3o5,
+  getNeoPayConfig,
   getResponseCodeMessage,
   isTimeoutResponseCode,
   isApprovedResponseCode,
@@ -111,6 +112,12 @@ export async function POST(request: NextRequest) {
       console.error("❌ Error al obtener los valores del Paso 1:", error);
       console.error("respuestaPago raw:", orden.respuestaPago?.substring(0, 200));
     }
+
+    // Log de configuración (útil para depurar -4 en producción)
+    const configPaso3 = getNeoPayConfig();
+    console.log("=== Paso 3 - Config ===");
+    console.log("apiUrl (host):", configPaso3.apiUrl?.replace(/https?:\/\//, "").split("/")[0]);
+    console.log("urlCommerce (callback):", configPaso3.urlCommerce);
 
     // Construir payload para Paso 3 usando valores del Paso 1 si están disponibles
     const payload = buildPaso3Payload({
@@ -283,6 +290,38 @@ export async function POST(request: NextRequest) {
                               neopayResponse.ResponseMessage || 
                               getResponseCodeMessage(responseCode);
 
+    // ✅ Manejar código -4 "ERROR GENERAL EN 3D SECURE" (común en producción por URL de callback o configuración)
+    if (responseCode === "-4") {
+      const config = getNeoPayConfig();
+      console.error("=== Código -4 ERROR GENERAL EN 3D SECURE ===");
+      console.error("Verificar en producción:");
+      console.error("  1. NEOPAY_URL_COMMERCE debe ser exactamente la URL de callback en producción:", config.urlCommerce);
+      console.error("  2. La URL debe ser HTTPS y accesible desde internet");
+      console.error("  3. Paso 1 y Paso 3 deben usar las mismas credenciales (NEOPAY_PROD_*)");
+      console.error("  4. Si persiste, contactar a NeoPay con ReferenceId:", referenceIdFinal, "SystemsTraceNo:", traceNo);
+
+      await prisma.orden.update({
+        where: { id: orden.id },
+        data: {
+          estadoPago: "ERROR",
+          codigoRespuesta: "-4",
+          mensajeRespuesta: "ERROR GENERAL EN 3D SECURE. Verificar NEOPAY_URL_COMMERCE en producción.",
+        },
+      });
+
+      return NextResponse.json(
+        {
+          success: false,
+          aprobado: false,
+          error: "TRANSACTION DENIED",
+          codigoRespuesta: "-4",
+          mensajeCatalogo: "ERROR GENERAL EN 3D SECURE",
+          mensajeRespuesta: "En producción, verifica que NEOPAY_URL_COMMERCE sea la URL real de callback (ej: https://tudominio.com/pago/3dsecure/callback). Si el problema continúa, contacta a NeoPay con el número de orden.",
+        },
+        { status: 400 }
+      );
+    }
+
     // ✅ Manejar el caso "STEP ALREADY DONE" o "INVALID AUTHENTICATION" (ResponseCode "-3")
     // Si el paso ya se completó o hay un error de autenticación, verificar el estado de la orden
     // Reutilizar alternateHostResponse declarado arriba
@@ -292,10 +331,14 @@ export async function POST(request: NextRequest) {
     if (responseCode === "-3" && (isStepAlreadyDone || isInvalidAuth)) {
       if (isStepAlreadyDone) {
         console.log("⚠️ Paso 3 ya fue ejecutado anteriormente para este ReferenceId");
-        console.log("Verificando estado actual de la orden...");
-        
-        // Si la orden ya está aprobada, retornar éxito
-        if (orden.estadoPago === "APROBADO") {
+        // Re-fetch la orden por si otra petición (doble envío/recarga) ya la actualizó a APROBADO
+        const ordenActualizada = await prisma.orden.findUnique({
+          where: { id: orden.id },
+          select: { estadoPago: true },
+        });
+        const estadoActual = ordenActualizada?.estadoPago ?? orden.estadoPago;
+
+        if (estadoActual === "APROBADO") {
           console.log("✅ La orden ya está aprobada, retornando éxito");
           return NextResponse.json({
             success: true,
@@ -304,17 +347,18 @@ export async function POST(request: NextRequest) {
             mensaje: "El pago ya fue procesado exitosamente anteriormente.",
           });
         }
-        
-        // Si no está aprobada, retornar error
-        return NextResponse.json(
-          {
-            success: false,
-            error: "El paso 3 ya fue ejecutado, pero la orden no está aprobada. Por favor contacta al soporte.",
-            codigoRespuesta: responseCode,
-            mensajeRespuesta: alternateHostResponse || "STEP ALREADY DONE",
-          },
-          { status: 400 }
-        );
+
+        // Paso 3 ya ejecutado en NeoPay pero la orden no está APROBADA aquí (ej. doble envío, primera respuesta se perdió)
+        // Devolver 200 con flag para que el usuario pueda ir a "Ver mi orden" y comprobar
+        return NextResponse.json({
+          success: false,
+          aprobado: false,
+          stepAlreadyDone: true,
+          ordenId: orden.id,
+          error: "Esta transacción ya fue procesada en el banco. Si descontaron el monto de tu tarjeta, revisa el estado de tu orden.",
+          codigoRespuesta: responseCode,
+          mensajeRespuesta: alternateHostResponse || "STEP ALREADY DONE",
+        });
       }
       
       if (isInvalidAuth) {

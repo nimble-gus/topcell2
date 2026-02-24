@@ -12,6 +12,8 @@ function ThreeDSecureCallbackContent() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [errorDetail, setErrorDetail] = useState<{ status?: number; codigoRespuesta?: string }>({});
+  const [stepAlreadyDoneOrdenId, setStepAlreadyDoneOrdenId] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [serverData, setServerData] = useState<{
     logoUrl: string | null;
@@ -132,9 +134,13 @@ function ThreeDSecureCallbackContent() {
         data = { error: "Error al procesar la respuesta del servidor" };
       }
 
-      console.log("=== Respuesta del Paso 3 ===");
-      console.log("Status:", response.status);
-      console.log("Data:", data);
+      // Un solo log con todo para debugging
+      console.log("=== Respuesta Paso 3 ===", {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        ...data,
+      });
 
       // ✅ Si se requiere Paso 4, redirigir a la página de Paso 4
       if (response.ok && data.requierePaso4) {
@@ -146,11 +152,21 @@ function ThreeDSecureCallbackContent() {
 
       if (response.ok && data.aprobado) {
         setSuccess(true);
-        // Redirigir a la página de confirmación de orden después de 2 segundos
         setTimeout(() => {
           router.push(`/orden/${ordenId}`);
         }, 2000);
-      } else {
+        return;
+      }
+
+      // Paso 3 ya ejecutado en NeoPay (doble envío/recarga) — mostrar mensaje y botón "Ver mi orden"
+      if (response.ok && data.stepAlreadyDone && data.ordenId) {
+        setError(data.error || "Esta transacción ya fue procesada. Revisa el estado de tu orden.");
+        setStepAlreadyDoneOrdenId(String(data.ordenId));
+        setLoading(false);
+        return;
+      }
+
+      {
         // Mostrar error más detallado
         const errorMessage = data.error || data.mensaje || data.mensajeCatalogo || "Error al confirmar el pago";
         const codigoRespuesta = data.codigoRespuesta || "";
@@ -163,16 +179,27 @@ function ThreeDSecureCallbackContent() {
         if (mensajeRespuesta && mensajeRespuesta !== errorMessage) {
           errorCompleto += ` - ${mensajeRespuesta}`;
         }
-        
-        // Log más detallado para debugging
-        console.error("❌ Error en Paso 3:");
-        console.error("  Status:", response.status, response.statusText);
-        console.error("  Error:", errorMessage);
-        console.error("  Código Respuesta:", codigoRespuesta || "N/A");
-        console.error("  Mensaje Respuesta:", mensajeRespuesta || "N/A");
-        console.error("  Data completa:", JSON.stringify(data, null, 2));
-        
+        // Mensaje más claro para -4 (común en producción por URL de callback)
+        if (String(codigoRespuesta) === "-4") {
+          errorCompleto = "No se pudo completar la verificación 3D Secure. Por favor intenta de nuevo o usa otro método de pago. Si el problema continúa, contacta a soporte.";
+        }
+        // Si es error del servidor (5xx), mensaje genérico
+        if (response.status >= 500) {
+          errorCompleto = "Error temporal del servidor. Por favor intenta de nuevo en unos minutos.";
+        }
+
+        const errorDebug = {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorMessage,
+          codigoRespuesta: codigoRespuesta || "N/A",
+          mensajeRespuesta: mensajeRespuesta || "N/A",
+          data,
+        };
+        console.error("❌ Error en Paso 3:", JSON.stringify(errorDebug, null, 2));
+
         setError(errorCompleto);
+        setErrorDetail({ status: response.status, codigoRespuesta: codigoRespuesta || undefined });
         // Limpiar flag para permitir reintento si el usuario recarga
         const paso = searchParams.get("paso") || "3";
         sessionStorage.removeItem(`3ds-confirmar-${ordenId}-${paso}`);
@@ -207,7 +234,31 @@ function ThreeDSecureCallbackContent() {
       
       <main className="pt-16 sm:pt-20 pb-8 sm:pb-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          {success ? (
+          {stepAlreadyDoneOrdenId ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 shadow-sm text-center">
+              <div className="inline-flex justify-center w-20 h-20 rounded-full bg-amber-100 mb-4">
+                <svg className="w-10 h-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Transacción ya procesada</h1>
+              <p className="text-gray-600 mb-6">{error}</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => router.push(`/orden/${stepAlreadyDoneOrdenId}`)}
+                  className="px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+                >
+                  Ver mi orden
+                </button>
+                <button
+                  onClick={() => router.push("/checkout")}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Volver al Checkout
+                </button>
+              </div>
+            </div>
+          ) : success ? (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm text-center">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-4">
                 <svg
@@ -251,7 +302,13 @@ function ThreeDSecureCallbackContent() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Error en el Pago
               </h1>
-              <p className="text-gray-600 mb-6">{error}</p>
+              <p className="text-gray-600 mb-2">{error}</p>
+              {(errorDetail.status != null || errorDetail.codigoRespuesta) && (
+                <p className="text-sm text-gray-400 mb-6">
+                  Referencia: {[errorDetail.status != null && `Status ${errorDetail.status}`, errorDetail.codigoRespuesta && `Código ${errorDetail.codigoRespuesta}`].filter(Boolean).join(" · ")}
+                </p>
+              )}
+              {!(errorDetail.status != null || errorDetail.codigoRespuesta) && <div className="mb-6" />}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={() => router.push("/checkout")}
