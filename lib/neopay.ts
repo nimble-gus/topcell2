@@ -248,6 +248,20 @@ export function normalizeBillToAddress(str: string): string {
     .trim();
 }
 
+/** Normaliza teléfono para BillTo: solo dígitos; si son 8 dígitos (Guatemala), antepone 502 */
+export function normalizeBillToPhone(phone: string): string {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 8) return "502" + digits; // Guatemala sin código
+  return digits;
+}
+
+/** UrlCommerce para producción: sin www para compatibilidad con validación NeoPay */
+export function normalizeUrlCommerce(url: string): string {
+  if (!url) return url;
+  return url.replace(/^https?:\/\/www\./, "https://");
+}
+
 /**
  * Extrae el número de zona de la dirección de facturación.
  * Ej: "15 Av 7-11 Zona 13" -> "13", "Zona 1" -> "01"
@@ -405,22 +419,21 @@ export function buildPaso1Payload(
       PhoneNumber: "",
     },
     BillTo: {
-      FirstName: normalizeBillToText(cliente.nombre),
-      LastName: normalizeBillToText(cliente.apellido),
-      Company: "NA",
-      AddressOne: normalizeBillToAddress(cliente.direccionFacturacion || cliente.direccion),
+      FirstName: normalizeBillToText(cliente.nombre).toUpperCase().slice(0, 50),
+      LastName: normalizeBillToText(cliente.apellido).toUpperCase().slice(0, 50),
+      Company: "",
+      AddressOne: normalizeBillToAddress(cliente.direccionFacturacion || cliente.direccion).toUpperCase().slice(0, 100),
       AddressTwo: "",
-      Locality: normalizeBillToText(cliente.ciudadFacturacion || cliente.ciudad),
-      AdministrativeArea: cliente.departamento || "GU",
-      // PostalCode: últimos 2 dígitos según zona en la dirección (ej: Zona 13 -> 01013), o "01" por defecto
+      Locality: normalizeBillToText(cliente.ciudadFacturacion || cliente.ciudad).toUpperCase().slice(0, 50),
+      AdministrativeArea: (cliente.departamento || "GU").toUpperCase(),
       PostalCode: construirPostalCodeConZona(
         cliente.direccionFacturacion || cliente.direccion || "",
         DEPARTAMENTOS_GT[cliente.departamento || "GU"]?.codigoPostal || "01001",
         cliente.codigoPostalFacturacion || cliente.codigoPostal
       ),
-      Country: cliente.pais || "GT",
-      Email: cliente.email,
-      PhoneNumber: cliente.telefono,
+      Country: (cliente.pais || "GT").toUpperCase() === "GT" ? "GTM" : (cliente.pais || "GTM").toUpperCase().slice(0, 3),
+      Email: (cliente.email || "").trim().toLowerCase().slice(0, 100),
+      PhoneNumber: normalizeBillToPhone(cliente.telefono).slice(0, 20),
     },
     ShipTo: {
       DefaultSt: "",
@@ -446,7 +459,7 @@ export function buildPaso1Payload(
     },
     PayerAuthentication: {
       Step: "1",
-      UrlCommerce: urlCommerce,
+      UrlCommerce: normalizeUrlCommerce(urlCommerce),
       ReferenceId: "",
     },
   };

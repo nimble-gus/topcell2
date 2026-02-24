@@ -446,7 +446,12 @@ export default function CheckoutPage() {
           }
           // Código -1: sugerencias para ERROR GENERAL EN LA OPERACIÓN
           if (paso1Data.codigoRespuesta === "-1" || paso1Data.codigoRespuesta === -1) {
-            errorMessage += ". Posibles causas: credenciales NeoPay incorrectas (.env), URL de callback (NEOPAY_URL_COMMERCE) no accesible, o error temporal del servicio. Verifica que ngrok esté activo si usas túnel.";
+            const esProduccion = typeof window !== "undefined" && !window.location.hostname.includes("localhost") && !window.location.hostname.includes("ngrok");
+            if (esProduccion) {
+              errorMessage += " En producción, verifica en Vercel que estén configuradas NEOPAY_URL_COMMERCE (URL real del sitio, ej. https://tudominio.com/pago/3dsecure/callback) y todas las variables NEOPAY_PROD_* (credenciales de producción).";
+            } else {
+              errorMessage += " Posibles causas: credenciales NeoPay incorrectas (.env), URL de callback (NEOPAY_URL_COMMERCE) no accesible, o error temporal. Verifica que ngrok esté activo si usas túnel.";
+            }
           }
           // En desarrollo, mostrar respuesta de NeoPay solo si tiene contenido
           if (process.env.NODE_ENV === "development" && paso1Data.respuestaCompleta && Object.keys(paso1Data.respuestaCompleta).length > 0) {

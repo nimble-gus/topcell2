@@ -82,6 +82,10 @@ export async function POST(request: NextRequest) {
 
     // Obtener URL de retorno
     const config = await import("@/lib/neopay").then(m => m.getNeoPayConfig());
+    console.log("=== Paso 1 - Config ===", {
+      apiHost: config.apiUrl?.replace(/https?:\/\//, "").split("/")[0],
+      urlCommerce: config.urlCommerce,
+    });
 
     // Construir AdditionalData para NeoCuotas si se seleccionaron cuotas
     const additionalData = cuotasToAdditionalData(cuotas);
