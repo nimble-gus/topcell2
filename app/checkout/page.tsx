@@ -1223,21 +1223,6 @@ export default function CheckoutPage() {
                             />
                           </div>
                         </div>
-
-                        {/* Tarjetas de prueba: colapsable y discreto */}
-                        <details className="group rounded-lg border border-gray-200 bg-gray-50">
-                          <summary className="list-none flex items-center justify-between cursor-pointer px-4 py-3 text-sm text-gray-500 hover:text-gray-700">
-                            <span>Información para ambiente de pruebas</span>
-                            <span className="transition group-open:rotate-180">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                            </span>
-                          </summary>
-                          <div className="px-4 pb-4 pt-0 text-xs text-gray-600 border-t border-gray-100 space-y-1">
-                            <p className="font-medium text-gray-700">Tarjetas de prueba:</p>
-                            <p>Visa: 4456530000001005 · Fecha: 12/29 · CVV: 123</p>
-                            <p>Mastercard: 4000000000002503 · Fecha: 12/29 · CVV: 123</p>
-                          </div>
-                        </details>
                       </div>
                     )}
                   </div>

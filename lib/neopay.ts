@@ -37,6 +37,7 @@ export function isCardExpired(mm: string, yy: string): boolean {
 
 /**
  * Configuración de NeoPay según el ambiente
+ * Producción: según credenciales de NeoPay/ePayServer (epayserver.neonet.com.gt)
  */
 export function getNeoPayConfig() {
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -59,6 +60,10 @@ export function getNeoPayConfig() {
       : process.env.NEOPAY_PROD_CARD_ACQ_ID || process.env.NEOPAY_TEST_CARD_ACQ_ID,
     urlCommerce: process.env.NEOPAY_URL_COMMERCE || 
                  `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/pago/3dsecure/callback`,
+    // Producción: IP fija del gateway NeoPay (obligatorio para epayserver.neonet.com.gt)
+    paymentgwIP: isDevelopment ? undefined : process.env.NEOPAY_PROD_PAYMENTGW_IP || "181.114.3.133",
+    // Producción: IP del servidor donde corre la app (si no se define, se usa ShopperIP como fallback)
+    merchantServerIP: isDevelopment ? undefined : process.env.NEOPAY_PROD_MERCHANT_SERVER_IP,
   };
 }
 
@@ -985,19 +990,18 @@ export async function callNeoPayAPI(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    // PaymentgwIP debe ser una IP, no un hostname
-    // Según el Postman collection, debe ser la misma IP que ShopperIP y MerchantServerIP
-    // En producción, esto debería ser la IP pública del servidor del comerciante
-    // Por ahora, usamos la IP del cliente como fallback
-    const paymentgwIP: string = clientIP;
+    // Producción (epayserver.neonet.com.gt): paymentgwIP fija (181.114.3.133)
+    // Pruebas: usar IP del cliente como fallback
+    const paymentgwIP: string = config.paymentgwIP ?? clientIP;
+    const merchantServerIP: string = config.merchantServerIP ?? clientIP;
 
     const response = await fetch(config.apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "ShopperIP": clientIP,
-        "PaymentgwIP": paymentgwIP, // ✅ Corregido: usar IP (igual que ShopperIP según Postman)
-        "MerchantServerIP": clientIP,
+        "PaymentgwIP": paymentgwIP,
+        "MerchantServerIP": merchantServerIP,
         "MerchantUser": config.merchantUser || "",
         "MerchantPasswd": config.merchantPasswd || "",
       },

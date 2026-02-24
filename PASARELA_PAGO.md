@@ -349,12 +349,16 @@ NEOPAY_TEST_MERCHANT_PASSWD=tu_password_test
 NEOPAY_TEST_TERMINAL_ID=tu_terminal_id_test
 NEOPAY_TEST_CARD_ACQ_ID=tu_card_acq_id_test
 
-# NeoPay - Ambiente de Producción
-NEOPAY_PROD_API_URL=https://epayvisanet.com.gt:4433/V3/api/AuthorizationPaymentCommerce
-NEOPAY_PROD_MERCHANT_USER=tu_usuario_prod
-NEOPAY_PROD_MERCHANT_PASSWD=tu_password_prod
-NEOPAY_PROD_TERMINAL_ID=tu_terminal_id_prod
-NEOPAY_PROD_CARD_ACQ_ID=tu_card_acq_id_prod
+# NeoPay - Ambiente de Producción (epayserver.neonet.com.gt)
+NEOPAY_PROD_API_URL=https://epayserver.neonet.com.gt/api/AuthorizationPaymentCommerce
+NEOPAY_PROD_MERCHANT_USER=     # Del archivo adjunto de NeoPay
+NEOPAY_PROD_MERCHANT_PASSWD=   # Del archivo adjunto de NeoPay
+NEOPAY_PROD_TERMINAL_ID=99578298
+NEOPAY_PROD_CARD_ACQ_ID=049379012
+# IP fija del gateway productivo (obligatorio)
+NEOPAY_PROD_PAYMENTGW_IP=181.114.3.133
+# IP del servidor donde corre la app (recomendado para producción)
+# NEOPAY_PROD_MERCHANT_SERVER_IP=tu_ip_publica
 
 # URL de Callback (para desarrollo con ngrok)
 NEOPAY_URL_COMMERCE=https://tu-dominio-ngrok.ngrok-free.dev/pago/3dsecure/callback
@@ -370,6 +374,18 @@ El sistema detecta automáticamente el ambiente usando `NODE_ENV`:
 - **Production**: Usa credenciales de producción (`NEOPAY_PROD_*`), con fallback a prueba si no están configuradas
 
 **Archivo**: `lib/neopay.ts` → función `getNeoPayConfig()`
+
+### Producción (Quetzales - epayserver.neonet.com.gt)
+
+Parámetros de producción según NeoPay:
+- **paymentgwIP**: 181.114.3.133 (IP fija del gateway)
+- **shopperIP**: IP del cliente (se obtiene automáticamente del request)
+- **merchantServerIP**: IP del servidor (configurable con `NEOPAY_PROD_MERCHANT_SERVER_IP`)
+- **CardAcqId**: 049379012
+- **TerminalId**: 99578298
+- **merchantUser** y **merchantPasswd**: Del archivo adjunto enviado por NeoPay
+
+**Importante**: Conexión TLS 1.2 requerida (Node.js la usa por defecto).
 
 ---
 
