@@ -248,12 +248,15 @@ export function normalizeBillToAddress(str: string): string {
     .trim();
 }
 
-/** Normaliza teléfono para BillTo: solo dígitos; si son 8 dígitos (Guatemala), antepone 502 */
+/** Normaliza teléfono para BillTo: solo dígitos, máx 15. NeoPay/Postman usa 8 dígitos locales (Guatemala). */
 export function normalizeBillToPhone(phone: string): string {
   if (!phone) return "";
   const digits = phone.replace(/\D/g, "");
-  if (digits.length === 8) return "502" + digits; // Guatemala sin código
-  return digits;
+  // Si tiene código 502 (11 dígitos), enviar solo los 8 locales. Postman usa "12345678"
+  if (digits.startsWith("502") && digits.length === 11) {
+    return digits.slice(3); // 8 dígitos locales
+  }
+  return digits.slice(0, 15);
 }
 
 /** UrlCommerce para producción: sin www para compatibilidad con validación NeoPay */
@@ -419,21 +422,21 @@ export function buildPaso1Payload(
       PhoneNumber: "",
     },
     BillTo: {
-      FirstName: normalizeBillToText(cliente.nombre).toUpperCase().slice(0, 50),
-      LastName: normalizeBillToText(cliente.apellido).toUpperCase().slice(0, 50),
-      Company: "",
-      AddressOne: normalizeBillToAddress(cliente.direccionFacturacion || cliente.direccion).toUpperCase().slice(0, 100),
+      FirstName: normalizeBillToText(cliente.nombre).toUpperCase().slice(0, 60),
+      LastName: normalizeBillToText(cliente.apellido).toUpperCase().slice(0, 60),
+      Company: "NA", // NeoPay/Postman usa "NA" o "PRUEBA"; vacío puede causar rechazo
+      AddressOne: normalizeBillToAddress(cliente.direccionFacturacion || cliente.direccion).toUpperCase().slice(0, 60),
       AddressTwo: "",
       Locality: normalizeBillToText(cliente.ciudadFacturacion || cliente.ciudad).toUpperCase().slice(0, 50),
-      AdministrativeArea: (cliente.departamento || "GU").toUpperCase(),
+      AdministrativeArea: (cliente.departamento || "GU").toUpperCase().slice(0, 2),
       PostalCode: construirPostalCodeConZona(
         cliente.direccionFacturacion || cliente.direccion || "",
         DEPARTAMENTOS_GT[cliente.departamento || "GU"]?.codigoPostal || "01001",
         cliente.codigoPostalFacturacion || cliente.codigoPostal
-      ),
+      ).slice(0, 10),
       Country: (cliente.pais || "GT").toUpperCase().replace(/GTM/i, "GT").slice(0, 2),
       Email: (cliente.email || "").trim().toLowerCase().slice(0, 100),
-      PhoneNumber: normalizeBillToPhone(cliente.telefono).slice(0, 20),
+      PhoneNumber: normalizeBillToPhone(cliente.telefono).slice(0, 15),
     },
     ShipTo: {
       DefaultSt: "",
@@ -459,7 +462,7 @@ export function buildPaso1Payload(
     },
     PayerAuthentication: {
       Step: "1",
-      UrlCommerce: normalizeUrlCommerce(urlCommerce),
+      UrlCommerce: urlCommerce || "", // Usar exactamente lo configurado (NeoPay puede requerir whitelist)
       ReferenceId: "",
     },
   };
