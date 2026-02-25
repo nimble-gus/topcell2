@@ -51,7 +51,7 @@ function ThreeDSecureContent() {
       setDeviceDataCollectionUrl(decodeURIComponent(deviceUrlParam));
       setLoading(false);
     } else {
-      setError("No se recibió el formulario de autenticación");
+      setError("No se pudieron cargar los datos del pago");
       setLoading(false);
     }
   }, [searchParams]);
@@ -169,7 +169,7 @@ function ThreeDSecureContent() {
         // Verificar si hay error o fallo
         else if (data.Status === "FAILURE" || data.Status === "ERROR" || (data.MessageType && data.MessageType.includes("error"))) {
           console.error("❌ Autenticación fallida:", data);
-          setError("La autenticación 3DSecure falló. Por favor intenta nuevamente.");
+          setError("No se pudo verificar el pago. Por favor intenta nuevamente.");
         } 
         // Otros mensajes intermedios
         else {
@@ -301,7 +301,7 @@ function ThreeDSecureContent() {
         const timeoutId3 = setTimeout(() => {
           if (!trySubmit()) {
             console.error("❌ No se pudieron encontrar el formulario o el iframe después de múltiples intentos (Paso 2)");
-            setError("No se pudo cargar el formulario de autenticación 3DSecure. Por favor, intenta nuevamente.");
+            setError("No se pudo procesar el pago. Por favor, intenta nuevamente.");
           }
         }, 1000);
         
@@ -321,7 +321,7 @@ function ThreeDSecureContent() {
       <div className="min-h-screen bg-white">
         <Header logoUrl={null} />
         <div className="pt-20 flex items-center justify-center min-h-[60vh]">
-          <p className="text-gray-600">Cargando autenticación...</p>
+          <p className="text-gray-600">Procesando tu pago...</p>
         </div>
       </div>
     );
@@ -384,10 +384,10 @@ function ThreeDSecureContent() {
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Autenticación de Tarjeta
+              Procesando tu pago
             </h1>
             <p className="text-gray-600 mb-6">
-              Por favor, completa la autenticación de tu tarjeta en el siguiente formulario.
+              Tu pago está siendo verificado. Por favor espera, no cierres esta ventana.
             </p>
             
             {/* Contenedor para el formulario 3DSecure */}
@@ -411,7 +411,7 @@ function ThreeDSecureContent() {
                     }}
                     onError={(e) => {
                       console.error("❌ Error al cargar iframe:", e);
-                      setError("Error al cargar el formulario de autenticación. Por favor, intenta nuevamente.");
+                      setError("Error al procesar el pago. Por favor, intenta nuevamente.");
                     }}
                   />
                   
@@ -430,12 +430,9 @@ function ThreeDSecureContent() {
                   {/* Mensaje mientras se procesa */}
                   <div className="p-8 text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
-                    <p className="text-gray-600">Procesando autenticación 3DSecure...</p>
+                    <p className="text-gray-600">Procesando tu pago...</p>
                     <p className="text-sm text-gray-500 mt-2">
-                      Cardinal Commerce está verificando tu tarjeta. Por favor espera...
-                    </p>
-                    <p className="text-xs text-gray-400 mt-4">
-                      Si aparece un popup, por favor completa la autenticación allí.
+                      Un momento, estamos verificando la transacción.
                     </p>
                   </div>
                 </>
@@ -447,13 +444,13 @@ function ThreeDSecureContent() {
                 />
               ) : (
                 <div className="p-8 text-center text-gray-500">
-                  <p>Cargando formulario de autenticación...</p>
+                  <p>Procesando tu pago...</p>
                 </div>
               )}
             </div>
 
             <div className="mt-4 text-sm text-gray-500 text-center">
-              <p>No cierres esta ventana hasta completar la autenticación.</p>
+              <p>No cierres esta ventana hasta que termine el proceso.</p>
             </div>
           </div>
         </div>

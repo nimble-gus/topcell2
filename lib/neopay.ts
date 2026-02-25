@@ -426,7 +426,7 @@ export function buildPaso1Payload(
       LastName: normalizeBillToText(cliente.apellido).toUpperCase().slice(0, 60),
       Company: "NA", // NeoPay/Postman usa "NA" o "PRUEBA"; vacío puede causar rechazo
       AddressOne: normalizeBillToAddress(cliente.direccionFacturacion || cliente.direccion).toUpperCase().slice(0, 60),
-      AddressTwo: "",
+      AddressTwo: "NA", // Requerido para 3D Secure Paso 1 (manual NeoPay p.23-24). Usar "NA" si no hay complemento.
       Locality: normalizeBillToText(cliente.ciudadFacturacion || cliente.ciudad).toUpperCase().slice(0, 50),
       AdministrativeArea: (cliente.departamento || "GU").toUpperCase().slice(0, 2),
       PostalCode: construirPostalCodeConZona(

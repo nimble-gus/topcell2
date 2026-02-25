@@ -316,8 +316,8 @@ function ThreeDSecurePaso4Content() {
         <div className="pt-20 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
-            <p className="text-gray-600">Procesando autenticación adicional (Paso 4)...</p>
-            <p className="text-gray-600">Cardinal Commerce está verificando tu tarjeta. Por favor espera...</p>
+            <p className="text-gray-600">Procesando tu pago...</p>
+            <p className="text-gray-600">Un momento, estamos verificando la transacción.</p>
           </div>
         </div>
       </div>
@@ -381,10 +381,10 @@ function ThreeDSecurePaso4Content() {
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Autenticación Adicional (Paso 4)
+              Verificación de tu tarjeta
             </h1>
             <p className="text-gray-600 mb-6">
-              Por favor, completa la autenticación adicional de tu tarjeta (PIN).
+              Tu banco puede solicitar una verificación adicional. Completa los datos en el formulario que aparece debajo.
             </p>
             
             {/* Contenedor para el formulario Paso 4 */}
@@ -458,25 +458,25 @@ function ThreeDSecurePaso4Content() {
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
                     <p className="text-gray-600">
                       {countdown !== null
-                        ? `Autenticación completada. Redirigiendo en ${countdown} segundos...`
-                        : "Procesando autenticación adicional (Paso 4)..."}
+                        ? `Verificación completada. Redirigiendo en ${countdown} segundos...`
+                        : "Procesando tu pago..."}
                     </p>
                     <p className="text-sm text-gray-500 mt-2">
                       {countdown !== null
-                        ? "Cardinal Commerce verificó tu tarjeta. Procediendo a confirmar el pago..."
-                        : "Cardinal Commerce está verificando tu tarjeta. Por favor espera..."}
+                        ? "Procediendo a confirmar el pago."
+                        : "Un momento, estamos verificando la transacción."}
                     </p>
                   </div>
                 </>
               ) : (
                 <div className="p-8 text-center text-gray-500">
-                  <p>Cargando formulario de autenticación...</p>
+                  <p>Procesando tu pago...</p>
                 </div>
               )}
             </div>
 
             <div className="mt-4 text-sm text-gray-500 text-center">
-              <p>No cierres esta ventana hasta completar la autenticación.</p>
+              <p>No cierres esta ventana hasta que termine el proceso.</p>
             </div>
           </div>
         </div>
