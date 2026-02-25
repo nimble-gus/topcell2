@@ -431,7 +431,7 @@ export function buildPaso1Payload(
         DEPARTAMENTOS_GT[cliente.departamento || "GU"]?.codigoPostal || "01001",
         cliente.codigoPostalFacturacion || cliente.codigoPostal
       ),
-      Country: (cliente.pais || "GT").toUpperCase() === "GT" ? "GTM" : (cliente.pais || "GTM").toUpperCase().slice(0, 3),
+      Country: (cliente.pais || "GT").toUpperCase().replace(/GTM/i, "GT").slice(0, 2),
       Email: (cliente.email || "").trim().toLowerCase().slice(0, 100),
       PhoneNumber: normalizeBillToPhone(cliente.telefono).slice(0, 20),
     },
