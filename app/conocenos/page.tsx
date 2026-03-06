@@ -4,6 +4,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContentPage from "@/components/pages/ContentPage";
 
+// Evitar cache estático: el contenido se edita desde el admin y debe mostrarse actualizado
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Conócenos",
   description: "Conoce más sobre TopCell Telecomunicaciones. Nuestra historia, misión y compromiso contigo.",

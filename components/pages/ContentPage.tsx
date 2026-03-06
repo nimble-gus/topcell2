@@ -11,22 +11,17 @@ interface ContentPageProps {
 export default function ContentPage({ titulo, bannerUrl, contenido }: ContentPageProps) {
   return (
     <div>
-      {/* Banner */}
+      {/* Banner: si hay imagen, se muestra sin texto encima para apreciarla mejor. object-contain evita zoom excesivo. */}
       {bannerUrl ? (
-        <div className="relative w-full h-64 md:h-96 overflow-hidden">
+        <div className="relative w-full h-64 md:h-96 overflow-hidden bg-gray-100">
           <Image
             src={bannerUrl}
             alt={titulo}
             fill
-            className="object-cover"
+            className="object-contain object-center"
             sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white text-center px-4">
-              {titulo}
-            </h1>
-          </div>
         </div>
       ) : (
         <div className="w-full h-64 md:h-96 bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">

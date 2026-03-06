@@ -47,12 +47,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { tipo, url, urlDestino, titulo, descripcion, activo, orden } = body;
 
-    if (!tipo || !url) {
+    // Tipos de contenido solo texto (conocenos, privacidad, terminos) no requieren URL
+    const tiposSoloContenido = ["conocenos-contenido", "privacidad-contenido", "terminos-contenido"];
+    const requiereUrl = !tiposSoloContenido.includes(tipo);
+
+    if (!tipo) {
+      return NextResponse.json(
+        { error: "Tipo es requerido" },
+        { status: 400 }
+      );
+    }
+    if (requiereUrl && !url) {
       return NextResponse.json(
         { error: "Tipo y URL son requeridos" },
         { status: 400 }
       );
     }
+
+    // Para tipos solo contenido, usar placeholder ya que el schema exige url no vacía
+    const urlFinal = url?.trim() || (tiposSoloContenido.includes(tipo) ? " " : "");
 
     // Si es logo, desactivar otros logos
     if (tipo === "logo") {
@@ -65,7 +78,7 @@ export async function POST(request: NextRequest) {
     const contenido = await prisma.contenidoTienda.create({
       data: {
         tipo,
-        url,
+        url: urlFinal || " ",
         urlDestino: urlDestino || null,
         titulo: titulo || null,
         descripcion: descripcion || null,

@@ -80,9 +80,10 @@ export default async function CatalogoPage() {
         orderBy: { createdAt: "asc" },
       },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: [
+      { marca: { nombre: "asc" } },
+      { modelo: "asc" },
+    ],
   });
 
   // Formatear productos para el grid (solo teléfonos nuevos)

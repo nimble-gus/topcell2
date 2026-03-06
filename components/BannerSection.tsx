@@ -33,7 +33,7 @@ export default function BannerSection({ banners }: BannerSectionProps) {
           <Link
             key={banner.id}
             href={banner.urlDestino!}
-            className="group relative block overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.01]"
+            className="group relative block overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-lg transition-shadow hover:shadow-2xl"
           >
             {/* Imagen grande */}
             <div className="relative h-[300px] sm:h-[400px] md:h-[500px] w-full overflow-hidden bg-gray-100">
@@ -41,7 +41,7 @@ export default function BannerSection({ banners }: BannerSectionProps) {
                 src={banner.url}
                 alt={banner.titulo || "Banner"}
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                className="object-contain object-center"
               />
               {/* Overlay con gradiente */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />

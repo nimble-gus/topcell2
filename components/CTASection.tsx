@@ -33,14 +33,14 @@ export default function CTASection({ images }: CTASectionProps) {
           <Link
             key={image.id}
             href={image.urlDestino!}
-            className="group relative overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm transition-all hover:shadow-lg hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm transition-shadow hover:shadow-lg"
           >
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-100">
               <Image
                 src={image.url}
                 alt={image.descripcion || "Publicidad"}
                 fill
-                className="object-cover transition-transform group-hover:scale-110"
+                className="object-contain object-center"
               />
             </div>
             {image.descripcion && (

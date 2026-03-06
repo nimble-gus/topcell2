@@ -2,21 +2,49 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DeleteButton from "@/components/admin/DeleteButton";
 
-export default async function TelefonosNuevosPage() {
+type SortMode = "marca" | "marca-desc" | "fecha";
+
+function getOrderBy(sort: SortMode) {
+  switch (sort) {
+    case "marca":
+      return [{ marca: { nombre: "asc" } as const }, { modelo: "asc" as const }];
+    case "marca-desc":
+      return [{ marca: { nombre: "desc" } as const }, { modelo: "desc" as const }];
+    case "fecha":
+    default:
+      return { createdAt: "desc" } as const;
+  }
+}
+
+function nextSort(current: SortMode): SortMode {
+  if (current === "marca") return "marca-desc";
+  if (current === "marca-desc") return "fecha";
+  return "marca";
+}
+
+export default async function TelefonosNuevosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string }>;
+}) {
+  const { sort: sortParam } = await searchParams;
+  const sort: SortMode =
+    sortParam === "marca" || sortParam === "marca-desc" || sortParam === "fecha"
+      ? sortParam
+      : "marca";
+
   const telefonos = await prisma.telefonoNuevo.findMany({
     where: { activo: true },
-      include: {
-        marca: true,
-        variantes: {
-          include: {
-            color: true,
-          },
+    include: {
+      marca: true,
+      variantes: {
+        include: {
+          color: true,
         },
-        imagenes: true,
       },
-    orderBy: {
-      createdAt: "desc",
+      imagenes: true,
     },
+    orderBy: getOrderBy(sort),
   });
 
   return (
@@ -44,7 +72,16 @@ export default async function TelefonosNuevosPage() {
                 Imagen
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Marca / Modelo
+                <Link
+                  href={`/admin/productos/nuevos?sort=${nextSort(sort)}`}
+                  className="inline-flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                  title={`Ordenar por marca (actual: ${sort === "marca" ? "A-Z" : sort === "marca-desc" ? "Z-A" : "fecha"}). Clic para cambiar.`}
+                >
+                  Marca / Modelo
+                  <span className="text-indigo-500 text-[10px]" aria-hidden>
+                    {sort === "marca" ? "↑" : sort === "marca-desc" ? "↓" : "⏱"}
+                  </span>
+                </Link>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Precio

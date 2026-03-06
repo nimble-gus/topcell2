@@ -4,6 +4,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContentPage from "@/components/pages/ContentPage";
 
+// Evitar cache estático: el contenido se edita desde el admin y debe mostrarse actualizado
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Términos y Condiciones",
   description: "Lee nuestros términos y condiciones de uso. Conoce las políticas de compra, envío, devoluciones y garantías de TopCell.",
