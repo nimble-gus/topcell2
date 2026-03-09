@@ -13,7 +13,7 @@ export default function ContentPage({ titulo, bannerUrl, contenido }: ContentPag
     <div>
       {/* Banner: si hay imagen, se muestra sin texto encima para apreciarla mejor. object-contain evita zoom excesivo. */}
       {bannerUrl ? (
-        <div className="relative w-full h-64 md:h-96 overflow-hidden bg-gray-100">
+        <div className="relative aspect-[3/1] w-full overflow-hidden bg-white">
           <Image
             src={bannerUrl}
             alt={titulo}
@@ -24,7 +24,7 @@ export default function ContentPage({ titulo, bannerUrl, contenido }: ContentPag
           />
         </div>
       ) : (
-        <div className="w-full h-64 md:h-96 bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
+        <div className="w-full aspect-[3/1] bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white text-center px-4">
             {titulo}
           </h1>

@@ -35,8 +35,8 @@ export default function BannerSection({ banners }: BannerSectionProps) {
             href={banner.urlDestino!}
             className="group relative block overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-lg transition-shadow hover:shadow-2xl"
           >
-            {/* Imagen grande */}
-            <div className="relative h-[300px] sm:h-[400px] md:h-[500px] w-full overflow-hidden bg-gray-100">
+            {/* Imagen grande: aspect 3:1 para reducir espacios grises y ajustar a formato banner */}
+            <div className="relative aspect-[3/1] w-full overflow-hidden bg-gray-100">
               <Image
                 src={banner.url}
                 alt={banner.titulo || "Banner"}

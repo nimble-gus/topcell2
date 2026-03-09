@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
+import WhatsAppFloatingButton from "@/components/WhatsAppFloatingButton";
 
 const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],
@@ -81,6 +82,7 @@ export default function RootLayout({
         className={`${poppins.variable} font-sans antialiased bg-white`}
       >
         <SessionProvider>{children}</SessionProvider>
+        <WhatsAppFloatingButton />
       </body>
     </html>
   );
