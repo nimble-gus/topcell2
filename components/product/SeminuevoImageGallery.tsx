@@ -283,31 +283,31 @@ export default function SeminuevoImageGallery({
               draggable={false}
             />
 
-            {/* Botones de zoom */}
-            <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/60 rounded-full px-2 py-1.5">
+            {/* Botones de zoom - compactos en móvil */}
+            <div className="absolute bottom-4 left-4 flex items-center gap-0.5 sm:gap-2 bg-black/60 rounded-full px-1.5 py-1 sm:px-2 sm:py-1.5">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP));
                   if (zoom <= 1.5) setPan({ x: 0, y: 0 });
                 }}
-                className="text-white p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="text-white p-1 sm:p-2 hover:bg-white/20 rounded-full transition-colors"
                 aria-label="Reducir zoom"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                 </svg>
               </button>
-              <span className="text-white text-sm min-w-[3rem] text-center">{Math.round(zoom * 100)}%</span>
+              <span className="text-white text-xs sm:text-sm min-w-[2.5rem] sm:min-w-[3rem] text-center">{Math.round(zoom * 100)}%</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP));
                 }}
-                className="text-white p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="text-white p-1 sm:p-2 hover:bg-white/20 rounded-full transition-colors"
                 aria-label="Aumentar zoom"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </button>
@@ -382,8 +382,8 @@ export default function SeminuevoImageGallery({
                   </svg>
                 </button>
 
-                {/* Contador de imágenes */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-sm px-4 py-2 rounded-full">
+                {/* Contador de imágenes - derecha en móvil para no solaparse con zoom */}
+                <div className="absolute bottom-4 right-4 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 bg-black/60 text-white text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">
                   {currentIndex + 1} / {imagenes.length}
                 </div>
               </>
