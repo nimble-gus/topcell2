@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CloudinaryImage from "@/components/CloudinaryImage";
+import TableScrollHint from "@/components/seminuevos/TableScrollHint";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -205,7 +206,7 @@ export default async function SeminuevoModeloPage({ params }: PageProps) {
           </div>
 
           {/* Tabla de variantes */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="relative bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-bold text-gray-900">
                 Teléfonos Disponibles
@@ -268,14 +269,18 @@ export default async function SeminuevoModeloPage({ params }: PageProps) {
                       <tr key={variante.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-4 whitespace-nowrap">
                           {imagenMostrar ? (
-                            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
+                            <Link
+                              href={`/producto/seminuevo-variante/${variante.id}`}
+                              className="block relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:ring-2 hover:ring-orange-400 transition-all"
+                              title="Ver detalles"
+                            >
                               <CloudinaryImage
                                 src={imagenMostrar}
                                 alt={`${marcaInfo?.nombre} ${modeloInfo?.nombre} ${variante.color.color}`}
                                 fill
                                 size="thumbnail"
                               />
-                            </div>
+                            </Link>
                           ) : (
                             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center">
                               <span className="text-xs text-gray-400">Sin foto</span>
@@ -354,6 +359,7 @@ export default async function SeminuevoModeloPage({ params }: PageProps) {
               </table>
             </div>
           </div>
+          <TableScrollHint />
         </div>
       </main>
 
