@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import Image from "next/image";
+import CloudinaryImage from "@/components/CloudinaryImage";
 
 export const dynamic = 'force-dynamic';
 
@@ -128,12 +128,12 @@ export default async function SeminuevosPage() {
                   <div className="mb-6">
                     {grupo.marca.logoUrl ? (
                       <div className="relative h-12 w-32">
-                        <Image
+                        <CloudinaryImage
                           src={grupo.marca.logoUrl}
                           alt={grupo.marca.nombre}
                           fill
+                          size="full"
                           className="object-contain"
-                          unoptimized
                         />
                       </div>
                     ) : (
@@ -154,13 +154,12 @@ export default async function SeminuevosPage() {
                         {/* Imagen del producto */}
                         {modelo.imagenUrl ? (
                           <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
-                            <Image
+                            <CloudinaryImage
                               src={modelo.imagenUrl}
                               alt={modelo.modelo}
                               fill
-                              className="object-cover transition-transform group-hover:scale-110"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                              unoptimized
+                              size="card"
+                              className="transition-transform group-hover:scale-110"
                             />
                           </div>
                         ) : (

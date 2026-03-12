@@ -47,7 +47,7 @@ export default function Header({ logoUrl }: HeaderProps) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/90 backdrop-blur-lg shadow-md"
+          ? "bg-white shadow-md"
           : "bg-transparent"
       }`}
     >

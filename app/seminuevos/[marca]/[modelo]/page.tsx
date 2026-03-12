@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Image from "next/image";
+import CloudinaryImage from "@/components/CloudinaryImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -182,13 +182,11 @@ export default async function SeminuevoModeloPage({ params }: PageProps) {
             <div className="flex items-center gap-4 mb-4">
               {modeloInfo?.imagenes && modeloInfo.imagenes.length > 0 && (
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                  <Image
+                  <CloudinaryImage
                     src={modeloInfo.imagenes[0].url}
                     alt={modeloInfo.nombre}
                     fill
-                    className="object-cover"
-                    sizes="96px"
-                    unoptimized
+                    size="thumbnail"
                   />
                 </div>
               )}
@@ -271,13 +269,11 @@ export default async function SeminuevoModeloPage({ params }: PageProps) {
                         <td className="px-4 py-4 whitespace-nowrap">
                           {imagenMostrar ? (
                             <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
-                              <Image
+                              <CloudinaryImage
                                 src={imagenMostrar}
                                 alt={`${marcaInfo?.nombre} ${modeloInfo?.nombre} ${variante.color.color}`}
                                 fill
-                                className="object-cover"
-                                sizes="64px"
-                                unoptimized
+                                size="thumbnail"
                               />
                             </div>
                           ) : (

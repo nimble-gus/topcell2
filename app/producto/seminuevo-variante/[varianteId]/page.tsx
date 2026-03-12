@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Image from "next/image";
+import SeminuevoImageGallery from "@/components/product/SeminuevoImageGallery";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BuyButton from "@/components/product/BuyButton";
@@ -187,30 +187,11 @@ export default async function SeminuevoVarianteDetailPage({ params }: PageProps)
                     {telefono.marca.nombre} {telefono.modelo?.nombre} {variante.color.color}
                   </h2>
                   
-                  {/* Galería de imágenes */}
-                  {imagenes.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      {imagenes.slice(0, 6).map((url, index) => (
-                        <div
-                          key={index}
-                          className="relative aspect-square rounded-lg overflow-hidden bg-gray-100"
-                        >
-                          <Image
-                            src={url}
-                            alt={`${telefono.marca.nombre} ${telefono.modelo?.nombre} - Imagen ${index + 1}`}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 50vw, 33vw"
-                            unoptimized
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="relative aspect-square w-full rounded-lg bg-gray-100 flex items-center justify-center">
-                      <span className="text-gray-400">Sin imágenes disponibles</span>
-                    </div>
-                  )}
+                  {/* Galería de imágenes - igual que nuevos, con lightbox, sin límite */}
+                  <SeminuevoImageGallery
+                    imagenes={imagenes}
+                    titulo={`${telefono.marca.nombre} ${telefono.modelo?.nombre}`}
+                  />
                 </div>
               </div>
 

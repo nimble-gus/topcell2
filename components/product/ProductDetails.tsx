@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Image from "next/image";
+import CloudinaryImage from "@/components/CloudinaryImage";
 import { useRouter } from "next/navigation";
 import { addToCart } from "@/lib/cart";
 
@@ -287,14 +287,12 @@ export default function ProductDetails({ tipo, varianteIdInicial, producto }: Pr
         {/* Galería de imágenes */}
         <div className="space-y-4">
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100">
-            <Image
+            <CloudinaryImage
               src={imagenesAMostrar[currentImageIndex] || "/placeholder-phone.jpg"}
               alt={`${producto.marca} ${producto.modelo}`}
               fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-              unoptimized
+              size="gallery"
+              loading="eager"
             />
             
             {imagenesAMostrar.length > 1 && (
@@ -354,13 +352,11 @@ export default function ProductDetails({ tipo, varianteIdInicial, producto }: Pr
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <Image
+                  <CloudinaryImage
                     src={img}
                     alt={`${producto.marca} ${producto.modelo} - Imagen ${index + 1}`}
                     fill
-                    className="object-cover"
-                    sizes="80px"
-                    unoptimized
+                    size="thumbnail"
                   />
                 </button>
               ))}

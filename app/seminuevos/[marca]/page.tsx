@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import Image from "next/image";
+import CloudinaryImage from "@/components/CloudinaryImage";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -132,13 +132,12 @@ export default async function SeminuevosMarcaPage({ params }: PageProps) {
               >
                 {m.imagenUrl ? (
                   <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
-                    <Image
+                    <CloudinaryImage
                       src={m.imagenUrl}
                       alt={m.modelo}
                       fill
-                      className="object-cover transition-transform group-hover:scale-110"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      unoptimized
+                      size="card"
+                      className="transition-transform group-hover:scale-110"
                     />
                   </div>
                 ) : (
