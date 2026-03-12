@@ -137,6 +137,8 @@ export default async function SeminuevosMarcaPage({ params }: PageProps) {
                       alt={m.modelo}
                       fill
                       className="object-cover transition-transform group-hover:scale-110"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      unoptimized
                     />
                   </div>
                 ) : (

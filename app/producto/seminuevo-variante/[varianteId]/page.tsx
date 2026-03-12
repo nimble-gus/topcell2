@@ -200,6 +200,8 @@ export default async function SeminuevoVarianteDetailPage({ params }: PageProps)
                             alt={`${telefono.marca.nombre} ${telefono.modelo?.nombre} - Imagen ${index + 1}`}
                             fill
                             className="object-cover"
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                            unoptimized
                           />
                         </div>
                       ))}

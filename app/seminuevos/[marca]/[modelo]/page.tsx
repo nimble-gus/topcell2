@@ -187,6 +187,8 @@ export default async function SeminuevoModeloPage({ params }: PageProps) {
                     alt={modeloInfo.nombre}
                     fill
                     className="object-cover"
+                    sizes="96px"
+                    unoptimized
                   />
                 </div>
               )}
@@ -274,6 +276,8 @@ export default async function SeminuevoModeloPage({ params }: PageProps) {
                                 alt={`${marcaInfo?.nombre} ${modeloInfo?.nombre} ${variante.color.color}`}
                                 fill
                                 className="object-cover"
+                                sizes="64px"
+                                unoptimized
                               />
                             </div>
                           ) : (

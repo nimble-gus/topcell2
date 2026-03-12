@@ -294,6 +294,7 @@ export default function ProductDetails({ tipo, varianteIdInicial, producto }: Pr
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority
+              unoptimized
             />
             
             {imagenesAMostrar.length > 1 && (
@@ -359,6 +360,7 @@ export default function ProductDetails({ tipo, varianteIdInicial, producto }: Pr
                     fill
                     className="object-cover"
                     sizes="80px"
+                    unoptimized
                   />
                 </button>
               ))}
