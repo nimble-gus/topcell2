@@ -142,8 +142,8 @@ export default async function SeminuevoVarianteDetailPage({ params }: PageProps)
       <main className="pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb */}
-          <nav className="mb-6 text-sm">
-            <ol className="flex items-center space-x-2 text-gray-600">
+          <nav className="mb-4 sm:mb-6 text-xs sm:text-sm">
+            <ol className="flex items-center flex-wrap gap-x-1 sm:gap-x-2 gap-y-1 text-gray-600">
               <li>
                 <Link href="/" className="hover:text-orange-500">
                   Inicio
