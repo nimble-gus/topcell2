@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import CloudinaryImage from "@/components/CloudinaryImage";
 import { getCloudinaryOptimizedUrl } from "@/lib/cloudinary-utils";
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
+const ZOOM_STEP = 0.5;
 
 interface SeminuevoImageGalleryProps {
   imagenes: string[];
@@ -15,6 +19,16 @@ export default function SeminuevoImageGallery({
 }: SeminuevoImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+
+  // Reset zoom/pan al cambiar de imagen
+  useEffect(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, [currentIndex]);
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + imagenes.length) % imagenes.length);
@@ -28,17 +42,78 @@ export default function SeminuevoImageGallery({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!lightboxOpen) return;
-      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "Escape") {
+        setLightboxOpen(false);
+        setZoom(1);
+        setPan({ x: 0, y: 0 });
+      }
       if (e.key === "ArrowLeft") {
         setCurrentIndex((prev) => (prev - 1 + imagenes.length) % imagenes.length);
       }
       if (e.key === "ArrowRight") {
         setCurrentIndex((prev) => (prev + 1) % imagenes.length);
       }
+      if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP));
+      }
+      if (e.key === "-") {
+        e.preventDefault();
+        setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP));
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxOpen, imagenes.length]);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+    setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z + delta)));
+  }, []);
+
+  // Necesario para que preventDefault funcione en wheel (eventos pasivos)
+  const wheelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = wheelRef.current;
+    if (!el || !lightboxOpen) return;
+    const preventScroll = (e: WheelEvent) => e.preventDefault();
+    el.addEventListener("wheel", preventScroll, { passive: false });
+    return () => el.removeEventListener("wheel", preventScroll);
+  }, [lightboxOpen]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (zoom <= 1) return;
+    e.preventDefault();
+    setIsDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+  }, [zoom, pan]);
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || zoom <= 1) return;
+      setPan({
+        x: dragStart.current.panX + e.clientX - dragStart.current.x,
+        y: dragStart.current.panY + e.clientY - dragStart.current.y,
+      });
+    },
+    [isDragging, zoom]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   // Prevenir scroll del body cuando lightbox está abierto
   useEffect(() => {
@@ -61,7 +136,19 @@ export default function SeminuevoImageGallery({
   }
 
   const currentImage = imagenes[currentIndex];
-  const lightboxUrl = getCloudinaryOptimizedUrl(currentImage, "lightbox");
+  // Usar "gallery" = misma URL que el carrusel → instantáneo desde caché
+  const lightboxUrl = getCloudinaryOptimizedUrl(currentImage, "gallery");
+
+  // Precarga imágenes adyacentes para navegación rápida
+  useEffect(() => {
+    if (!lightboxOpen || imagenes.length <= 1) return;
+    const prevIndex = (currentIndex - 1 + imagenes.length) % imagenes.length;
+    const nextIndex = (currentIndex + 1) % imagenes.length;
+    [prevIndex, nextIndex].forEach((i) => {
+      const img = new Image();
+      img.src = getCloudinaryOptimizedUrl(imagenes[i], "gallery");
+    });
+  }, [lightboxOpen, currentIndex, imagenes]);
 
   return (
     <>
@@ -163,7 +250,7 @@ export default function SeminuevoImageGallery({
       {/* Lightbox overlay */}
       {lightboxOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"
           onClick={() => setLightboxOpen(false)}
         >
           {/* Fondo oscuro con blur */}
@@ -172,14 +259,59 @@ export default function SeminuevoImageGallery({
             aria-hidden="true"
           />
 
-          {/* Contenedor de la imagen - click fuera cierra */}
-          <div className="relative z-10 max-w-4xl max-h-[90vh] w-full flex items-center justify-center">
+          {/* Contenedor: mucho más grande que la imagen principal del carrusel */}
+          <div
+            ref={wheelRef}
+            className="relative z-10 w-[95vw] max-w-7xl h-[90vh] flex items-center justify-center overflow-hidden"
+            onWheel={handleWheel}
+          >
             <img
               src={lightboxUrl}
               alt={`${titulo} - Imagen ${currentIndex + 1}`}
-              className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+              className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg shadow-2xl select-none touch-none"
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                cursor: zoom > 1 ? (isDragging ? "grabbing" : "grab") : "default",
+              }}
               onClick={(e) => e.stopPropagation()}
+              onMouseDown={handleMouseDown}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                setZoom((z) => (z > 1 ? 1 : 2));
+                setPan({ x: 0, y: 0 });
+              }}
+              draggable={false}
             />
+
+            {/* Botones de zoom */}
+            <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/60 rounded-full px-2 py-1.5">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP));
+                  if (zoom <= 1.5) setPan({ x: 0, y: 0 });
+                }}
+                className="text-white p-2 hover:bg-white/20 rounded-full transition-colors"
+                aria-label="Reducir zoom"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
+              <span className="text-white text-sm min-w-[3rem] text-center">{Math.round(zoom * 100)}%</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP));
+                }}
+                className="text-white p-2 hover:bg-white/20 rounded-full transition-colors"
+                aria-label="Aumentar zoom"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
 
             {/* Botón cerrar */}
             <button

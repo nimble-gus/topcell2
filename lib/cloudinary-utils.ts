@@ -11,7 +11,7 @@ const SIZE_PRESETS: Record<CloudinarySize, string> = {
   thumbnail: "w_128,h_128,c_fill,q_auto,f_auto",
   card: "w_400,h_400,c_fill,q_auto,f_auto",
   gallery: "w_600,h_600,c_fill,q_auto,f_auto",
-  lightbox: "w_1000,h_1000,c_limit,q_auto,f_auto", // 1000px max, carga rápida
+  lightbox: "w_700,h_700,c_limit,q_auto,f_auto", // Resolución más baja para navegar rápido
   full: "q_auto,f_auto",
 };
 
