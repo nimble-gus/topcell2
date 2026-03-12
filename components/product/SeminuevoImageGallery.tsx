@@ -82,38 +82,54 @@ export default function SeminuevoImageGallery({
     return () => el.removeEventListener("wheel", preventScroll);
   }, [lightboxOpen]);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (zoom <= 1) return;
-    e.preventDefault();
-    setIsDragging(true);
-    dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
-  }, [zoom, pan]);
+  const handlePointerDown = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      if (zoom <= 1) return;
+      e.preventDefault();
+      setIsDragging(true);
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      dragStart.current = { x: clientX, y: clientY, panX: pan.x, panY: pan.y };
+    },
+    [zoom, pan]
+  );
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
+  const handlePointerMove = useCallback(
+    (e: MouseEvent | TouchEvent) => {
       if (!isDragging || zoom <= 1) return;
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
       setPan({
-        x: dragStart.current.panX + e.clientX - dragStart.current.x,
-        y: dragStart.current.panY + e.clientY - dragStart.current.y,
+        x: dragStart.current.panX + clientX - dragStart.current.x,
+        y: dragStart.current.panY + clientY - dragStart.current.y,
       });
     },
     [isDragging, zoom]
   );
 
-  const handleMouseUp = useCallback(() => {
+  const handlePointerUp = useCallback(() => {
     setIsDragging(false);
   }, []);
 
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    }
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+    if (!isDragging) return;
+    const move = (e: MouseEvent | TouchEvent) => {
+      if ("touches" in e) e.preventDefault();
+      handlePointerMove(e);
     };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+    window.addEventListener("mousemove", handlePointerMove);
+    window.addEventListener("mouseup", handlePointerUp);
+    window.addEventListener("touchmove", move, { passive: false });
+    window.addEventListener("touchend", handlePointerUp);
+    window.addEventListener("touchcancel", handlePointerUp);
+    return () => {
+      window.removeEventListener("mousemove", handlePointerMove);
+      window.removeEventListener("mouseup", handlePointerUp);
+      window.removeEventListener("touchmove", move);
+      window.removeEventListener("touchend", handlePointerUp);
+      window.removeEventListener("touchcancel", handlePointerUp);
+    };
+  }, [isDragging, handlePointerMove, handlePointerUp]);
 
   // Prevenir scroll del body cuando lightbox está abierto
   useEffect(() => {
@@ -272,9 +288,11 @@ export default function SeminuevoImageGallery({
               style={{
                 transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                 cursor: zoom > 1 ? (isDragging ? "grabbing" : "grab") : "default",
+                touchAction: "none",
               }}
               onClick={(e) => e.stopPropagation()}
-              onMouseDown={handleMouseDown}
+              onMouseDown={handlePointerDown}
+              onTouchStart={handlePointerDown}
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 setZoom((z) => (z > 1 ? 1 : 2));
