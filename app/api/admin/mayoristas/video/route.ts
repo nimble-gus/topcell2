@@ -46,15 +46,28 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Buscar si ya existe un contenido de video
+    // Buscar el registro que se muestra (misma lógica que GET y página pública)
     const existing = await prisma.contenidoTienda.findFirst({
       where: {
         tipo: "mayoristas-video",
+        activo: true,
+      },
+      orderBy: {
+        orden: "asc",
       },
     });
 
     let videoContent;
     if (existing) {
+      // Desactivar otros registros duplicados para evitar inconsistencias
+      await prisma.contenidoTienda.updateMany({
+        where: {
+          tipo: "mayoristas-video",
+          id: { not: existing.id },
+        },
+        data: { activo: false },
+      });
+
       videoContent = await prisma.contenidoTienda.update({
         where: { id: existing.id },
         data: {

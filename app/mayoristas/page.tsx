@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,6 +9,10 @@ export const metadata: Metadata = {
   title: "Programa Mayoristas",
   description: "Únete a nuestro programa de mayoristas y obtén precios especiales en grandes volúmenes. Ideal para negocios y distribuidores.",
 };
+
+// Evitar cache: el video se edita desde el admin y debe mostrarse actualizado
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function MayoristasPage() {
   // Obtener logo para el header
@@ -58,7 +63,8 @@ export default async function MayoristasPage() {
   const footerLinkPrivacidad = footerData.find((item) => item.tipo === "footer-link-privacidad")?.urlDestino || null;
   const footerLinkTerminos = footerData.find((item) => item.tipo === "footer-link-terminos")?.urlDestino || null;
 
-  // Obtener link del video de YouTube
+  // Obtener link del video de YouTube (sin caché: se edita desde el admin)
+  unstable_noStore();
   const videoContent = await prisma.contenidoTienda.findFirst({
     where: {
       tipo: "mayoristas-video",
